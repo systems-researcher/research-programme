@@ -20,7 +20,8 @@ A single entry point that explains what every repository in the doctoral researc
 programme is for, what question it answers, and how it links to the others.
 
 Primary reader: the supervisor, or anyone told "look at my research" who needs to
-understand the shape of it in ten minutes without opening twelve repositories.
+understand the shape of it in ten minutes without opening thirteen
+repositories.
 
 Two deliverables from one source of truth:
 
@@ -33,19 +34,23 @@ updating is a first-class requirement, not an afterthought.
 
 ## 2. Scope
 
-**In scope.** The nine `systems-researcher` repositories and the three
+**In scope.** The ten `systems-researcher` repositories and the three
 local-only research repositories that have no remote yet
 (`ahp-framing-fragility-probe`, `dsm-sequencing-probe`,
-`epistemic-adequacy-metamodel`).
+`epistemic-adequacy-metamodel`). Thirteen repositories, and `Thesis-Work-Area`
+is one of the ten, so `repos.yml` holds thirteen entries in total.
 
 **Out of scope.** The `jgsystemsconsulting` tooling repositories (MCP bridges,
-skill packs), thesis-writing infrastructure (`LboroPhdRepo`, thesis template),
-and commercial work. A tooling repository may be *named* in a card where a study
+skill packs), thesis-writing *infrastructure* (`LboroPhdRepo`, the Loughborough
+thesis LaTeX template), and commercial work. `Thesis-Work-Area` is in scope and
+distinct from those: it is where the programme's findings are written up, so it
+is the terminus the map needs, whereas the excluded repositories are build
+machinery for the document. A tooling repository may be *named* in a card where a study
 depends on it, but gets no card of its own.
 
 **Explicitly not built** (YAGNI, revisit only on evidence):
 
-- A docs-site generator (MkDocs, Astro Starlight). Twelve cards fit one page.
+- A docs-site generator (MkDocs, Astro Starlight). Twelve cards and one terminus node fit on one page.
 - Scheduled CI refresh. Manual refresh first; automate when it demonstrably rots.
 - Per-repo detail pages. The card is the unit.
 - Search. One page, `Ctrl-F`.
@@ -73,48 +78,127 @@ Thesis framing: *Architecting Trustworthy AI Integration in MBSE*; the MODELS
 
 ### Strand 2 — do classic SE methods survive an AI practitioner
 
-| Repository | Claim under test |
-|---|---|
-| `model-vs-document-defect-probe` | MBSE's flagship claim: does a connected model beat information-equivalent documents |
-| `ahp-framing-fragility-probe` | Does a structured trade study's winner flip under cosmetic perturbation |
-| `dsm-sequencing-probe` | Does DSM produce the optimal task order, measured against a provable optimum |
+| Repository | Stage | Claim under test |
+|---|---|---|
+| `model-vs-document-defect-probe` | `evidence` | MBSE's flagship claim: does a connected model beat information-equivalent documents |
+| `ahp-framing-fragility-probe` | `evidence` | Does a structured trade study's winner flip under cosmetic perturbation |
+| `dsm-sequencing-probe` | `evidence` | Does DSM produce the optimal task order, measured against a provable optimum |
+
+All three sit at `evidence`: each is an instrument that produces a measured
+result about a method. `strand` decides which section of the page an entry lands
+in; `stage` decides which subgraph it lands in on the diagram. The two are
+independent, and every entry carries both.
 
 ### Assembly
 
-`Thesis-Work-Area` is shown as the terminus of both strands: a node on the
-diagram, with **no card and no link**. It is never a dependency of anything —
-material moves *into* the thesis, and no repository may depend on it. It carries
-`render: node-only` in `repos.yml`; `build.py` emits the diagram node and skips
-the card.
+`Thesis-Work-Area` is the terminus of both strands: a node on the diagram, with
+**no card, and no hyperlink on the node**. It is never a dependency of anything —
+material moves *into* the thesis, and no repository may depend on it. Its entry
+is a full, valid record like any other; only its rendering differs:
+
+```yaml
+- key: Thesis-Work-Area
+  owner: systems-researcher
+  strand: assembly
+  stage: assembly
+  render: node-only
+  objective: >
+    Where the programme's findings are written up as the doctoral thesis.
+  question: >
+    Not applicable: this is the destination, not a study.
+  method: >
+    Not applicable.
+  status: design
+  depends_on: [epistemic-adequacy-probe, pressure-susceptibility-probe,
+               SysML-v2-API-Services-Arch-A, sysml-v2-metadata-graph-Arch-B,
+               sysml-v2-governed-substrate-Arch-C, model-vs-document-defect-probe,
+               ahp-framing-fragility-probe, dsm-sequencing-probe]
+```
+
+`render: node-only` changes rendering only. It grants **no exemption** from
+`--check`: every required field is still required, so a node-only entry cannot
+become a hole in the validation.
 
 ## 4. Content model
 
-`repos.yml` is the single hand-authored source of truth. One entry per
-repository:
+`repos.yml` is the single hand-authored source of truth, with three top-level
+blocks. `programme` carries the page's framing prose, `stages` carries the
+one-line explanation each stage section shows, and `repos` carries one entry per
+repository. Nothing the page displays is hardcoded in `build.py`:
+
+```yaml
+programme:
+  title: "Architecting Trustworthy AI Integration in MBSE"
+  question: >
+    One paragraph stating the research question, rendered in the page header.
+  move: >
+    The one sentence stating the methodological move (an AI agent standing in as
+    a consistent practitioner), rendered under the question.
+
+stages:
+  define: "What a record must expose, and how that binds to SysML v2."
+  measure: "The instruments that turn the definition into a number."
+  evidence: "What the instruments have actually measured."
+  architecture: "Candidate substrates that enforce it on the write side."
+  assembly: "Where it is written up."
+
+repos:
+  - key: ...
+```
+
+Each entry under `repos`:
 
 ```yaml
 - key: epistemic-adequacy-probe      # the GitHub repo name, verbatim, casing included
   owner: systems-researcher          # or "local" when there is no remote yet
   strand: adequacy                   # adequacy | method-validation | assembly
   stage: evidence                    # define | measure | evidence | architecture | assembly
-  objective: >                       # one sentence: what the repo is for
-    ...
-  question: >                        # the question it answers
-    ...
-  method: >                          # how it answers it
-    ...
+  render: card                       # card (default) | node-only
+  objective: >
+    First measured test of whether epistemic metadata, beyond structured model
+    access alone, changes how an AI consumer answers derivation questions.
+  question: >
+    Does an AI consumer reading an MBSE model produce fewer unauthorised answers
+    when the model exposes derivation, status, and provenance?
+  method: >
+    Three LLMs, 120 judged answers, over a verbatim excerpt of the public
+    Airbus Apollo 11 SysML v2 reconstruction, with and without a sidecar.
   status: published                  # design | built-runs-pending | results | published
-  headline: >                        # measured result, with its source and version;
-    ...                              # omit entirely when there is nothing measured
+  headline:                          # omit entirely when nothing has been measured
+    text: >
+      Unauthorised content on 13.3% of governed answers bare, 2.2% with the
+      metadata layer; 60% under answer pressure, roughly halved with it.
+    source: "epistemic-adequacy-probe v0.2.0, RESULTS.md verdict counts"
   output: "doi:10.1145/3822455.3838783"   # optional: paper, artefact, release
   depends_on: [epistemic-adequacy-spec, epistemic-adequacy-toolkit]
 ```
 
+**Required on every entry:** `key`, `owner`, `strand`, `stage`, `objective`,
+`question`, `method`, `status`.
+**Optional:** `render` (defaults to `card`), `headline`, `output`, `depends_on`
+(absent means the repository depends on nothing else in the map).
+
+Permitted values, which `--check` enforces:
+
+| Field | Values |
+|---|---|
+| `strand` | `adequacy`, `method-validation`, `assembly` |
+| `stage` | `define`, `measure`, `evidence`, `architecture`, `assembly` |
+| `status` | `design`, `built-runs-pending`, `results`, `published` |
+| `render` | `card`, `node-only` |
+| `owner` | the literal `local`, or a non-empty GitHub account name — `--check` verifies it is non-empty and matches `[A-Za-z0-9-]+`, not that the account exists |
+
+`render: node-only` suppresses card rendering while keeping the diagram node. It
+is used by `Thesis-Work-Area` alone.
+
 Rules on the fields:
 
-- `headline` carries a number **only** when a run produced it, and always names
-  the artefact and version it came from. A repository at design stage has no
-  `headline` key. The map must never imply a result exists where none does.
+- `headline` is a mapping of `text` (the result in prose) and `source` (the
+  artefact and version the number came from). Both are required whenever
+  `headline` is present, which makes "every number is attributed" a mechanically
+  checkable rule rather than an authoring habit. A repository whose runs have not
+  happened has no `headline` key at all. The map must never imply a result exists
+  where none does.
 - `status` is the author's judgement, not derived. `built-runs-pending` is a real
   and common state in this programme and must be visible as such.
 - `depends_on` is the **only** authored edge source. The reverse direction
@@ -130,9 +214,11 @@ map names the `systems-researcher` path in both cases. Several local working
 copies still carry the pre-transfer remote; that is harmless and out of scope
 here.
 
-`data/live.json` holds machine-derived fields only — description, visibility,
-default branch, last push date — keyed by `key`. It is generated, never edited,
-and committed so a build works without network access. Keeping it separate from
+`data/live.json` holds machine-derived fields only. Its shape is a top-level
+`generated_at` (ISO-8601 UTC timestamp of the last successful refresh, which the
+site footer renders) and a `repos` object keyed by `key`, each holding
+`description`, `visibility`, `default_branch`, and `pushed_at`. It is generated,
+never edited, and committed so a build works without network access. Keeping it separate from
 `repos.yml` is deliberate: a refresh can never clobber authored prose.
 
 Local-only repositories (`owner: local`) have no live data. They render with a
@@ -156,7 +242,11 @@ research-programme/
 ### `scripts/refresh.py`
 
 Calls `gh api repos/{owner}/{key}` for every entry with a real owner, writes
-`data/live.json`. Failures are non-fatal per repository: a repo that cannot be
+`data/live.json`. On the very first run the file does not exist yet; the script
+creates it. `build.py` treats a missing `data/live.json` as an empty refresh: it
+builds the page from `repos.yml` alone, omits the live description and the
+footer's last-refreshed line, and prints a warning. A build is never blocked by
+absent live data. Failures are non-fatal per repository: a repo that cannot be
 reached keeps its previous live entry and the script reports which ones went
 stale on stderr. Requires an authenticated `gh`; no token handling of its own.
 
@@ -166,21 +256,30 @@ Pure function of `repos.yml` + `data/live.json`. Emits:
 
 - `site/index.html` — the whole page, CSS inline, one `<script>` tag for Mermaid
   from CDN.
-- The Mermaid graph definition, inlined in that page, with nodes grouped into
-  subgraphs by stage and edges taken from `depends_on` alone.
+- The Mermaid graph definition, inlined in that page: one subgraph per stage in
+  argument order, strand carried by a Mermaid `classDef` per strand rather than
+  by layout, and edges taken from `depends_on` alone.
 - The README table, written between `<!-- BEGIN:repos -->` and
   `<!-- END:repos -->` markers. Content outside the markers is never touched.
 
 `build.py --check` validates and exits non-zero on:
 
-1. a `depends_on` or `feeds` entry naming a key that does not exist;
+1. a `depends_on` entry naming a key that does not exist;
 2. a `stage` or `strand` outside the permitted sets;
-3. a card missing a required field (`key`, `owner`, `strand`, `stage`,
-   `objective`, `question`, `status`);
+3. a card missing any required field (`key`, `owner`, `strand`, `stage`,
+   `objective`, `question`, `method`, `status`) — `render: node-only` is not an
+   exemption;
 4. `Thesis-Work-Area` appearing in any other card's `depends_on` (the terminus
    rule: the thesis consumes, it never supplies);
 5. a `headline` present on a card whose `status` is not `results` or
-   `published` — a repository whose runs have not happened cannot carry a number.
+   `published` — a repository whose runs have not happened cannot carry a number;
+6. a `headline` missing either `text` or `source`, which is what makes every
+   published number attributable;
+7. a field value outside the permitted sets in the table in §4, or a duplicate
+   `key`;
+8. a missing `programme` block, a missing `programme.title`, `programme.question`
+   or `programme.move`, or a `stage` used by some entry with no matching line in
+   `stages` — a stage section would otherwise render with no explanation.
 
 This is the project's one test. It runs as `python scripts/build.py --check` and
 is the check a future change has to keep passing.
@@ -193,8 +292,10 @@ Structure, top to bottom:
 
 1. **Header** — thesis title, one-paragraph statement of the research question,
    and the single sentence that states the methodological move.
-2. **Diagram** — the generated Mermaid graph, stages left to right, strands as
-   rows. Nodes link to their card.
+2. **Diagram** — the generated Mermaid graph, stages left to right. Every node
+   whose entry renders a card is hyperlinked to that card's anchor; a
+   `render: node-only` node carries no link, because there is no anchor to
+   point at.
 3. **Strand 1**, stage by stage. Each stage gets a one-line explanation of why
    the stage exists, then its cards.
 4. **Strand 2**, same treatment.
@@ -203,9 +304,11 @@ Structure, top to bottom:
    date from `data/live.json`.
 
 Card rendering: title (links to GitHub), visibility badge, status badge,
-objective, question, method, headline result when present, and two link rows —
-"depends on" (authored) and "feeds" (derived by inversion) — as internal anchors
-to the other cards on the page.
+objective, question, method, headline result when present, and two rows —
+"depends on" (authored) and "feeds" (derived by inversion). Each entry in those
+rows is an internal anchor to the named card, except where the named key is
+`render: node-only`, which renders as plain text. No row ever emits an anchor to
+an element the page does not contain.
 
 Design constraints: readable at 400px wide, works in light and dark, no
 horizontal page scroll, external links marked. No client-side JavaScript beyond
@@ -233,7 +336,7 @@ immediately why they cannot.
 edit repos.yml
 python scripts/refresh.py      # optional; pulls live GitHub fields
 python scripts/build.py        # regenerates site/index.html and the README block
-python scripts/build.py --check
+python scripts/build.py --check   # must pass; a non-zero exit stops here, nothing is committed
 git commit -am "map: <what changed>"
 git push                       # Vercel redeploys
 ```
@@ -248,11 +351,13 @@ drift is evidenced and the automation is earned.
 |---|---|
 | `gh` unauthenticated or offline | `refresh.py` exits non-zero, prints the reason, leaves `data/live.json` untouched. `build.py` still works from the committed file |
 | A repository is renamed or deleted | `refresh.py` reports it as stale; `--check` still passes, because the graph is authored not derived. The author fixes `repos.yml` |
-| `repos.yml` malformed | `build.py` fails with the YAML error and the offending key; no partial write to `site/index.html` |
+| `repos.yml` has a YAML syntax error | `build.py` fails with the parser's line and column; no partial write to `site/index.html` |
+| `repos.yml` parses but an entry is invalid | `build.py` fails naming the offending `key` and field; no partial write |
 | A card references a missing key | `--check` fails with both keys named |
 
-`build.py` writes to a temporary file and moves it into place, so a crashed build
-never leaves a half-written page.
+`build.py` writes both of its outputs — `site/index.html` and the rewritten
+`README.md` — to temporary files and moves each into place, so a crashed build
+leaves neither a half-written page nor a README with one marker and no other.
 
 ## 9. Success criteria
 
