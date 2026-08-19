@@ -6,6 +6,8 @@ from __future__ import annotations
 import html
 import re
 
+from pathlib import Path
+
 from scripts import mapdata
 
 BEGIN = "<!-- BEGIN:repos -->"
@@ -14,14 +16,49 @@ STAGE_ORDER = mapdata.STAGES
 STRAND_ORDER = mapdata.STRANDS
 
 MERMAID_CDN = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
+TOKENS_CSS = Path(__file__).resolve().parent.parent / "design" / "tokens.css"
 
-# One fill per strand. These must differ: the strand is carried by colour, not by
-# layout, so identical palettes would silently erase the distinction.
+# GOV.UK strand colours. Must match design/tokens.css. Distinct on purpose:
+# strand is carried by colour, not layout.
 STRAND_STYLE = {
-    "adequacy": "fill:#e7effc,stroke:#3f6bb5,color:#10203a;",
-    "method-validation": "fill:#f2ecfb,stroke:#7a5bb0,color:#241436;",
-    "assembly": "fill:#eaf3ec,stroke:#4f8b62,color:#12291a;",
+    "adequacy": "fill:#e8f1f8,stroke:#1d70b8,color:#0b0c0c;",
+    "method-validation": "fill:#f3e9ff,stroke:#4c2c92,color:#0b0c0c;",
+    "assembly": "fill:#e1f3e8,stroke:#00703c,color:#0b0c0c;",
 }
+
+# Page chrome on top of design/tokens.css. Keep tokens out of here.
+CHROME_CSS = """
+* { box-sizing: border-box; }
+body { margin:0; background:var(--canvas); color:var(--ink); font:var(--text)/var(--leading) var(--font); }
+a { color:var(--link); }
+a:hover { color:var(--link-hover); }
+a:focus-visible { outline:3px solid var(--focus); outline-offset:0; background:var(--focus); color:var(--ink); }
+.masthead { background:var(--header); color:var(--header-text); padding:var(--space-3) var(--space-4); display:flex; flex-wrap:wrap; gap:var(--space-2) var(--space-6); align-items:baseline; justify-content:space-between; }
+.masthead .wordmark { color:var(--header-text); text-decoration:none; font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:.875rem; }
+.masthead .org { color:var(--header-text); font-size:.875rem; }
+.phase { background:var(--phase); color:#fff; padding:var(--space-2) var(--space-4); font-size:.875rem; }
+.phase strong { display:inline-block; background:#fff; color:var(--ink); padding:0 .4em; margin-right:.6em; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; }
+main { max-width:var(--measure); margin:0 auto; padding:var(--space-7) var(--space-4) var(--space-9); }
+h1 { font-size:2.25rem; line-height:1.15; margin:0 0 var(--space-4); font-weight:700; }
+h2 { font-size:1.5rem; margin:var(--space-8) 0 var(--space-1); padding-top:var(--space-6); border-top:1px solid var(--line); font-weight:700; }
+h3 { font-size:1.1875rem; margin:var(--space-6) 0 var(--space-1); font-weight:700; }
+.subtitle, .stage-note { color:var(--muted); margin:.25rem 0 var(--space-4); }
+.card { background:var(--surface); border:1px solid var(--line); padding:var(--space-4); margin:var(--space-4) 0; }
+.card h4 { margin:0 0 var(--space-2); font-size:1.1875rem; }
+.ext { font-size:.75em; margin-left:.15em; }
+.sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.badges { margin:0 0 var(--space-3); }
+.badge { display:inline-block; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; border:1px solid var(--line); padding:.1rem .5rem; margin:0 var(--space-1) var(--space-1) 0; color:var(--muted); }
+.card p { margin:.4rem 0; }
+.headline { border-left:5px solid var(--link); padding-left:var(--space-3); }
+.source, .output { color:var(--muted); font-size:.875rem; }
+.links { font-size:.95rem; }
+.plain { color:var(--muted); }
+.terminus { color:var(--muted); }
+#diagram { overflow-x:auto; border:1px solid var(--line); padding:var(--space-4); background:var(--surface); }
+footer { margin-top:var(--space-8); padding-top:var(--space-5); border-top:1px solid var(--line); color:var(--muted); font-size:.875rem; }
+@media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+"""
 
 STATUS_LABELS = {
     "design": "design stage",
@@ -235,45 +272,28 @@ def page(data: mapdata.MapData, live: dict | None) -> str:
         "<p>Repositories marked private are readable on request — contact the author.</p>"
     )
 
+    tokens = TOKENS_CSS.read_text(encoding="utf-8")
+    title = html.escape(str(programme.get("title", "Research programme")))
     return f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{html.escape(str(programme.get("title", "Research programme")))}</title>
+<title>{title}</title>
+<meta name="description" content="Map of the doctoral research programme: what each repository is for and how they link.">
 <style>
-:root {{ --bg:#fbfbfd; --fg:#14161a; --muted:#5a6270; --line:#dfe3ea; --card:#ffffff; --accent:#2f4f8f; }}
-@media (prefers-color-scheme: dark) {{
-  :root {{ --bg:#111318; --fg:#e8eaee; --muted:#98a1b0; --line:#272b33; --card:#171a20; --accent:#9db6f0; }}
-}}
-* {{ box-sizing: border-box; }}
-body {{ margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; }}
-main {{ max-width: 62rem; margin: 0 auto; padding: 2rem 1.25rem 5rem; }}
-h1 {{ font-size: 1.9rem; line-height:1.25; margin:0 0 .5rem; }}
-h2 {{ font-size: 1.4rem; margin: 3rem 0 .25rem; padding-top:1.5rem; border-top:1px solid var(--line); }}
-h3 {{ font-size: 1.05rem; margin: 2rem 0 .25rem; }}
-.subtitle, .stage-note {{ color: var(--muted); margin:.25rem 0 1rem; }}
-.card {{ background:var(--card); border:1px solid var(--line); border-radius:.6rem; padding:1rem 1.15rem; margin:1rem 0; }}
-.card h4 {{ margin:0 0 .5rem; font-size:1.05rem; }}
-.ext {{ font-size:.75em; margin-left:.15em; }}
-.sr {{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }}
-.badges {{ margin:0 0 .75rem; }}
-.badge {{ display:inline-block; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em;
-  border:1px solid var(--line); border-radius:1rem; padding:.1rem .6rem; margin-right:.4rem; color:var(--muted); }}
-.card p {{ margin:.4rem 0; }}
-.headline {{ border-left:3px solid var(--accent); padding-left:.75rem; }}
-.source, .output {{ color:var(--muted); font-size:.85rem; }}
-.links {{ font-size:.9rem; }}
-.plain {{ color:var(--muted); }}
-.terminus {{ color:var(--muted); }}
-a {{ color:var(--accent); }}
-#diagram {{ overflow-x:auto; border:1px solid var(--line); border-radius:.6rem; padding:1rem; background:var(--card); }}
-footer {{ margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }}
+{tokens}
+{CHROME_CSS}
 </style>
 </head>
 <body>
+<header class="masthead">
+  <a class="wordmark" href="#">{title}</a>
+  <span class="org">Loughborough University</span>
+</header>
+<p class="phase"><strong>Research</strong> Doctoral programme map. Not a GOV.UK service.</p>
 <main>
-<h1>{html.escape(str(programme.get("title", "")))}</h1>
+<h1>{title}</h1>
 <p>{html.escape(" ".join(str(programme.get("question", "")).split()))}</p>
 <p><strong>{html.escape(" ".join(str(programme.get("move", "")).split()))}</strong></p>
 

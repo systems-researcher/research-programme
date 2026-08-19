@@ -218,6 +218,14 @@ def test_absent_live_file_omits_the_footer_timestamp() -> None:
     assert "last refreshed" not in page.lower()
 
 
+def test_page_inlines_govuk_tokens_and_phase_banner() -> None:
+    page = render.page(data_with(entry()), live={"generated_at": "t", "repos": {}})
+
+    assert "--ink: #0b0c0c" in page
+    assert "Not a GOV.UK service" in page
+    assert "border-radius" not in page.split("<style>", 1)[1].split("</style>", 1)[0]
+
+
 def test_prose_is_escaped_not_injected() -> None:
     page = render.page(
         data_with(entry(objective="<script>alert(1)</script>")),

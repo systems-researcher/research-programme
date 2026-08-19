@@ -4,37 +4,112 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Architecting Trustworthy AI Integration in MBSE</title>
+<meta name="description" content="Map of the doctoral research programme: what each repository is for and how they link.">
 <style>
-:root { --bg:#fbfbfd; --fg:#14161a; --muted:#5a6270; --line:#dfe3ea; --card:#ffffff; --accent:#2f4f8f; }
-@media (prefers-color-scheme: dark) {
-  :root { --bg:#111318; --fg:#e8eaee; --muted:#98a1b0; --line:#272b33; --card:#171a20; --accent:#9db6f0; }
+/* Research programme tokens.
+   Adapted from the GOV.UK Design System colour, type, spacing, and focus
+   rules (https://design-system.service.gov.uk/). Not a GOV.UK service.
+   GDS Transport is crown-use only — Helvetica/Arial is the documented fallback.
+   Copy this file into any programme repo and consume only these variables. */
+
+:root {
+  --canvas: #f3f2f1;
+  --surface: #ffffff;
+  --ink: #0b0c0c;
+  --muted: #505a5f;
+  --line: #b1b4b6;
+  --link: #1d70b8;
+  --link-hover: #003078;
+  --link-visited: #4c2c92;
+  --focus: #ffdd00;
+  --success: #00703c;
+  --error: #d4351c;
+  --header: #0b0c0c;
+  --header-text: #ffffff;
+  --phase: #1d70b8;
+
+  --strand-adequacy-fill: #e8f1f8;
+  --strand-adequacy-line: #1d70b8;
+  --strand-method-fill: #f3e9ff;
+  --strand-method-line: #4c2c92;
+  --strand-assembly-fill: #e1f3e8;
+  --strand-assembly-line: #00703c;
+
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Consolas, monospace;
+
+  --text: 1.1875rem;
+  --leading: 1.315;
+  --measure: 62rem;
+  --space-1: 5px;
+  --space-2: 10px;
+  --space-3: 15px;
+  --space-4: 20px;
+  --space-5: 25px;
+  --space-6: 30px;
+  --space-7: 40px;
+  --space-8: 50px;
+  --space-9: 60px;
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #0b0c0c;
+    --surface: #1d1d1d;
+    --ink: #f3f2f1;
+    --muted: #b1b4b6;
+    --line: #505a5f;
+    --link: #5694ca;
+    --link-hover: #9eceff;
+    --link-visited: #c6b3e6;
+    --header: #0b0c0c;
+    --header-text: #ffffff;
+    --strand-adequacy-fill: #122433;
+    --strand-method-fill: #231833;
+    --strand-assembly-fill: #12261b;
+  }
+}
+
+
 * { box-sizing: border-box; }
-body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; }
-main { max-width: 62rem; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
-h1 { font-size: 1.9rem; line-height:1.25; margin:0 0 .5rem; }
-h2 { font-size: 1.4rem; margin: 3rem 0 .25rem; padding-top:1.5rem; border-top:1px solid var(--line); }
-h3 { font-size: 1.05rem; margin: 2rem 0 .25rem; }
-.subtitle, .stage-note { color: var(--muted); margin:.25rem 0 1rem; }
-.card { background:var(--card); border:1px solid var(--line); border-radius:.6rem; padding:1rem 1.15rem; margin:1rem 0; }
-.card h4 { margin:0 0 .5rem; font-size:1.05rem; }
+body { margin:0; background:var(--canvas); color:var(--ink); font:var(--text)/var(--leading) var(--font); }
+a { color:var(--link); }
+a:hover { color:var(--link-hover); }
+a:focus-visible { outline:3px solid var(--focus); outline-offset:0; background:var(--focus); color:var(--ink); }
+.masthead { background:var(--header); color:var(--header-text); padding:var(--space-3) var(--space-4); display:flex; flex-wrap:wrap; gap:var(--space-2) var(--space-6); align-items:baseline; justify-content:space-between; }
+.masthead .wordmark { color:var(--header-text); text-decoration:none; font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:.875rem; }
+.masthead .org { color:var(--header-text); font-size:.875rem; }
+.phase { background:var(--phase); color:#fff; padding:var(--space-2) var(--space-4); font-size:.875rem; }
+.phase strong { display:inline-block; background:#fff; color:var(--ink); padding:0 .4em; margin-right:.6em; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; }
+main { max-width:var(--measure); margin:0 auto; padding:var(--space-7) var(--space-4) var(--space-9); }
+h1 { font-size:2.25rem; line-height:1.15; margin:0 0 var(--space-4); font-weight:700; }
+h2 { font-size:1.5rem; margin:var(--space-8) 0 var(--space-1); padding-top:var(--space-6); border-top:1px solid var(--line); font-weight:700; }
+h3 { font-size:1.1875rem; margin:var(--space-6) 0 var(--space-1); font-weight:700; }
+.subtitle, .stage-note { color:var(--muted); margin:.25rem 0 var(--space-4); }
+.card { background:var(--surface); border:1px solid var(--line); padding:var(--space-4); margin:var(--space-4) 0; }
+.card h4 { margin:0 0 var(--space-2); font-size:1.1875rem; }
 .ext { font-size:.75em; margin-left:.15em; }
 .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
-.badges { margin:0 0 .75rem; }
-.badge { display:inline-block; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em;
-  border:1px solid var(--line); border-radius:1rem; padding:.1rem .6rem; margin-right:.4rem; color:var(--muted); }
+.badges { margin:0 0 var(--space-3); }
+.badge { display:inline-block; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; border:1px solid var(--line); padding:.1rem .5rem; margin:0 var(--space-1) var(--space-1) 0; color:var(--muted); }
 .card p { margin:.4rem 0; }
-.headline { border-left:3px solid var(--accent); padding-left:.75rem; }
-.source, .output { color:var(--muted); font-size:.85rem; }
-.links { font-size:.9rem; }
+.headline { border-left:5px solid var(--link); padding-left:var(--space-3); }
+.source, .output { color:var(--muted); font-size:.875rem; }
+.links { font-size:.95rem; }
 .plain { color:var(--muted); }
 .terminus { color:var(--muted); }
-a { color:var(--accent); }
-#diagram { overflow-x:auto; border:1px solid var(--line); border-radius:.6rem; padding:1rem; background:var(--card); }
-footer { margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }
+#diagram { overflow-x:auto; border:1px solid var(--line); padding:var(--space-4); background:var(--surface); }
+footer { margin-top:var(--space-8); padding-top:var(--space-5); border-top:1px solid var(--line); color:var(--muted); font-size:.875rem; }
+@media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+
 </style>
 </head>
 <body>
+<header class="masthead">
+  <a class="wordmark" href="#">Architecting Trustworthy AI Integration in MBSE</a>
+  <span class="org">Loughborough University</span>
+</header>
+<p class="phase"><strong>Research</strong> Doctoral programme map. Not a GOV.UK service.</p>
 <main>
 <h1>Architecting Trustworthy AI Integration in MBSE</h1>
 <p>AI assistants already read engineering models and answer questions from them. The answers are fluent, mostly true, and largely unauthorised by the model in front of them. This programme asks three things: what an engineering record must expose for an AI consumer to tell a grounded claim from an ungrounded one, whether exposing it changes what the AI actually says, and how a substrate can refuse an inadmissible write on its own behalf.</p>
@@ -88,11 +163,11 @@ graph LR
   n_model_vs_document_defect_probe --> n_Thesis_Work_Area
   n_ahp_framing_fragility_probe --> n_Thesis_Work_Area
   n_dsm_sequencing_probe --> n_Thesis_Work_Area
-  classDef adequacy fill:#e7effc,stroke:#3f6bb5,color:#10203a;
+  classDef adequacy fill:#e8f1f8,stroke:#1d70b8,color:#0b0c0c;
   class n_epistemic_adequacy_spec,n_epistemic_adequacy_metamodel,n_epistemic_adequacy_toolkit,n_sysml2_bench,n_epistemic_adequacy_probe,n_pressure_susceptibility_probe,n_SysML_v2_API_Services_Arch_A,n_sysml_v2_metadata_graph_Arch_B,n_sysml_v2_governed_substrate_Arch_C adequacy;
-  classDef method_validation fill:#f2ecfb,stroke:#7a5bb0,color:#241436;
+  classDef method_validation fill:#f3e9ff,stroke:#4c2c92,color:#0b0c0c;
   class n_model_vs_document_defect_probe,n_ahp_framing_fragility_probe,n_dsm_sequencing_probe method_validation;
-  classDef assembly fill:#eaf3ec,stroke:#4f8b62,color:#12291a;
+  classDef assembly fill:#e1f3e8,stroke:#00703c,color:#0b0c0c;
   class n_Thesis_Work_Area assembly;
   click n_epistemic_adequacy_spec "#card-epistemic-adequacy-spec"
   click n_epistemic_adequacy_metamodel "#card-epistemic-adequacy-metamodel"
