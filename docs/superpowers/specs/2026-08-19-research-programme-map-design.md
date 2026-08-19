@@ -222,8 +222,10 @@ Rules on the fields:
   "design stage" on a supervisor-facing page understates it. A `released` entry
   carries no `headline`: a release is not a measurement.
   `not-applicable` exists for entries that are not studies and have no run
-  lifecycle at all; `--check` permits it only on `render: node-only` entries, so
-  it cannot be used to hide a study whose status is simply unknown.
+  lifecycle at all; `--check` permits it only on `render: node-only` entries, and
+  permits `render: node-only` only on `Thesis-Work-Area`. The two rules together
+  are what stops the pair being used to hide a study: without the second, any
+  entry could be marked node-only and not-applicable and vanish from the cards.
 - `depends_on` states what a repository consumes **now and going forward**, not
   what existed when it was committed. Most of the programme predates the
   specification, so reading the edges as commit order would be wrong.
@@ -240,10 +242,11 @@ map names the `systems-researcher` path in both cases. Several local working
 copies still carry the pre-transfer remote; that is harmless and out of scope
 here.
 
-`data/live.json` holds machine-derived fields only. Its shape is a top-level
-`generated_at` (ISO-8601 UTC timestamp of the last successful refresh, which the
-site footer renders) and a `repos` object keyed by `key`, each holding
-`description`, `visibility`, `default_branch`, and `pushed_at`. It is generated,
+`data/live.json` holds machine-derived fields only, and only fields the page
+actually renders. Its shape is a top-level `generated_at` (ISO-8601 UTC timestamp
+of the last successful refresh, which the site footer renders) and a `repos`
+object keyed by `key`, each holding `visibility` and `pushed_at`. A field nothing
+renders does not belong here: it would be data the map carries but never shows. It is generated,
 never edited, and committed so a build works without network access. Keeping it separate from
 `repos.yml` is deliberate: a refresh can never clobber authored prose.
 
@@ -265,7 +268,8 @@ research-programme/
   site/index.html        generated, committed
   vercel.json            static output dir = site/
   docs/superpowers/specs/  this document
-  LICENSE                CC-BY-4.0 for prose, MIT for scripts
+  LICENSE.md             states the split: CC-BY-4.0 for prose, MIT for scripts
+  LICENSE-MIT            the MIT text the code is under
 ```
 
 ### `scripts/refresh.py`
@@ -279,6 +283,10 @@ Missing live data has exactly two cases, and neither ever blocks a build:
 - **The whole file is absent.** `build.py` builds from `repos.yml` alone, omits
   the footer's last-refreshed line entirely, badges every non-`local` entry
   "awaiting refresh", and prints a warning.
+- **Every lookup failed.** `refresh.py` exits non-zero and leaves
+  `data/live.json` untouched. It must never stamp a fresh `generated_at` over a
+  refresh that reached nothing: the footer would then publish a last-refreshed
+  date describing no data at all.
 - **The file exists but has no entry for a key.** The footer always renders that
   file's `generated_at` — it is the honest timestamp of the last successful
   refresh, whatever it covered — and the individual entry is badged "awaiting
@@ -309,7 +317,8 @@ Pure function of `repos.yml` + `data/live.json`. Emits:
    rule: the thesis consumes, it never supplies);
 5. a `headline` present on a card whose `status` is not `results` or
    `published` — a repository whose runs have not happened cannot carry a number;
-   `status: not-applicable` on any entry that is not `render: node-only`;
+   `status: not-applicable` on any entry that is not `render: node-only`; or
+   `render: node-only` on any entry other than `Thesis-Work-Area`;
 6. a `headline` missing either `text` or `source`, which is what makes every
    published number attributable;
 7. a field value outside the permitted sets in the table in §4, or a duplicate
@@ -376,9 +385,9 @@ immediately why they cannot.
 ```
 # after anything changes in the programme
 edit repos.yml
-python scripts/refresh.py      # optional; pulls live GitHub fields
-python scripts/build.py        # regenerates site/index.html and the README block
-python scripts/build.py --check   # must pass; a non-zero exit stops here, nothing is committed
+python -m scripts.refresh      # optional; pulls live GitHub fields
+python -m scripts.build        # regenerates site/index.html and the README block
+python -m scripts.build --check   # must pass; a non-zero exit stops here, nothing is committed
 git commit -am "map: <what changed>"
 git push                       # Vercel redeploys
 ```

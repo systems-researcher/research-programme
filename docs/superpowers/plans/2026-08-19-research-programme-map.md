@@ -82,7 +82,31 @@ Licence, reproduced in `LICENSE-MIT`.
 Each file carries an SPDX identifier stating which of the two applies.
 ```
 
-`LICENSE-MIT`: the standard MIT text with `Copyright (c) 2026 Jason D. Gower`.
+`LICENSE-MIT`:
+
+```
+MIT License
+
+Copyright (c) 2026 Jason D. Gower
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 - [ ] **Step 4: Install dependencies and confirm the toolchain**
 
@@ -379,6 +403,15 @@ def test_rule_5_not_applicable_only_on_node_only_entries() -> None:
     assert any("not-applicable" in e for e in errors_of(raw))
 
 
+def test_rule_5_node_only_is_reserved_for_the_terminus() -> None:
+    """Without this, node-only plus not-applicable would hide any study entirely."""
+    raw = base()
+    raw["repos"][0]["render"] = "node-only"
+    raw["repos"][0]["status"] = "not-applicable"
+
+    assert any("node-only" in e and mapdata.TERMINUS in e for e in errors_of(raw))
+
+
 def errors_of(raw: dict) -> list[str]:
     return check(raw)
 ```
@@ -465,13 +498,18 @@ def _rule_5_headline_status(data: MapData) -> list[str]:
             errors.append(
                 f"{name}: status 'not-applicable' is permitted only on render: node-only entries"
             )
+        if entry.get("render") == "node-only" and name != TERMINUS:
+            errors.append(
+                f"{name}: render 'node-only' is permitted only on {TERMINUS}; "
+                "no study may be hidden from the cards"
+            )
     return errors
 ```
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `python -m pytest tests/test_mapdata.py -v`
-Expected: PASS, 9 passed.
+Expected: PASS, 10 passed.
 
 - [ ] **Step 5: Commit**
 
@@ -721,7 +759,7 @@ def feeds(data: MapData) -> dict[str, list[str]]:
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `python -m pytest tests/test_mapdata.py -v`
-Expected: PASS, 17 passed.
+Expected: PASS, 18 passed.
 
 - [ ] **Step 5: Commit**
 
@@ -1352,13 +1390,18 @@ class RenderError(Exception):
 
 
 def _ordered(data: mapdata.MapData) -> list[dict]:
-    """Entries in strand order, then stage order, then key order."""
+    """Entries in strand order, then stage order, then the order authored in repos.yml.
+
+    Authored order is the final tie-break, not alphabetical order: the three
+    architecture candidates must read A, B, C, and their keys sort A, C, B.
+    """
+    position = {entry["key"]: index for index, entry in enumerate(data.repos)}
     return sorted(
         data.repos,
         key=lambda e: (
             STRAND_ORDER.index(e["strand"]),
             STAGE_ORDER.index(e["stage"]),
-            e["key"].lower(),
+            position[e["key"]],
         ),
     )
 
@@ -1397,9 +1440,11 @@ Expected: PASS, 3 passed.
 
 - [ ] **Step 5: Write the narrative README with markers**
 
-`README.md` — the prose is hand-written and permanent; only the marked block is regenerated:
+`README.md` — the prose is hand-written and permanent; only the marked block is
+regenerated. The outer fence below is **four** backticks because the file it
+contains has a three-backtick block of its own:
 
-```markdown
+````markdown
 <!--
 Copyright (c) 2026 Jason D. Gower
 SPDX-License-Identifier: CC-BY-4.0
@@ -1439,15 +1484,18 @@ optimal order.
 `repos.yml` is the source of truth. After editing it:
 
 ```bash
-python scripts/refresh.py       # optional: pull live GitHub fields
+python -m scripts.refresh       # optional: pull live GitHub fields
 python -m scripts.build         # regenerate site/index.html and the table above
 python -m scripts.build --check # must pass before committing
 ```
 
+Every script runs as a module (`python -m scripts.build`), never as a path
+(`python scripts/build.py`) — the latter breaks the package imports.
+
 ## Licence
 
 Prose and data CC-BY-4.0; code MIT. See [LICENSE.md](LICENSE.md).
-```
+````
 
 - [ ] **Step 6: Wire the README write into `build.py`**
 
@@ -1553,7 +1601,7 @@ def test_local_entries_are_never_queried() -> None:
     assert calls == []
 
 
-def test_successful_refresh_records_the_four_live_fields() -> None:
+def test_successful_refresh_records_only_the_fields_the_page_renders() -> None:
     runner = fake_gh(
         {
             "repos/systems-researcher/alpha": {
@@ -1569,9 +1617,7 @@ def test_successful_refresh_records_the_four_live_fields() -> None:
     result = refresh.collect(data_with(entry("alpha", "systems-researcher")), runner)
 
     assert result.repos["alpha"] == {
-        "description": "d",
         "visibility": "private",
-        "default_branch": "main",
         "pushed_at": "2026-08-19T08:00:00Z",
     }
     assert result.stale == []
@@ -1586,13 +1632,29 @@ def test_an_unreachable_repository_is_reported_stale_not_fatal() -> None:
     assert result.repos == {}
 
 
+def test_total_failure_is_true_when_every_lookup_failed() -> None:
+    data = data_with(entry("alpha", "systems-researcher"), entry("beta", "systems-researcher"))
+
+    result = refresh.collect(data, fake_gh({}))
+
+    assert refresh.total_failure(data, result) is True
+
+
+def test_total_failure_is_false_when_only_local_entries_exist() -> None:
+    data = data_with(entry("alpha", "local"))
+
+    result = refresh.collect(data, fake_gh({}))
+
+    assert refresh.total_failure(data, result) is False
+
+
 def test_previous_entries_survive_a_failed_lookup(tmp_path: Path) -> None:
     live = tmp_path / "live.json"
     live.write_text(
         json.dumps(
             {
                 "generated_at": "2026-01-01T00:00:00+00:00",
-                "repos": {"alpha": {"description": "old"}},
+                "repos": {"alpha": {"visibility": "private", "pushed_at": "old"}},
             }
         ),
         encoding="utf-8",
@@ -1602,7 +1664,7 @@ def test_previous_entries_survive_a_failed_lookup(tmp_path: Path) -> None:
         data_with(entry("alpha", "systems-researcher")), fake_gh({}), previous=live
     )
 
-    assert result.repos["alpha"]["description"] == "old"
+    assert result.repos["alpha"]["pushed_at"] == "old"
     assert result.stale == ["alpha"]
 ```
 
@@ -1638,7 +1700,7 @@ from scripts import mapdata
 ROOT = Path(__file__).resolve().parent.parent
 REPOS_YML = ROOT / "repos.yml"
 LIVE_JSON = ROOT / "data" / "live.json"
-LIVE_FIELDS = ("description", "visibility", "default_branch", "pushed_at")
+LIVE_FIELDS = ("visibility", "pushed_at")
 
 
 class GhError(Exception):
@@ -1693,6 +1755,16 @@ def collect(
     return result
 
 
+def total_failure(data: mapdata.MapData, result: Refreshed) -> bool:
+    """True when every repository that could have been queried failed.
+
+    A refresh that reached nothing must not stamp a fresh generated_at: the
+    footer would then publish a last-refreshed date describing no data at all.
+    """
+    queried = [entry for entry in data.repos if entry["owner"] != "local"]
+    return bool(queried) and len(result.stale) == len(queried)
+
+
 def main(argv: list[str] | None = None) -> int:
     try:
         data = mapdata.load(REPOS_YML)
@@ -1701,6 +1773,14 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     result = collect(data)
+    if total_failure(data, result):
+        print(
+            "error: every GitHub lookup failed; data/live.json left untouched. "
+            "Check `gh auth status` and your network.",
+            file=sys.stderr,
+        )
+        return 1
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "repos": result.repos,
@@ -1726,7 +1806,7 @@ if __name__ == "__main__":
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `python -m pytest tests/test_refresh.py -v`
-Expected: PASS, 4 passed.
+Expected: PASS, 6 passed.
 
 - [ ] **Step 5: Run it against the real GitHub account**
 
@@ -1734,7 +1814,7 @@ Run: `gh auth status`
 Expected: logged in as `systems-researcher`. If not, stop and authenticate — the refresh reads private repositories.
 
 Run: `python -m scripts.refresh`
-Expected: `refreshed 10 repositories into live.json`, and three keys reported stale on stderr — the three `owner: local` entries are skipped entirely, so they must NOT appear in that list. If any of the ten is listed stale, investigate before continuing.
+Expected, on a clean run: `refreshed 10 repositories into live.json` on stdout and **nothing on stderr**. The three `owner: local` entries are skipped without being queried, so they are neither counted nor reported stale. A `stale (kept previous values):` line means a repository could not be reached — investigate before continuing rather than committing a partial refresh.
 
 Run: `python -c "import json;d=json.load(open('data/live.json'));print(d['generated_at'], len(d['repos']))"`
 Expected: a timestamp and `10`.
@@ -1782,6 +1862,13 @@ def test_mermaid_groups_by_stage_and_classes_by_strand() -> None:
     assert "classDef adequacy" in diagram
 
 
+def test_every_strand_has_a_visually_distinct_style() -> None:
+    """Strand is carried by colour, so identical palettes would erase it silently."""
+    styles = list(render.STRAND_STYLE.values())
+
+    assert len(set(styles)) == len(styles)
+
+
 def test_node_only_entries_get_no_click_target() -> None:
     data = data_with(
         entry(),
@@ -1819,6 +1906,22 @@ def test_feeds_row_does_not_link_to_a_node_only_entry() -> None:
 
     assert 'href="#card-Thesis-Work-Area"' not in page
     assert "Thesis-Work-Area" in page
+
+
+def test_within_a_stage_entries_keep_their_authored_order() -> None:
+    """Authored order, not alphabetical: the architecture candidates read A, B, C."""
+    data = data_with(entry(key="zulu"), entry(key="alpha"))
+
+    page = render.page(data, live={"generated_at": "t", "repos": {}})
+
+    assert page.index('id="card-zulu"') < page.index('id="card-alpha"')
+
+
+def test_external_links_are_marked() -> None:
+    page = render.page(data_with(entry()), live={"generated_at": "t", "repos": {}})
+
+    assert "\u2197" in page
+    assert "opens GitHub" in page
 
 
 def test_headline_is_rendered_with_its_source() -> None:
@@ -1873,10 +1976,26 @@ Expected: FAIL — `AttributeError: module 'scripts.render' has no attribute 'me
 
 - [ ] **Step 3: Write the minimal implementation**
 
-Append to `scripts/render.py` (add `import html` at the top):
+First extend the imports at the top of `scripts/render.py` — rendering escapes
+every authored string, so `html` is needed from here on:
+
+```python
+import html
+import re
+```
+
+Then append to `scripts/render.py`:
 
 ```python
 MERMAID_CDN = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
+
+# One fill per strand. These must differ: the strand is carried by colour, not by
+# layout, so identical palettes would silently erase the distinction.
+STRAND_STYLE = {
+    "adequacy": "fill:#e7effc,stroke:#3f6bb5,color:#10203a;",
+    "method-validation": "fill:#f2ecfb,stroke:#7a5bb0,color:#241436;",
+    "assembly": "fill:#eaf3ec,stroke:#4f8b62,color:#12291a;",
+}
 
 STATUS_LABELS = {
     "design": "design stage",
@@ -1913,10 +2032,7 @@ def mermaid(data: mapdata.MapData) -> str:
     for strand in STRAND_ORDER:
         members = [e for e in data.repos if e["strand"] == strand]
         if members:
-            lines.append(
-                f"  classDef {strand.replace('-', '_')} "
-                "fill:#eef4ff,stroke:#5b7cc4,color:#12233f;"
-            )
+            lines.append(f"  classDef {strand.replace('-', '_')} {STRAND_STYLE[strand]}")
             names = ",".join(node_id(m["key"]) for m in members)
             lines.append(f"  class {names} {strand.replace('-', '_')};")
 
@@ -1925,6 +2041,11 @@ def mermaid(data: mapdata.MapData) -> str:
             lines.append(f'  click {node_id(member["key"])} "#card-{member["key"]}"')
 
     return "\n".join(lines)
+
+
+def _tidy(value: object) -> str:
+    """Collapse the newlines a YAML folded scalar leaves behind, then escape."""
+    return html.escape(" ".join(str(value).split()))
 
 
 def _anchor(key: str, data: mapdata.MapData) -> str:
@@ -1947,10 +2068,14 @@ def _card(entry: dict, data: mapdata.MapData, inverted: dict, live: dict | None)
         if not known:
             badge = "awaiting refresh"
         url = f"https://github.com/{entry['owner']}/{key}"
-        title = f'<a href="{html.escape(url)}" rel="noopener">{html.escape(key)}</a>'
+        title = (
+            f'<a href="{html.escape(url)}" rel="noopener">{html.escape(key)}'
+            '<span class="ext" aria-hidden="true">\u2197</span>'
+            '<span class="sr">(opens GitHub)</span></a>'
+        )
 
     parts = [f'<article class="card" id="card-{html.escape(key)}">']
-    parts.append(f"<h3>{title}</h3>")
+    parts.append(f"<h4>{title}</h4>")
     parts.append(
         f'<p class="badges"><span class="badge">{html.escape(badge)}</span>'
         f'<span class="badge">{html.escape(STATUS_LABELS.get(entry["status"], ""))}</span></p>'
@@ -1960,18 +2085,17 @@ def _card(entry: dict, data: mapdata.MapData, inverted: dict, live: dict | None)
         ("Question", "question"),
         ("Method", "method"),
     ):
-        text = html.escape(" ".join(str(entry[field_name]).split()))
-        parts.append(f"<p><strong>{label}.</strong> {text}</p>")
+        parts.append(f"<p><strong>{label}.</strong> {_tidy(entry[field_name])}</p>")
 
     headline = entry.get("headline")
     if headline:
         parts.append(
             '<p class="headline"><strong>Result.</strong> '
-            f'{html.escape(" ".join(str(headline["text"]).split()))} '
-            f'<span class="source">Source: {html.escape(str(headline["source"]))}</span></p>'
+            f'{_tidy(headline["text"])} '
+            f'<span class="source">Source: {_tidy(headline["source"])}</span></p>'
         )
     if entry.get("output"):
-        parts.append(f'<p class="output">{html.escape(str(entry["output"]))}</p>')
+        parts.append(f'<p class="output">{_tidy(entry["output"])}</p>')
 
     depends = entry.get("depends_on", [])
     feeds_into = inverted.get(key, [])
@@ -2004,13 +2128,13 @@ def page(data: mapdata.MapData, live: dict | None) -> str:
         heading = data.strands.get(strand, {})
         sections.append(f'<section id="strand-{strand}">')
         sections.append(f'<h2>{html.escape(str(heading.get("title", strand)))}</h2>')
-        sections.append(f'<p class="subtitle">{html.escape(str(heading.get("subtitle", "")))}</p>')
+        sections.append(f'<p class="subtitle">{_tidy(heading.get("subtitle", ""))}</p>')
         for stage in STAGE_ORDER:
             in_stage = [e for e in cards if e["stage"] == stage]
             if not in_stage:
                 continue
             sections.append(f"<h3>{stage.title()}</h3>")
-            sections.append(f'<p class="stage-note">{html.escape(str(data.stages.get(stage, "")))}</p>')
+            sections.append(f'<p class="stage-note">{_tidy(data.stages.get(stage, ""))}</p>')
             sections.extend(_card(e, data, inverted, live) for e in in_stage)
         sections.append("</section>")
 
@@ -2042,7 +2166,9 @@ h2 {{ font-size: 1.4rem; margin: 3rem 0 .25rem; padding-top:1.5rem; border-top:1
 h3 {{ font-size: 1.05rem; margin: 2rem 0 .25rem; }}
 .subtitle, .stage-note {{ color: var(--muted); margin:.25rem 0 1rem; }}
 .card {{ background:var(--card); border:1px solid var(--line); border-radius:.6rem; padding:1rem 1.15rem; margin:1rem 0; }}
-.card h3 {{ margin:0 0 .5rem; font-size:1.05rem; }}
+.card h4 {{ margin:0 0 .5rem; font-size:1.05rem; }}
+.ext {{ font-size:.75em; margin-left:.15em; }}
+.sr {{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }}
 .badges {{ margin:0 0 .75rem; }}
 .badge {{ display:inline-block; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em;
   border:1px solid var(--line); border-radius:1rem; padding:.1rem .6rem; margin-right:.4rem; color:var(--muted); }}
@@ -2084,13 +2210,72 @@ mermaid.initialize({{ startOnLoad: true, theme: window.matchMedia("(prefers-colo
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `python -m pytest tests/test_render.py -v`
-Expected: PASS, 13 passed.
+Expected: PASS, 16 passed.
 
-- [ ] **Step 5: Wire the page into `build.py`**
+- [ ] **Step 5: Complete `scripts/build.py`**
 
-In `scripts/build.py`, add `import json` and replace the render section of `main()` with:
+`build.py` has been patched incrementally across Tasks 5, 6, and 8. This is its
+final state — **replace the whole file** with this, rather than applying another
+edit, so there is no ambiguity about what it ends up containing:
 
 ```python
+# Copyright (c) 2026 Jason D. Gower
+# SPDX-License-Identifier: MIT
+"""Validate repos.yml and render the site and README block."""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import tempfile
+from pathlib import Path
+
+from scripts import mapdata, render
+
+ROOT = Path(__file__).resolve().parent.parent
+REPOS_YML = ROOT / "repos.yml"
+
+
+def write_atomic(path: Path, text: str) -> None:
+    """Write via a temporary file in the same directory, then replace.
+
+    A crashed build must never leave a half-written page, or a README with one
+    marker and not the other.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle, temporary = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")
+    with os.fdopen(handle, "w", encoding="utf-8", newline="\n") as stream:
+        stream.write(text)
+    os.replace(temporary, path)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="validate repos.yml and exit; write nothing",
+    )
+    args = parser.parse_args(argv)
+
+    try:
+        data = mapdata.load(REPOS_YML)
+    except mapdata.MapError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    errors = mapdata.check(data)
+    if errors:
+        for error in errors:
+            print(f"error: {error}", file=sys.stderr)
+        print(f"{len(errors)} problem(s) in {REPOS_YML.name}", file=sys.stderr)
+        return 1
+
+    if args.check:
+        print(f"{REPOS_YML.name}: {len(data.repos)} entries, all nine rules pass")
+        return 0
+
     live = None
     live_path = ROOT / "data" / "live.json"
     if live_path.exists():
@@ -2102,10 +2287,20 @@ In `scripts/build.py`, add `import json` and replace the render section of `main
         )
 
     readme = ROOT / "README.md"
-    write_atomic(readme, render.readme_block(readme.read_text(encoding="utf-8"), data))
+    try:
+        rendered_readme = render.readme_block(readme.read_text(encoding="utf-8"), data)
+    except render.RenderError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    write_atomic(readme, rendered_readme)
     write_atomic(ROOT / "site" / "index.html", render.page(data, live))
     print(f"wrote README.md and site/index.html ({len(data.repos)} entries)")
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 ```
 
 - [ ] **Step 6: Build and check the page by eye**
@@ -2117,7 +2312,12 @@ Run: `python -m pytest -q`
 Expected: all tests pass.
 
 Open `site/index.html` in a browser. Confirm, by eye:
-1. The diagram renders and arrows run from earlier stages to later ones.
+1. The diagram renders, and every arrow matches an authored `depends_on`. Most
+   run from earlier stages to later ones; two documented edges do not, and both
+   are correct: `epistemic-adequacy-spec` depends on `epistemic-adequacy-probe`
+   because the spec quotes the probe's measured rates as its evidence base, and
+   `sysml-v2-metadata-graph-Arch-B` depends on `SysML-v2-API-Services-Arch-A`
+   because comparing B against A requires A deployed.
 2. Clicking a diagram node scrolls to that card.
 3. The thesis node is present, has no card, and is not clickable.
 4. Narrow the window to 400px — no horizontal page scroll; the diagram scrolls inside its own box.
@@ -2125,16 +2325,44 @@ Open `site/index.html` in a browser. Confirm, by eye:
 
 - [ ] **Step 7: Verify the page has exactly one external dependency**
 
-```bash
-python -c "import re,pathlib;u=sorted(set(re.findall(r'https?://[^\"'\\s<>]+', pathlib.Path('site/index.html').read_text(encoding='utf-8'))));print(chr(10).join(u))"
+Write `tests/check_external_links.py`:
+
+```python
+# Copyright (c) 2026 Jason D. Gower
+# SPDX-License-Identifier: MIT
+"""Fail if the built page reaches any host other than the two it is allowed."""
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+from urllib.parse import urlparse
+
+ALLOWED = {"cdn.jsdelivr.net", "github.com"}
+
+page = Path("site/index.html").read_text(encoding="utf-8")
+urls = sorted(set(re.findall(r"https?://[^\s\"'<>)]+", page)))
+hosts = sorted({urlparse(url).netloc for url in urls})
+
+for url in urls:
+    print(url)
+
+unexpected = [host for host in hosts if host not in ALLOWED]
+if unexpected:
+    print("unexpected hosts: " + ", ".join(unexpected), file=sys.stderr)
+    raise SystemExit(1)
+print(f"{len(urls)} URLs across {len(hosts)} hosts, all allowed")
 ```
 
-Expected: the Mermaid CDN URL and `https://github.com/systems-researcher/...` links, and nothing else — no analytics, no font hosts, no trackers. Every host other than `cdn.jsdelivr.net` and `github.com` is a defect: the page must stay self-contained.
+Run: `python tests/check_external_links.py`
+Expected: the Mermaid CDN URL and the `https://github.com/systems-researcher/...`
+links, then `all allowed`. Any other host is a defect — apart from Mermaid the
+page must be entirely self-contained: no analytics, no font hosts, no trackers.
 
 - [ ] **Step 8: Commit**
 
 ```bash
-git add scripts/render.py scripts/build.py tests/test_render.py site/index.html README.md
+git add scripts/render.py scripts/build.py tests/test_render.py tests/check_external_links.py site/index.html README.md
 git commit -m "feat(render): generate the one-page site with a Mermaid dependency graph"
 ```
 
