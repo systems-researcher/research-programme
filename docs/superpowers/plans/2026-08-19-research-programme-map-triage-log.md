@@ -57,3 +57,20 @@ Lens coverage: saboteur 3, new_hire 2, auditor 2.
 Fixes applied: 7
 Inflation rate: 0% (0 FP/Recurring/Design of 1 CRITICAL+MAJOR)
 Validation: PASS — repository reconstructed and executed again: 42 tests pass (18 mapdata, 18 render, 6 refresh, matching the stated counts); the build renders with and without live.json; the "last commit" badge appears when live data is present; the Assembly section names the thesis rather than standing empty; the link audit still reports 10 URLs across 2 allowed hosts.
+
+## Round 3 Summary
+
+| Finding | Lens | Severity | Verdict | Action |
+|---------|------|----------|---------|--------|
+| Eye-check named two backward edges; the real classification is 16 forward, 5 same-stage, 2 backward, and one named edge is same-stage not backward | Saboteur | MAJ | Genuine | Half-finished Round 1 fix. Independently recomputed from repos.yml: 23 edges, 16/5/2 exactly. Both real backward edges now named (spec→probe, metamodel→toolkit), the same-stage one reclassified, and metamodel→toolkit documented in the card prose |
+| Expected failure is ModuleNotFoundError; the real error is ImportError | Saboteur | ADV | Genuine | Fixed, with the reason: `scripts` exists from Task 1, so only the name is missing |
+| Rule-2 test vacuous — rule 8's message satisfies both asserted substrings | Auditor | ADV | Genuine | Fixed by adding the stage to the fixture's stages block and asserting on "not one of". Verified by deletion: removing rule 2's stage check now fails exactly that test, where before it stayed green |
+| Mutation proof exercised rules 2 and 7 only; a broken edge had no end-to-end proof | Auditor | ADV | Genuine | Fixed: fourth mutation rewrites a depends_on to a non-existent key. Verified — all four mutations now bite |
+| Files lists omit mutate_check.py, check_external_links.py and Task 9's README edit; Task 6 says Modify for a file it creates | New-Hire | ADV | Genuine | All four lists corrected |
+| Task 1 cites a `git init` the plan never runs | New-Hire | ADV | Genuine | Precondition stated, with a guarded `git init` for a from-nothing start |
+| Spec §5 and §9 still showed `python scripts/build.py --check`, which the plan calls broken | Auditor | ADV | Genuine | Both corrected to module invocation; no path-form command remains in the spec |
+
+Lens coverage: saboteur 2, new_hire 2, auditor 3.
+Fixes applied: 7
+Inflation rate: 0% (0 FP/Recurring/Design of 1 CRITICAL+MAJOR)
+Validation: PASS — 42 tests pass (18/18/6); the mutation script now bites on four mutations including the dangling-edge one; the rule-2 test was mutation-tested and confirmed non-vacuous.

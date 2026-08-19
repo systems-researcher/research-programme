@@ -40,8 +40,13 @@ Validation, rendering, and I/O are three separate modules so each is testable wi
 
 - [ ] **Step 1: Create the directory skeleton and Python dependency list**
 
+**Precondition:** the directory exists and is an initialised git repository
+holding the design spec and this plan. If you are starting from nothing, run
+`git init` first; the command below then names the branch correctly either way.
+
 ```bash
 cd c:/Users/gower/OneDrive/Documents/GitHub/research-programme
+git rev-parse --git-dir > /dev/null 2>&1 || git init
 git branch -M main          # git init defaults to master here; Task 9 expects main
 mkdir -p scripts tests data site
 touch scripts/__init__.py tests/__init__.py
@@ -203,7 +208,8 @@ def test_load_raises_with_line_and_column_on_syntax_error(tmp_path: Path) -> Non
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run: `python -m pytest tests/test_mapdata.py -v`
-Expected: FAIL — `ModuleNotFoundError: No module named 'scripts.mapdata'`
+Expected: FAIL — `ImportError: cannot import name 'mapdata' from 'scripts'`. (Not
+`ModuleNotFoundError`: `scripts` itself exists, having been created in Task 1.)
 
 - [ ] **Step 3: Write the minimal implementation**
 
@@ -359,10 +365,16 @@ def test_rule_1_depends_on_names_a_key_that_does_not_exist() -> None:
 
 
 def test_rule_2_stage_outside_the_permitted_set() -> None:
+    """The stages block gains 'prototype' so rule 8 cannot fire and mask rule 2.
+
+    Without that line both rules produce a message containing "stage" and
+    "prototype", and deleting rule 2 entirely would leave this test green.
+    """
     raw = base()
+    raw["stages"]["prototype"] = "p"
     raw["repos"][0]["stage"] = "prototype"
 
-    assert any("stage" in e and "prototype" in e for e in errors_of(raw))
+    assert any("not one of" in e and "prototype" in e for e in errors_of(raw))
 
 
 def test_rule_3_missing_required_field_including_on_node_only() -> None:
@@ -780,6 +792,7 @@ git commit -m "feat(mapdata): validation rules 6-9 and depends_on inversion"
 **Files:**
 - Create: `repos.yml`
 - Create: `scripts/build.py`
+- Create: `tests/mutate_check.py`
 
 This task fills the source of truth with the thirteen real entries and gives `--check` a command-line entry point so the data can be validated.
 
@@ -1198,9 +1211,18 @@ would be wrong. Two edges are worth knowing about:
   backwards for a define-stage repository. It is deliberate: the spec quotes the
   probe's measured rates as the evidence base for EA1 to EA4, and the probe
   cites no sibling repository at all.
+- `epistemic-adequacy-metamodel` depends on `epistemic-adequacy-toolkit`, the
+  second edge that runs backward by stage. The metamodel's reader, resolver, and
+  extractor stages emit the toolkit's canonical claim graph, so the metamodel is
+  built against a format the instrument defines.
 - `model-vs-document-defect-probe` does **not** depend on the specification.
   A search of that repository returns no mention of it; the edge was proposed
   during drafting and removed on inspection.
+
+Counted by stage, the twenty-three edges are 16 forward, 5 same-stage, and the 2
+backward ones named above. Task 8 Step 6 restates that classification, because it
+is the only way to tell a deliberate arrow from a mistake by looking at the
+diagram.
 
 Every objective, question, method, and status above was drafted by reading the
 repository it describes, and each `status` was justified against a specific
@@ -1240,10 +1262,14 @@ from pathlib import Path
 
 REPOS = Path("repos.yml")
 
+# One mutation per rule class the map depends on: enumerated values (rule 2),
+# owner shape (rule 7), and a dangling edge (rule 1) — the criterion the design
+# spec names in its success criteria.
 MUTATIONS = [
     ("stage: define", "stage: prototype"),
     ("strand: adequacy", "strand: nonsense"),
     ("owner: systems-researcher", "owner: not a name!"),
+    ("depends_on: [epistemic-adequacy-probe]", "depends_on: [no-such-repository]"),
 ]
 
 original = REPOS.read_text(encoding="utf-8")
@@ -1267,11 +1293,14 @@ finally:
 if failures:
     print("\n".join(failures), file=sys.stderr)
     raise SystemExit(1)
-print("validator bites on all three mutations")
+print(f"validator bites on all {len(MUTATIONS)} mutations")
 ```
 
 Run: `python tests/mutate_check.py`
-Expected: three `ok:` lines, then `validator bites on all three mutations`, exit 0.
+Expected: four `ok:` lines, then `validator bites on all four mutations`, exit 0.
+The fourth is the one that matters most: it proves a `depends_on` naming a
+repository that does not exist is caught, which is success criterion 4 in the
+design spec.
 
 Run: `python -m scripts.build --check`
 Expected: exit 0 — the mutation script restored `repos.yml`.
@@ -1294,8 +1323,8 @@ git commit -m "test: prove --check rejects three classes of malformed entry"
 
 **Files:**
 - Create: `scripts/render.py`
+- Create: `README.md`
 - Modify: `scripts/build.py`
-- Modify: `README.md`
 - Test: `tests/test_render.py`
 
 - [ ] **Step 1: Write the failing test**
@@ -1863,6 +1892,7 @@ git commit -m "feat(refresh): pull live GitHub fields into data/live.json"
 **Files:**
 - Modify: `scripts/render.py`
 - Modify: `scripts/build.py`
+- Create: `tests/check_external_links.py`
 - Test: `tests/test_render.py`
 
 - [ ] **Step 1: Write the failing tests**
@@ -2389,12 +2419,18 @@ Run: `python -m pytest -q`
 Expected: all tests pass.
 
 Open `site/index.html` in a browser. Confirm, by eye:
-1. The diagram renders, and every arrow matches an authored `depends_on`. Most
-   run from earlier stages to later ones; two documented edges do not, and both
-   are correct: `epistemic-adequacy-spec` depends on `epistemic-adequacy-probe`
-   because the spec quotes the probe's measured rates as its evidence base, and
+1. The diagram renders, and every arrow matches an authored `depends_on`. The
+   twenty-three edges classify as **16 forward** (earlier stage to later), **5
+   same-stage**, and **2 backward**. Both backward edges are deliberate:
+   `epistemic-adequacy-spec` (define) depends on `epistemic-adequacy-probe`
+   (evidence), because the spec quotes the probe's measured rates as its evidence
+   base for EA1 to EA4; and `epistemic-adequacy-metamodel` (define) depends on
+   `epistemic-adequacy-toolkit` (measure), because the metamodel's extractor
+   emits the toolkit's canonical claim graph and is built against that format.
+   A third arrow worth recognising is same-stage, not backward:
    `sysml-v2-metadata-graph-Arch-B` depends on `SysML-v2-API-Services-Arch-A`
-   because comparing B against A requires A deployed.
+   because comparing B against A requires A deployed. Any arrow outside these
+   three that does not run forward is a defect in `repos.yml`, not in the render.
 2. Clicking a diagram node scrolls to that card.
 3. The thesis node is present, has no card, and is not clickable.
 4. Narrow the window to 400px — no horizontal page scroll; the diagram scrolls inside its own box.
@@ -2449,6 +2485,7 @@ git commit -m "feat(render): generate the one-page site with a Mermaid dependenc
 
 **Files:**
 - Create: `vercel.json`
+- Modify: `README.md` (Step 5 replaces the `<!-- SITE-URL -->` marker)
 
 - [ ] **Step 1: Write `vercel.json`**
 

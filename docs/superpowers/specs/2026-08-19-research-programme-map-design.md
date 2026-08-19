@@ -332,7 +332,7 @@ Pure function of `repos.yml` + `data/live.json`. Emits:
    `--check` reports the full cycle path, not just one edge.
 
 These nine rules are the project's whole test suite. They run as
-`python scripts/build.py --check`, and that command is what a future change has
+`python -m scripts.build --check`, and that command is what a future change has
 to keep passing.
 
 ## 6. The website
@@ -418,7 +418,7 @@ leaves neither a half-written page nor a README with one marker and no other.
    version that number came from.
 3. Adding a new repository to the programme costs one `repos.yml` entry and one
    command.
-4. `python scripts/build.py --check` passes, and fails when an edge is broken.
+4. `python -m scripts.build --check` passes, and fails when an edge is broken.
 5. The diagram and the cards cannot disagree, because both are generated from
    one authored edge list, and the reverse direction is derived rather than
    written twice.
