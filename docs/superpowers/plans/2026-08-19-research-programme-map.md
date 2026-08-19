@@ -1205,7 +1205,7 @@ repos:
 **What `depends_on` means here.** It is a statement about what a repository
 consumes *now and going forward*, not a claim about commit order. Most of these
 repositories predate the specification, so a git-history reading of the edges
-would be wrong. Two edges are worth knowing about:
+would be wrong. Two edges, and one deliberate non-edge, are worth knowing about:
 
 - `epistemic-adequacy-spec` depends on `epistemic-adequacy-probe`, which looks
   backwards for a define-stage repository. It is deliberate: the spec quotes the
@@ -1297,7 +1297,7 @@ print(f"validator bites on all {len(MUTATIONS)} mutations")
 ```
 
 Run: `python tests/mutate_check.py`
-Expected: four `ok:` lines, then `validator bites on all four mutations`, exit 0.
+Expected: four `ok:` lines, then `validator bites on all 4 mutations`, exit 0.
 The fourth is the one that matters most: it proves a `depends_on` naming a
 repository that does not exist is caught, which is success criterion 4 in the
 design spec.
@@ -1529,7 +1529,7 @@ optimal order.
 `repos.yml` is the source of truth. After editing it:
 
 ```bash
-python -m scripts.refresh       # optional: pull live GitHub fields
+python -m scripts.refresh       # optional: validates repos.yml, then pulls live fields
 python -m scripts.build         # regenerate site/index.html and the table above
 python -m scripts.build --check # must pass before committing
 ```
@@ -1829,6 +1829,16 @@ def main(argv: list[str] | None = None) -> int:
         data = mapdata.load(REPOS_YML)
     except mapdata.MapError as exc:
         print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    # Validate before reading any field. collect() indexes key and owner directly,
+    # so an entry missing either would raise KeyError rather than say what is wrong
+    # — and the documented workflow runs refresh before --check.
+    errors = mapdata.check(data)
+    if errors:
+        for error in errors:
+            print(f"error: {error}", file=sys.stderr)
+        print(f"{REPOS_YML.name} is not valid; fix it before refreshing", file=sys.stderr)
         return 2
 
     result = collect(data)
@@ -2427,10 +2437,14 @@ Open `site/index.html` in a browser. Confirm, by eye:
    base for EA1 to EA4; and `epistemic-adequacy-metamodel` (define) depends on
    `epistemic-adequacy-toolkit` (measure), because the metamodel's extractor
    emits the toolkit's canonical claim graph and is built against that format.
-   A third arrow worth recognising is same-stage, not backward:
-   `sysml-v2-metadata-graph-Arch-B` depends on `SysML-v2-API-Services-Arch-A`
-   because comparing B against A requires A deployed. Any arrow outside these
-   three that does not run forward is a defect in `repos.yml`, not in the render.
+   The five same-stage arrows are normal and need no justification — siblings at
+   the same stage build on each other: `epistemic-adequacy-spec` →
+   `epistemic-adequacy-metamodel`, `epistemic-adequacy-probe` →
+   `pressure-susceptibility-probe`, `SysML-v2-API-Services-Arch-A` →
+   `sysml-v2-metadata-graph-Arch-B`, and `pressure-susceptibility-probe` → both
+   `model-vs-document-defect-probe` and `ahp-framing-fragility-probe`.
+   The rule to apply when checking: a **backward** arrow other than the two named
+   above is a defect in `repos.yml`. Forward and same-stage arrows are not.
 2. Clicking a diagram node scrolls to that card.
 3. The thesis node is present, has no card, and is not clickable.
 4. Narrow the window to 400px — no horizontal page scroll; the diagram scrolls inside its own box.

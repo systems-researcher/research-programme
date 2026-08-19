@@ -74,3 +74,19 @@ Lens coverage: saboteur 2, new_hire 2, auditor 3.
 Fixes applied: 7
 Inflation rate: 0% (0 FP/Recurring/Design of 1 CRITICAL+MAJOR)
 Validation: PASS — 42 tests pass (18/18/6); the mutation script now bites on four mutations including the dangling-edge one; the rule-2 test was mutation-tested and confirmed non-vacuous.
+
+## Round 4 Summary
+
+| Finding | Lens | Severity | Verdict | Action |
+|---------|------|----------|---------|--------|
+| Eye-check declares every non-forward arrow outside three named ones a defect, condemning four legitimate same-stage edges | Saboteur + New-Hire | MAJ | Genuine | Regression introduced by my own Round 3 fix. All five same-stage edges are now named and declared normal; the defect rule applies only to backward arrows other than the two documented ones |
+| Expected output says "all four mutations"; the f-string prints "all 4 mutations" | Saboteur | ADV | Genuine | Introduced when the fourth mutation was added in Round 3. Expected string corrected to match what the code prints |
+| "Two edges are worth knowing about:" introduces three bullets | New-Hire | ADV | Genuine | Reworded to "Two edges, and one deliberate non-edge" |
+| refresh.main calls collect() without validating, so a malformed repos.yml gives a KeyError traceback — and the documented workflow runs refresh before --check | Auditor | ADV | Genuine | Fixed: refresh validates first and exits 2 with the rule violations, as build.py does |
+
+Lens coverage: saboteur 2, new_hire 2, auditor 1.
+Fixes applied: 4
+Inflation rate: 0% (0 FP/Recurring/Design of 1 CRITICAL+MAJOR)
+Validation: PASS — clean rebuild from the plan: 42 tests pass (18/18/6), `--check` prints the stated line verbatim, four mutations bite, link audit reports 10 URLs across 2 allowed hosts.
+
+Note: two of Round 4's four findings were regressions introduced by Round 3's own fixes, both in prose rather than code. That is the failure mode the Phase 3 post-fix self-check exists to catch, and it caught neither.
