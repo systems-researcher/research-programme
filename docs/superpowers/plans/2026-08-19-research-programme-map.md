@@ -939,8 +939,9 @@ repos:
       representation with programmatic ground truth, plus two cross-cutting
       headline metrics, confabulation rate and format-failure rate. The
       generator and truth layer exist; the wild set that draws on the public
-      Apollo 11 model is human-gated and still unpopulated.
-    depends_on: [epistemic-adequacy-probe]
+      Apollo 11 model is human-gated and still unpopulated, so the bench does
+      not yet consume anything the probe produced.
+    depends_on: []
 
   # ------------------------------------------------- evidence, read-side ---
 
@@ -1952,7 +1953,7 @@ def _card(entry: dict, data: mapdata.MapData, inverted: dict, live: dict | None)
     parts.append(f"<h3>{title}</h3>")
     parts.append(
         f'<p class="badges"><span class="badge">{html.escape(badge)}</span>'
-        f'<span class="badge">{html.escape(STATUS_LABELS[entry["status"]])}</span></p>'
+        f'<span class="badge">{html.escape(STATUS_LABELS.get(entry["status"], ""))}</span></p>'
     )
     for label, field_name in (
         ("What it is for", "objective"),
@@ -2009,7 +2010,7 @@ def page(data: mapdata.MapData, live: dict | None) -> str:
             if not in_stage:
                 continue
             sections.append(f"<h3>{stage.title()}</h3>")
-            sections.append(f'<p class="stage-note">{html.escape(str(data.stages[stage]))}</p>')
+            sections.append(f'<p class="stage-note">{html.escape(str(data.stages.get(stage, "")))}</p>')
             sections.extend(_card(e, data, inverted, live) for e in in_stage)
         sections.append("</section>")
 
