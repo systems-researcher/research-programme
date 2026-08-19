@@ -121,10 +121,11 @@ become a hole in the validation.
 
 ## 4. Content model
 
-`repos.yml` is the single hand-authored source of truth, with three top-level
-blocks. `programme` carries the page's framing prose, `stages` carries the
-one-line explanation each stage section shows, and `repos` carries one entry per
-repository. Nothing the page displays is hardcoded in `build.py`:
+`repos.yml` is the single hand-authored source of truth, with four top-level
+blocks. `programme` carries the page's framing prose, `strands` carries each
+section's heading and subtitle, `stages` carries the one-line explanation each
+stage sub-section shows, and `repos` carries one entry per repository. Nothing
+the page displays is hardcoded in `build.py`:
 
 ```yaml
 programme:
@@ -134,6 +135,17 @@ programme:
   move: >
     The one sentence stating the methodological move (an AI agent standing in as
     a consistent practitioner), rendered under the question.
+
+strands:
+  adequacy:
+    title: "Epistemic adequacy"
+    subtitle: "Can a record tell an AI what it is authorised to say?"
+  method-validation:
+    title: "Do classic SE methods survive an AI practitioner?"
+    subtitle: "The same instrument turned on the methods themselves."
+  assembly:
+    title: "Assembly"
+    subtitle: "Where the findings are written up."
 
 stages:
   define: "What a record must expose, and how that binds to SysML v2."
@@ -222,7 +234,11 @@ never edited, and committed so a build works without network access. Keeping it 
 `repos.yml` is deliberate: a refresh can never clobber authored prose.
 
 Local-only repositories (`owner: local`) have no live data. They render with a
-"not yet published" badge and no link.
+"not yet published" badge and no link. The same fallback covers any key missing
+from `live.json`'s `repos` map — a repository added to `repos.yml` since the last
+refresh, or one `refresh.py` could not reach — except that a non-`local` entry
+keeps its GitHub link and is badged "awaiting refresh" rather than "not yet
+published". A missing live entry never fails the build.
 
 ## 5. Repository layout
 
@@ -278,8 +294,12 @@ Pure function of `repos.yml` + `data/live.json`. Emits:
 7. a field value outside the permitted sets in the table in §4, or a duplicate
    `key`;
 8. a missing `programme` block, a missing `programme.title`, `programme.question`
-   or `programme.move`, or a `stage` used by some entry with no matching line in
-   `stages` — a stage section would otherwise render with no explanation.
+   or `programme.move`, or a `stage` or `strand` used by some entry with no
+   matching line in `stages` or `strands` — a section would otherwise render with
+   no heading or no explanation;
+9. a `depends_on` cycle, or an entry naming itself. The graph is a DAG: a cycle
+   makes "what feeds what" unanswerable and would render an unreadable diagram.
+   `--check` reports the full cycle path, not just one edge.
 
 This is the project's one test. It runs as `python scripts/build.py --check` and
 is the check a future change has to keep passing.

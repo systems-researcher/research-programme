@@ -50,3 +50,23 @@ Lens coverage: saboteur 1, new_hire 1, auditor 4.
 Fixes applied: 7 (6 reviewer findings + 1 author self-check)
 Inflation rate: 0% (0 FP/Recurring/Design of 1 CRITICAL+MAJOR)
 Validation: SKIP (spec only, no executable artefact yet)
+
+## Round 3 Summary
+
+| Finding | Lens | Severity | Verdict | Action |
+|---------|------|----------|---------|--------|
+| Strand headings/subtitles have no source in the content model | New-Hire | ADV | Genuine | Fixed: `strands` top-level block added; check rule 8 extended to cover it |
+| No `--check` rule rejects a cyclic or self-referencing `depends_on` | Saboteur | ADV | Genuine | Fixed: check rule 9 requires a DAG and reports the full cycle path |
+| Behaviour unstated when live.json exists but lacks an entry for a key | New-Hire | ADV | Genuine | Fixed: missing live entry falls back to an "awaiting refresh" badge, never fails the build |
+
+Lens coverage: saboteur 1, new_hire 2, auditor 0.
+Fixes applied: 3
+Inflation rate: 0% (0 FP/Recurring/Design of 0 CRITICAL+MAJOR)
+Validation: SKIP (spec only, no executable artefact yet)
+
+## Converged — Round 3
+
+Track 1: Reviewer returned NO_CRITICAL_OR_MAJOR.
+Total rounds: 3  |  Total fixes: 21 (19 reviewer findings + 2 author self-checks)
+Cumulative inflation rate: 0% — every finding across all three rounds triaged Genuine.
+Document is ready.
