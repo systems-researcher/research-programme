@@ -40,3 +40,20 @@ Lens coverage: saboteur 6, new_hire 5, auditor 8.
 Fixes applied: 18 (15 reviewer findings + 3 author self-checks)
 Inflation rate: 0% (0 FP/Recurring/Design of 8 CRITICAL+MAJOR)
 Validation: PASS — repository reconstructed from the plan and executed: 40 tests pass (18/16/6, matching the stated counts), `--check` reports 13 entries and nine rules passing, the mutation script bites on all three mutations, the link audit reports 10 URLs across 2 allowed hosts, and the built page shows architecture cards in A/B/C order, three distinct strand palettes, and the thesis as a node with no card and no anchor.
+
+## Round 2 Summary
+
+| Finding | Lens | Severity | Verdict | Action |
+|---------|------|----------|---------|--------|
+| T5S4 checks `git status` on an untracked repos.yml; the stated recovery `git checkout` errors | Saboteur | MAJ | Genuine | Fixed: Task 5 reordered so the commit precedes the mutation proof, which is what makes `git checkout` a real recovery path. Mutation proof committed separately |
+| T6S7 `git diff --stat README.md` is vacuous before the file is tracked, and `--stat` cannot show which lines changed | Saboteur | ADV | Genuine | Fixed: direct inspection of the marker block plus a prose-intact grep; the git diff check applies from the next build onward |
+| `pushed_at` collected into live.json but never rendered, against spec §4; the test name claimed otherwise | Auditor | ADV | Genuine | Fixed: rendered as a "last commit" badge, with a test. Both live fields are now shown |
+| A strand whose members are all node-only emits a heading and subtitle with no cards | Saboteur | ADV | Genuine | Fixed: a card-less strand names its entries in a line instead. Test asserts the objective appears and no card is emitted |
+| Local branch is `master`; Task 9 expects `main` | New-Hire | ADV | Genuine | Fixed: `git branch -M main` in Task 1 Step 1, with a verification command. The working repository was renamed too |
+| Task 1 Files list claims a README no Task 1 step writes | New-Hire | ADV | Genuine | Fixed: removed, with a note that it belongs to Task 6 |
+| Palette test proves distinctness but not coverage; a new strand would KeyError | Auditor | ADV | Genuine | Fixed: the test now asserts `set(STRAND_STYLE) == set(mapdata.STRANDS)` |
+
+Lens coverage: saboteur 3, new_hire 2, auditor 2.
+Fixes applied: 7
+Inflation rate: 0% (0 FP/Recurring/Design of 1 CRITICAL+MAJOR)
+Validation: PASS — repository reconstructed and executed again: 42 tests pass (18 mapdata, 18 render, 6 refresh, matching the stated counts); the build renders with and without live.json; the "last commit" badge appears when live data is present; the Assembly section names the thesis rather than standing empty; the link audit still reports 10 URLs across 2 allowed hosts.

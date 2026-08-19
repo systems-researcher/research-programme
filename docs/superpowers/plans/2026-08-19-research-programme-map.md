@@ -35,15 +35,20 @@ Validation, rendering, and I/O are three separate modules so each is testable wi
 ## Task 1: Repository skeleton
 
 **Files:**
-- Create: `.gitignore`, `requirements.txt`, `LICENSE.md`, `LICENSE-MIT`, `README.md`, `scripts/__init__.py`, `tests/__init__.py`
+- Create: `.gitignore`, `requirements.txt`, `LICENSE.md`, `LICENSE-MIT`, `scripts/__init__.py`, `tests/__init__.py`
+- (`README.md` is written in Task 6, once there is a table to put in it)
 
 - [ ] **Step 1: Create the directory skeleton and Python dependency list**
 
 ```bash
 cd c:/Users/gower/OneDrive/Documents/GitHub/research-programme
+git branch -M main          # git init defaults to master here; Task 9 expects main
 mkdir -p scripts tests data site
 touch scripts/__init__.py tests/__init__.py
 ```
+
+Run: `git branch --show-current`
+Expected: `main`.
 
 `requirements.txt`:
 
@@ -1208,11 +1213,20 @@ appear there with the same meaning.
 Run: `python -m scripts.build --check`
 Expected: `repos.yml: 13 entries, all nine rules pass`
 
-- [ ] **Step 4: Prove the validator actually bites**
+- [ ] **Step 4: Commit, so the mutation proof has something to restore from**
 
-Temporarily break one entry to confirm the check is not vacuous:
+```bash
+git add repos.yml scripts/build.py
+git commit -m "feat: author repos.yml with all thirteen entries"
+```
 
-Write `tests/mutate_check.py` — a throwaway that proves the validator is not vacuous:
+This commit comes *before* the mutation proof deliberately: that step deliberately
+corrupts `repos.yml`, and `git checkout repos.yml` is only a recovery path once the
+file is tracked.
+
+- [ ] **Step 5: Prove the validator actually bites**
+
+Write `tests/mutate_check.py`, which corrupts a tracked file and restores it:
 
 ```python
 # Copyright (c) 2026 Jason D. Gower
@@ -1263,13 +1277,15 @@ Run: `python -m scripts.build --check`
 Expected: exit 0 — the mutation script restored `repos.yml`.
 
 Run: `git status --short repos.yml`
-Expected: no output. If `repos.yml` shows as modified, the restore failed — run `git checkout repos.yml` before continuing.
+Expected: no output — `repos.yml` is tracked as of Step 4 and the script restored it
+byte for byte. If it shows as modified, the restore failed: run
+`git checkout repos.yml` to recover, then investigate before continuing.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit the mutation proof**
 
 ```bash
-git add repos.yml scripts/build.py tests/mutate_check.py
-git commit -m "feat: author repos.yml with all thirteen entries"
+git add tests/mutate_check.py
+git commit -m "test: prove --check rejects three classes of malformed entry"
 ```
 
 ---
@@ -1536,8 +1552,22 @@ def write_atomic(path: Path, text: str) -> None:
 Run: `python -m scripts.build`
 Expected: `wrote README.md`
 
-Run: `git diff --stat README.md`
-Expected: only lines between the markers changed.
+`README.md` is not tracked yet — it is committed at the end of this task — so a
+`git diff` would show nothing. Inspect the file directly instead:
+
+```bash
+sed -n '/BEGIN:repos/,/END:repos/p' README.md
+```
+
+Expected: the marker pair with a thirteen-row table between them. Then confirm the
+hand-written prose is untouched:
+
+```bash
+grep -c 'consistent practitioner' README.md
+```
+
+Expected: `1`. From the next build onward, `git diff README.md` is the check, and it
+must never show a change outside the markers.
 
 - [ ] **Step 8: Commit**
 
@@ -1863,9 +1893,14 @@ def test_mermaid_groups_by_stage_and_classes_by_strand() -> None:
 
 
 def test_every_strand_has_a_visually_distinct_style() -> None:
-    """Strand is carried by colour, so identical palettes would erase it silently."""
+    """Strand is carried by colour, so identical palettes would erase it silently.
+
+    The set equality matters as much as the distinctness: a strand added to
+    mapdata.STRANDS without a style here would KeyError inside mermaid().
+    """
     styles = list(render.STRAND_STYLE.values())
 
+    assert set(render.STRAND_STYLE) == set(mapdata.STRANDS)
     assert len(set(styles)) == len(styles)
 
 
@@ -1892,6 +1927,20 @@ def test_page_renders_a_card_per_card_entry_and_none_for_node_only() -> None:
     page = render.page(data, live={"generated_at": "2026-08-19T09:00:00+00:00", "repos": {}})
 
     assert 'id="card-alpha"' in page
+    assert 'id="card-Thesis-Work-Area"' not in page
+
+
+def test_a_card_less_strand_names_its_entries_instead_of_emitting_a_bare_heading() -> None:
+    data = data_with(
+        entry(),
+        entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
+              render="node-only", status="not-applicable",
+              objective="Where the findings are written up."),
+    )
+
+    page = render.page(data, live={"generated_at": "t", "repos": {}})
+
+    assert "Where the findings are written up." in page
     assert 'id="card-Thesis-Work-Area"' not in page
 
 
@@ -1936,6 +1985,19 @@ def test_headline_is_rendered_with_its_source() -> None:
 
     assert "13.3% fell to 2.2%." in page
     assert "probe v0.2.0, RESULTS.md" in page
+
+
+def test_live_push_date_is_rendered_when_known() -> None:
+    """live.json holds only fields the page shows; pushed_at is one of them."""
+    page = render.page(
+        data_with(entry()),
+        live={
+            "generated_at": "t",
+            "repos": {"alpha": {"visibility": "private", "pushed_at": "2026-08-19T08:00:00Z"}},
+        },
+    )
+
+    assert "last commit 2026-08-19" in page
 
 
 def test_missing_live_entry_is_badged_awaiting_refresh() -> None:
@@ -2076,9 +2138,14 @@ def _card(entry: dict, data: mapdata.MapData, inverted: dict, live: dict | None)
 
     parts = [f'<article class="card" id="card-{html.escape(key)}">']
     parts.append(f"<h4>{title}</h4>")
+    badges = [badge, STATUS_LABELS.get(entry["status"], "")]
+    pushed = live_repos.get(key, {}).get("pushed_at")
+    if pushed:
+        badges.append(f"last commit {str(pushed)[:10]}")
     parts.append(
-        f'<p class="badges"><span class="badge">{html.escape(badge)}</span>'
-        f'<span class="badge">{html.escape(STATUS_LABELS.get(entry["status"], ""))}</span></p>'
+        '<p class="badges">'
+        + "".join(f'<span class="badge">{html.escape(str(b))}</span>' for b in badges if b)
+        + "</p>"
     )
     for label, field_name in (
         ("What it is for", "objective"),
@@ -2129,6 +2196,15 @@ def page(data: mapdata.MapData, live: dict | None) -> str:
         sections.append(f'<section id="strand-{strand}">')
         sections.append(f'<h2>{html.escape(str(heading.get("title", strand)))}</h2>')
         sections.append(f'<p class="subtitle">{_tidy(heading.get("subtitle", ""))}</p>')
+        if not cards:
+            # Every member renders node-only (the thesis terminus). The section still
+            # belongs on the page, but an empty one reads as a rendering fault, so
+            # name the entries in a line instead of emitting a bare heading.
+            for member in members:
+                sections.append(
+                    f'<p class="terminus"><strong>{html.escape(member["key"])}.</strong> '
+                    f'{_tidy(member["objective"])}</p>'
+                )
         for stage in STAGE_ORDER:
             in_stage = [e for e in cards if e["stage"] == stage]
             if not in_stage:
@@ -2177,6 +2253,7 @@ h3 {{ font-size: 1.05rem; margin: 2rem 0 .25rem; }}
 .source, .output {{ color:var(--muted); font-size:.85rem; }}
 .links {{ font-size:.9rem; }}
 .plain {{ color:var(--muted); }}
+.terminus {{ color:var(--muted); }}
 a {{ color:var(--accent); }}
 #diagram {{ overflow-x:auto; border:1px solid var(--line); border-radius:.6rem; padding:1rem; background:var(--card); }}
 footer {{ margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }}
@@ -2210,7 +2287,7 @@ mermaid.initialize({{ startOnLoad: true, theme: window.matchMedia("(prefers-colo
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `python -m pytest tests/test_render.py -v`
-Expected: PASS, 16 passed.
+Expected: PASS, 18 passed.
 
 - [ ] **Step 5: Complete `scripts/build.py`**
 
