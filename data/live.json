@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-08-19T14:52:38+00:00",
+  "repos": {
+    "SysML-v2-API-Services-Arch-A": {
+      "pushed_at": "2026-07-06T10:17:41Z",
+      "visibility": "private"
+    },
+    "Thesis-Work-Area": {
+      "pushed_at": "2026-08-18T09:17:08Z",
+      "visibility": "private"
+    },
+    "epistemic-adequacy-probe": {
+      "pushed_at": "2026-08-18T09:14:21Z",
+      "visibility": "public"
+    },
+    "epistemic-adequacy-spec": {
+      "pushed_at": "2026-08-19T12:01:34Z",
+      "visibility": "private"
+    },
+    "epistemic-adequacy-toolkit": {
+      "pushed_at": "2026-08-19T10:48:08Z",
+      "visibility": "private"
+    },
+    "model-vs-document-defect-probe": {
+      "pushed_at": "2026-07-02T12:50:02Z",
+      "visibility": "private"
+    },
+    "pressure-susceptibility-probe": {
+      "pushed_at": "2026-07-30T15:57:47Z",
+      "visibility": "private"
+    },
+    "sysml-v2-governed-substrate-Arch-C": {
+      "pushed_at": "2026-07-06T10:55:19Z",
+      "visibility": "private"
+    },
+    "sysml-v2-metadata-graph-Arch-B": {
+      "pushed_at": "2026-07-06T15:52:39Z",
+      "visibility": "private"
+    },
+    "sysml2-bench": {
+      "pushed_at": "2026-06-11T11:40:48Z",
+      "visibility": "private"
+    }
+  }
+}
