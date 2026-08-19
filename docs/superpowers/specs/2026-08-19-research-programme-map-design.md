@@ -38,7 +38,10 @@ updating is a first-class requirement, not an afterthought.
 local-only research repositories that have no remote yet
 (`ahp-framing-fragility-probe`, `dsm-sequencing-probe`,
 `epistemic-adequacy-metamodel`). Thirteen repositories, and `Thesis-Work-Area`
-is one of the ten, so `repos.yml` holds thirteen entries in total.
+is one of the ten, so `repos.yml` holds thirteen entries in total. The count of
+ten was verified against `gh repo list systems-researcher` on 2026-08-19; it
+includes `sysml2-bench` and `model-vs-document-defect-probe`, which resolve under
+the old `jgsystemsconsulting` paths only as redirects.
 
 **Out of scope.** The `jgsystemsconsulting` tooling repositories (MCP bridges,
 skill packs), thesis-writing *infrastructure* (`LboroPhdRepo`, the Loughborough
@@ -108,7 +111,7 @@ is a full, valid record like any other; only its rendering differs:
     Not applicable: this is the destination, not a study.
   method: >
     Not applicable.
-  status: design
+  status: not-applicable
   depends_on: [epistemic-adequacy-probe, pressure-susceptibility-probe,
                SysML-v2-API-Services-Arch-A, sysml-v2-metadata-graph-Arch-B,
                sysml-v2-governed-substrate-Arch-C, model-vs-document-defect-probe,
@@ -196,7 +199,7 @@ Permitted values, which `--check` enforces:
 |---|---|
 | `strand` | `adequacy`, `method-validation`, `assembly` |
 | `stage` | `define`, `measure`, `evidence`, `architecture`, `assembly` |
-| `status` | `design`, `built-runs-pending`, `results`, `published` |
+| `status` | `design`, `built-runs-pending`, `results`, `published`, `not-applicable` |
 | `render` | `card`, `node-only` |
 | `owner` | the literal `local`, or a non-empty GitHub account name — `--check` verifies it is non-empty and matches `[A-Za-z0-9-]+`, not that the account exists |
 
@@ -213,6 +216,9 @@ Rules on the fields:
   where none does.
 - `status` is the author's judgement, not derived. `built-runs-pending` is a real
   and common state in this programme and must be visible as such.
+  `not-applicable` exists for entries that are not studies and therefore have no
+  run lifecycle; `--check` permits it only on `render: node-only` entries, so it
+  cannot be used to hide a study whose status is simply unknown.
 - `depends_on` is the **only** authored edge source. The reverse direction
   ("what this feeds") is derived at build time by inverting the graph, so the two
   can never disagree and no edge can be declared twice. Keys are named verbatim,
@@ -234,11 +240,10 @@ never edited, and committed so a build works without network access. Keeping it 
 `repos.yml` is deliberate: a refresh can never clobber authored prose.
 
 Local-only repositories (`owner: local`) have no live data. They render with a
-"not yet published" badge and no link. The same fallback covers any key missing
-from `live.json`'s `repos` map — a repository added to `repos.yml` since the last
-refresh, or one `refresh.py` could not reach — except that a non-`local` entry
-keeps its GitHub link and is badged "awaiting refresh" rather than "not yet
-published". A missing live entry never fails the build.
+"not yet published" badge and no link. A non-`local` entry missing from
+`live.json`'s `repos` map — added to `repos.yml` since the last refresh, or
+unreachable when `refresh.py` ran — keeps its GitHub link and is badged
+"awaiting refresh" instead. See §5 for the two missing-data cases in full.
 
 ## 5. Repository layout
 
@@ -259,10 +264,17 @@ research-programme/
 
 Calls `gh api repos/{owner}/{key}` for every entry with a real owner, writes
 `data/live.json`. On the very first run the file does not exist yet; the script
-creates it. `build.py` treats a missing `data/live.json` as an empty refresh: it
-builds the page from `repos.yml` alone, omits the live description and the
-footer's last-refreshed line, and prints a warning. A build is never blocked by
-absent live data. Failures are non-fatal per repository: a repo that cannot be
+creates it.
+
+Missing live data has exactly two cases, and neither ever blocks a build:
+
+- **The whole file is absent.** `build.py` builds from `repos.yml` alone, omits
+  the footer's last-refreshed line entirely, badges every non-`local` entry
+  "awaiting refresh", and prints a warning.
+- **The file exists but has no entry for a key.** The footer always renders that
+  file's `generated_at` — it is the honest timestamp of the last successful
+  refresh, whatever it covered — and the individual entry is badged "awaiting
+  refresh". Failures are non-fatal per repository: a repo that cannot be
 reached keeps its previous live entry and the script reports which ones went
 stale on stderr. Requires an authenticated `gh`; no token handling of its own.
 
@@ -289,6 +301,7 @@ Pure function of `repos.yml` + `data/live.json`. Emits:
    rule: the thesis consumes, it never supplies);
 5. a `headline` present on a card whose `status` is not `results` or
    `published` — a repository whose runs have not happened cannot carry a number;
+   `status: not-applicable` on any entry that is not `render: node-only`;
 6. a `headline` missing either `text` or `source`, which is what makes every
    published number attributable;
 7. a field value outside the permitted sets in the table in §4, or a duplicate
@@ -301,8 +314,9 @@ Pure function of `repos.yml` + `data/live.json`. Emits:
    makes "what feeds what" unanswerable and would render an unreadable diagram.
    `--check` reports the full cycle path, not just one edge.
 
-This is the project's one test. It runs as `python scripts/build.py --check` and
-is the check a future change has to keep passing.
+These nine rules are the project's whole test suite. They run as
+`python scripts/build.py --check`, and that command is what a future change has
+to keep passing.
 
 ## 6. The website
 

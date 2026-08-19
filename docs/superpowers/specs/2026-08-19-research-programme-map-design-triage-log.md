@@ -70,3 +70,12 @@ Track 1: Reviewer returned NO_CRITICAL_OR_MAJOR.
 Total rounds: 3  |  Total fixes: 21 (19 reviewer findings + 2 author self-checks)
 Cumulative inflation rate: 0% — every finding across all three rounds triaged Genuine.
 Document is ready.
+
+## Post-convergence pass (author + advisor, Round 3)
+
+| Finding | Source | Severity | Verdict | Action |
+|---------|--------|----------|---------|--------|
+| R3's per-key live-data fallback overlapped R2's whole-file rule, leaving stale-for-every-key undefined | Advisor | MAJ-equivalent | Genuine | Fixed: §5 now states both missing-data cases once; footer always renders `generated_at` when the file exists |
+| `Thesis-Work-Area` carried `status: design`, a study-lifecycle value on a non-study | Advisor | ADV | Genuine | Fixed: `not-applicable` added to the enum, permitted by `--check` only on `render: node-only` entries |
+| Ten-repo count asserted but not re-verified after the nine-to-ten correction | Advisor | ADV | Genuine | Verified: `gh repo list systems-researcher` returns exactly 10. Provenance recorded in §2 |
+| "The project's one test" understated nine check rules | Advisor | Cosmetic | Genuine | Reworded |
