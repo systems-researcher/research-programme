@@ -1,0 +1,63 @@
+/* Research programme tokens.
+   Adapted from the GOV.UK Design System colour, type, spacing, and focus
+   rules (https://design-system.service.gov.uk/). Not a GOV.UK service.
+   GDS Transport is crown-use only — Helvetica/Arial is the documented fallback.
+   Copy this file into any programme repo and consume only these variables. */
+
+:root {
+  --canvas: #f3f2f1;
+  --surface: #ffffff;
+  --ink: #0b0c0c;
+  --muted: #505a5f;
+  --line: #b1b4b6;
+  --link: #1d70b8;
+  --link-hover: #003078;
+  --link-visited: #4c2c92;
+  --focus: #ffdd00;
+  --success: #00703c;
+  --error: #d4351c;
+  --header: #0b0c0c;
+  --header-text: #ffffff;
+  --phase: #1d70b8;
+
+  --strand-adequacy-fill: #e8f1f8;
+  --strand-adequacy-line: #1d70b8;
+  --strand-method-fill: #f3e9ff;
+  --strand-method-line: #4c2c92;
+  --strand-assembly-fill: #e1f3e8;
+  --strand-assembly-line: #00703c;
+
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Consolas, monospace;
+
+  --text: 1.1875rem;
+  --leading: 1.315;
+  --measure: 62rem;
+  --space-1: 5px;
+  --space-2: 10px;
+  --space-3: 15px;
+  --space-4: 20px;
+  --space-5: 25px;
+  --space-6: 30px;
+  --space-7: 40px;
+  --space-8: 50px;
+  --space-9: 60px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #0b0c0c;
+    --surface: #1d1d1d;
+    --ink: #f3f2f1;
+    --muted: #b1b4b6;
+    --line: #505a5f;
+    --link: #5694ca;
+    --link-hover: #9eceff;
+    --link-visited: #c6b3e6;
+    --header: #0b0c0c;
+    --header-text: #ffffff;
+    --strand-adequacy-fill: #122433;
+    --strand-method-fill: #231833;
+    --strand-assembly-fill: #12261b;
+  }
+}
