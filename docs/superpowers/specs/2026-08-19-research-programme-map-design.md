@@ -178,7 +178,7 @@ Each entry under `repos`:
   method: >
     Three LLMs, 120 judged answers, over a verbatim excerpt of the public
     Airbus Apollo 11 SysML v2 reconstruction, with and without a sidecar.
-  status: published                  # design | built-runs-pending | results | published
+  status: published                  # see the permitted-values table below
   headline:                          # omit entirely when nothing has been measured
     text: >
       Unauthorised content on 13.3% of governed answers bare, 2.2% with the
