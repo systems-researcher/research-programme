@@ -18,12 +18,24 @@ STRAND_ORDER = mapdata.STRANDS
 MERMAID_CDN = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
 TOKENS_CSS = Path(__file__).resolve().parent.parent / "design" / "tokens.css"
 
-# GOV.UK strand colours. Must match design/tokens.css. Distinct on purpose:
-# strand is carried by colour, not layout.
-STRAND_STYLE = {
-    "adequacy": "fill:#e8f1f8,stroke:#1d70b8,color:#0b0c0c;",
-    "method-validation": "fill:#f3e9ff,stroke:#4c2c92,color:#0b0c0c;",
-    "assembly": "fill:#e1f3e8,stroke:#00703c,color:#0b0c0c;",
+# The CSS class each strand's nodes carry in the diagram, and the token stem
+# that paints it. Colours live in design/tokens.css, never here: a Mermaid
+# classDef writes inline "!important" onto every node, which outranks any
+# stylesheet and would freeze the diagram in light mode. Emitting a bare
+# "class" statement attaches the class without an inline style, so the same
+# tokens drive the page and the diagram, and dark mode follows for free.
+#
+# Stems must differ: the strand is carried by colour, not by layout, so a
+# shared stem would silently erase the distinction.
+STRAND_CLASS = {
+    "adequacy": "adequacy",
+    "method-validation": "method_validation",
+    "assembly": "assembly",
+}
+STRAND_TOKEN = {
+    "adequacy": "adequacy",
+    "method-validation": "method",
+    "assembly": "assembly",
 }
 
 # Page chrome on top of design/tokens.css. Keep tokens out of here.
@@ -37,13 +49,16 @@ a:focus-visible { outline:3px solid var(--focus); outline-offset:0; background:v
 .masthead .wordmark { color:var(--header-text); text-decoration:none; font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:.875rem; }
 .masthead .org { color:var(--header-text); font-size:.875rem; }
 .phase { background:var(--phase); color:#fff; padding:var(--space-2) var(--space-4); font-size:.875rem; }
-.phase strong { display:inline-block; background:#fff; color:var(--ink); padding:0 .4em; margin-right:.6em; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; }
+/* The banner keeps its blue in both schemes, so the tag is pinned to literal
+   black on white. Tracking --ink here turned the label white-on-white in dark. */
+.phase strong { display:inline-block; background:#fff; color:#0b0c0c; padding:0 .4em; margin-right:.6em; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; }
 main { max-width:var(--measure); margin:0 auto; padding:var(--space-7) var(--space-4) var(--space-9); }
 h1 { font-size:2.25rem; line-height:1.15; margin:0 0 var(--space-4); font-weight:700; }
 h2 { font-size:1.5rem; margin:var(--space-8) 0 var(--space-1); padding-top:var(--space-6); border-top:1px solid var(--line); font-weight:700; }
 h3 { font-size:1.1875rem; margin:var(--space-6) 0 var(--space-1); font-weight:700; }
 .subtitle, .stage-note { color:var(--muted); margin:.25rem 0 var(--space-4); }
-.card { background:var(--surface); border:1px solid var(--line); padding:var(--space-4); margin:var(--space-4) 0; }
+.card { background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--strand-line, var(--line)); padding:var(--space-4); margin:var(--space-4) 0; }
+.card:target { outline:3px solid var(--focus); outline-offset:2px; }
 .card h4 { margin:0 0 var(--space-2); font-size:1.1875rem; }
 .ext { font-size:.75em; margin-left:.15em; }
 .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
@@ -56,9 +71,38 @@ h3 { font-size:1.1875rem; margin:var(--space-6) 0 var(--space-1); font-weight:70
 .plain { color:var(--muted); }
 .terminus { color:var(--muted); }
 #diagram { overflow-x:auto; border:1px solid var(--line); padding:var(--space-4); background:var(--surface); }
+/* Mermaid injects its own stylesheet inside the SVG, after this one, so equal
+   specificity loses on source order. These need !important to land. */
+#diagram .cluster rect { fill:var(--diagram-cluster-fill) !important; stroke:var(--diagram-cluster-line) !important; }
+#diagram .cluster-label .nodeLabel, #diagram .cluster-label text, #diagram .cluster-label span { color:var(--muted) !important; fill:var(--muted) !important; font-weight:700; }
+#diagram .node rect { fill:var(--surface) !important; stroke:var(--line) !important; }
+#diagram .nodeLabel, #diagram .nodeLabel p { color:var(--ink) !important; }
+#diagram .flowchart-link { stroke:var(--diagram-edge) !important; }
+#diagram .arrowMarkerPath { fill:var(--diagram-edge) !important; stroke:var(--diagram-edge) !important; }
+#diagram a .node rect { cursor:pointer; }
+#diagram a:focus-visible .node rect { stroke:var(--ink) !important; stroke-width:3px !important; }
 footer { margin-top:var(--space-8); padding-top:var(--space-5); border-top:1px solid var(--line); color:var(--muted); font-size:.875rem; }
 @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
 """
+
+
+def strand_css() -> str:
+    """One rule per strand, generated so a new strand cannot be added without
+    its colour. Both halves resolve to the same tokens the page uses, which is
+    what keeps the diagram and the cards from disagreeing in either mode."""
+    rules = []
+    for strand in STRAND_ORDER:
+        css_class, token = STRAND_CLASS[strand], STRAND_TOKEN[strand]
+        rules.append(
+            f"#diagram .node.{css_class} rect {{ "
+            f"fill:var(--strand-{token}-fill) !important; "
+            f"stroke:var(--strand-{token}-line) !important; }}"
+        )
+        rules.append(
+            f".strand-{css_class} {{ --strand-line:var(--strand-{token}-line); }}"
+        )
+    return "\n".join(rules)
+
 
 STATUS_LABELS = {
     "design": "design stage",
@@ -124,14 +168,16 @@ def node_id(key: str) -> str:
 
 
 def mermaid(data: mapdata.MapData) -> str:
-    """One subgraph per stage, strand carried by classDef, edges from depends_on."""
+    """One subgraph per stage, strand carried by CSS class, edges from depends_on."""
     lines = ["graph LR"]
     for stage in STAGE_ORDER:
         members = [e for e in _ordered(data) if e["stage"] == stage]
         if not members:
             continue
-        label = html.escape(str(data.stages.get(stage, stage)))
-        lines.append(f'  subgraph stage_{stage}["{stage.title()} — {label}"]')
+        # The stage name alone. Its one-line explanation already renders as the
+        # stage-note under the matching heading, and repeating it here only
+        # widened every cluster to the length of a sentence.
+        lines.append(f'  subgraph stage_{stage}["{stage.title()}"]')
         for member in members:
             lines.append(f'    {node_id(member["key"])}["{member["key"]}"]')
         lines.append("  end")
@@ -143,9 +189,8 @@ def mermaid(data: mapdata.MapData) -> str:
     for strand in STRAND_ORDER:
         members = [e for e in data.repos if e["strand"] == strand]
         if members:
-            lines.append(f"  classDef {strand.replace('-', '_')} {STRAND_STYLE[strand]}")
             names = ",".join(node_id(m["key"]) for m in members)
-            lines.append(f"  class {names} {strand.replace('-', '_')};")
+            lines.append(f"  class {names} {STRAND_CLASS[strand]};")
 
     for member in data.repos:
         if member.get("render", "card") == "card":
@@ -242,7 +287,9 @@ def page(data: mapdata.MapData, live: dict | None) -> str:
         if not members:
             continue
         heading = data.strands.get(strand, {})
-        sections.append(f'<section id="strand-{strand}">')
+        sections.append(
+            f'<section id="strand-{strand}" class="strand-{STRAND_CLASS[strand]}">'
+        )
         sections.append(f'<h2>{html.escape(str(heading.get("title", strand)))}</h2>')
         sections.append(f'<p class="subtitle">{_tidy(heading.get("subtitle", ""))}</p>')
         if not cards:
@@ -269,7 +316,7 @@ def page(data: mapdata.MapData, live: dict | None) -> str:
             f'<p>Live repository data last refreshed {html.escape(str(live["generated_at"]))}.</p>'
         )
     footer.append(
-        "<p>Repositories marked private are readable on request — contact the author.</p>"
+        "<p>Repositories marked private are readable on request: contact the author.</p>"
     )
 
     tokens = TOKENS_CSS.read_text(encoding="utf-8")
@@ -284,6 +331,7 @@ def page(data: mapdata.MapData, live: dict | None) -> str:
 <style>
 {tokens}
 {CHROME_CSS}
+{strand_css()}
 </style>
 </head>
 <body>

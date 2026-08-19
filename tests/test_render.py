@@ -90,15 +90,37 @@ def test_mermaid_groups_by_stage_and_classes_by_strand() -> None:
 
     assert 'subgraph stage_define["' in diagram
     assert 'subgraph stage_evidence["' in diagram
-    assert "classDef adequacy" in diagram
+    assert "class n_alpha,n_beta adequacy;" in diagram
+
+
+def test_diagram_carries_no_inline_colour() -> None:
+    """A Mermaid classDef writes inline '!important' onto every node, which
+    outranks the stylesheet and freezes the diagram in light mode. The strand
+    must travel as a bare class so design/tokens.css can repaint it."""
+    diagram = render.mermaid(data_with(entry()))
+
+    assert "classDef" not in diagram
+    assert "fill:#" not in diagram
 
 
 def test_every_strand_has_a_visually_distinct_style() -> None:
     """Strand is carried by colour, so identical palettes would erase it silently."""
-    styles = list(render.STRAND_STYLE.values())
+    assert set(render.STRAND_CLASS) == set(mapdata.STRANDS)
+    assert set(render.STRAND_TOKEN) == set(mapdata.STRANDS)
+    assert len(set(render.STRAND_CLASS.values())) == len(render.STRAND_CLASS)
+    assert len(set(render.STRAND_TOKEN.values())) == len(render.STRAND_TOKEN)
 
-    assert set(render.STRAND_STYLE) == set(mapdata.STRANDS)
-    assert len(set(styles)) == len(styles)
+
+def test_every_strand_token_resolves_in_both_colour_schemes() -> None:
+    """The dark block must redefine every strand colour the light block sets,
+    or the diagram silently keeps its light fills on a dark page."""
+    tokens = render.TOKENS_CSS.read_text(encoding="utf-8")
+    light, dark = tokens.split("prefers-color-scheme: dark", 1)
+
+    for token in render.STRAND_TOKEN.values():
+        for part in ("fill", "line"):
+            assert f"--strand-{token}-{part}:" in light
+            assert f"--strand-{token}-{part}:" in dark
 
 
 def test_node_only_entries_get_no_click_target() -> None:

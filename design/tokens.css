@@ -27,6 +27,12 @@
   --strand-assembly-fill: #e1f3e8;
   --strand-assembly-line: #00703c;
 
+  /* Diagram chrome. Mermaid ships its own yellow cluster fill; these override
+     it so the graph reads as part of the page rather than a pasted-in image. */
+  --diagram-cluster-fill: #fafafa;
+  --diagram-cluster-line: #b1b4b6;
+  --diagram-edge: #505a5f;
+
   --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Consolas, monospace;
 
@@ -57,7 +63,14 @@
     --header: #0b0c0c;
     --header-text: #ffffff;
     --strand-adequacy-fill: #122433;
+    --strand-adequacy-line: #5694ca;
     --strand-method-fill: #231833;
+    --strand-method-line: #c6b3e6;
     --strand-assembly-fill: #12261b;
+    --strand-assembly-line: #5aa47a;
+
+    --diagram-cluster-fill: #141414;
+    --diagram-cluster-line: #505a5f;
+    --diagram-edge: #b1b4b6;
   }
 }

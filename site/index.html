@@ -35,6 +35,12 @@
   --strand-assembly-fill: #e1f3e8;
   --strand-assembly-line: #00703c;
 
+  /* Diagram chrome. Mermaid ships its own yellow cluster fill; these override
+     it so the graph reads as part of the page rather than a pasted-in image. */
+  --diagram-cluster-fill: #fafafa;
+  --diagram-cluster-line: #b1b4b6;
+  --diagram-edge: #505a5f;
+
   --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Consolas, monospace;
 
@@ -65,8 +71,15 @@
     --header: #0b0c0c;
     --header-text: #ffffff;
     --strand-adequacy-fill: #122433;
+    --strand-adequacy-line: #5694ca;
     --strand-method-fill: #231833;
+    --strand-method-line: #c6b3e6;
     --strand-assembly-fill: #12261b;
+    --strand-assembly-line: #5aa47a;
+
+    --diagram-cluster-fill: #141414;
+    --diagram-cluster-line: #505a5f;
+    --diagram-edge: #b1b4b6;
   }
 }
 
@@ -80,13 +93,16 @@ a:focus-visible { outline:3px solid var(--focus); outline-offset:0; background:v
 .masthead .wordmark { color:var(--header-text); text-decoration:none; font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:.875rem; }
 .masthead .org { color:var(--header-text); font-size:.875rem; }
 .phase { background:var(--phase); color:#fff; padding:var(--space-2) var(--space-4); font-size:.875rem; }
-.phase strong { display:inline-block; background:#fff; color:var(--ink); padding:0 .4em; margin-right:.6em; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; }
+/* The banner keeps its blue in both schemes, so the tag is pinned to literal
+   black on white. Tracking --ink here turned the label white-on-white in dark. */
+.phase strong { display:inline-block; background:#fff; color:#0b0c0c; padding:0 .4em; margin-right:.6em; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; }
 main { max-width:var(--measure); margin:0 auto; padding:var(--space-7) var(--space-4) var(--space-9); }
 h1 { font-size:2.25rem; line-height:1.15; margin:0 0 var(--space-4); font-weight:700; }
 h2 { font-size:1.5rem; margin:var(--space-8) 0 var(--space-1); padding-top:var(--space-6); border-top:1px solid var(--line); font-weight:700; }
 h3 { font-size:1.1875rem; margin:var(--space-6) 0 var(--space-1); font-weight:700; }
 .subtitle, .stage-note { color:var(--muted); margin:.25rem 0 var(--space-4); }
-.card { background:var(--surface); border:1px solid var(--line); padding:var(--space-4); margin:var(--space-4) 0; }
+.card { background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--strand-line, var(--line)); padding:var(--space-4); margin:var(--space-4) 0; }
+.card:target { outline:3px solid var(--focus); outline-offset:2px; }
 .card h4 { margin:0 0 var(--space-2); font-size:1.1875rem; }
 .ext { font-size:.75em; margin-left:.15em; }
 .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
@@ -99,9 +115,25 @@ h3 { font-size:1.1875rem; margin:var(--space-6) 0 var(--space-1); font-weight:70
 .plain { color:var(--muted); }
 .terminus { color:var(--muted); }
 #diagram { overflow-x:auto; border:1px solid var(--line); padding:var(--space-4); background:var(--surface); }
+/* Mermaid injects its own stylesheet inside the SVG, after this one, so equal
+   specificity loses on source order. These need !important to land. */
+#diagram .cluster rect { fill:var(--diagram-cluster-fill) !important; stroke:var(--diagram-cluster-line) !important; }
+#diagram .cluster-label .nodeLabel, #diagram .cluster-label text, #diagram .cluster-label span { color:var(--muted) !important; fill:var(--muted) !important; font-weight:700; }
+#diagram .node rect { fill:var(--surface) !important; stroke:var(--line) !important; }
+#diagram .nodeLabel, #diagram .nodeLabel p { color:var(--ink) !important; }
+#diagram .flowchart-link { stroke:var(--diagram-edge) !important; }
+#diagram .arrowMarkerPath { fill:var(--diagram-edge) !important; stroke:var(--diagram-edge) !important; }
+#diagram a .node rect { cursor:pointer; }
+#diagram a:focus-visible .node rect { stroke:var(--ink) !important; stroke-width:3px !important; }
 footer { margin-top:var(--space-8); padding-top:var(--space-5); border-top:1px solid var(--line); color:var(--muted); font-size:.875rem; }
 @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
 
+#diagram .node.adequacy rect { fill:var(--strand-adequacy-fill) !important; stroke:var(--strand-adequacy-line) !important; }
+.strand-adequacy { --strand-line:var(--strand-adequacy-line); }
+#diagram .node.method_validation rect { fill:var(--strand-method-fill) !important; stroke:var(--strand-method-line) !important; }
+.strand-method_validation { --strand-line:var(--strand-method-line); }
+#diagram .node.assembly rect { fill:var(--strand-assembly-fill) !important; stroke:var(--strand-assembly-line) !important; }
+.strand-assembly { --strand-line:var(--strand-assembly-line); }
 </style>
 </head>
 <body>
@@ -117,27 +149,27 @@ footer { margin-top:var(--space-8); padding-top:var(--space-5); border-top:1px s
 
 <div id="diagram"><pre class="mermaid">
 graph LR
-  subgraph stage_define["Define — What a record must expose, and how that binds to SysML v2."]
+  subgraph stage_define["Define"]
     n_epistemic_adequacy_spec["epistemic-adequacy-spec"]
     n_epistemic_adequacy_metamodel["epistemic-adequacy-metamodel"]
   end
-  subgraph stage_measure["Measure — The instruments that turn the definition into a number."]
+  subgraph stage_measure["Measure"]
     n_epistemic_adequacy_toolkit["epistemic-adequacy-toolkit"]
     n_sysml2_bench["sysml2-bench"]
   end
-  subgraph stage_evidence["Evidence — What the instruments have actually measured."]
+  subgraph stage_evidence["Evidence"]
     n_epistemic_adequacy_probe["epistemic-adequacy-probe"]
     n_pressure_susceptibility_probe["pressure-susceptibility-probe"]
     n_model_vs_document_defect_probe["model-vs-document-defect-probe"]
     n_ahp_framing_fragility_probe["ahp-framing-fragility-probe"]
     n_dsm_sequencing_probe["dsm-sequencing-probe"]
   end
-  subgraph stage_architecture["Architecture — Candidate substrates that enforce it on the write side."]
+  subgraph stage_architecture["Architecture"]
     n_SysML_v2_API_Services_Arch_A["SysML-v2-API-Services-Arch-A"]
     n_sysml_v2_metadata_graph_Arch_B["sysml-v2-metadata-graph-Arch-B"]
     n_sysml_v2_governed_substrate_Arch_C["sysml-v2-governed-substrate-Arch-C"]
   end
-  subgraph stage_assembly["Assembly — Where it is written up."]
+  subgraph stage_assembly["Assembly"]
     n_Thesis_Work_Area["Thesis-Work-Area"]
   end
   n_epistemic_adequacy_probe --> n_epistemic_adequacy_spec
@@ -163,11 +195,8 @@ graph LR
   n_model_vs_document_defect_probe --> n_Thesis_Work_Area
   n_ahp_framing_fragility_probe --> n_Thesis_Work_Area
   n_dsm_sequencing_probe --> n_Thesis_Work_Area
-  classDef adequacy fill:#e8f1f8,stroke:#1d70b8,color:#0b0c0c;
   class n_epistemic_adequacy_spec,n_epistemic_adequacy_metamodel,n_epistemic_adequacy_toolkit,n_sysml2_bench,n_epistemic_adequacy_probe,n_pressure_susceptibility_probe,n_SysML_v2_API_Services_Arch_A,n_sysml_v2_metadata_graph_Arch_B,n_sysml_v2_governed_substrate_Arch_C adequacy;
-  classDef method_validation fill:#f3e9ff,stroke:#4c2c92,color:#0b0c0c;
   class n_model_vs_document_defect_probe,n_ahp_framing_fragility_probe,n_dsm_sequencing_probe method_validation;
-  classDef assembly fill:#e1f3e8,stroke:#00703c,color:#0b0c0c;
   class n_Thesis_Work_Area assembly;
   click n_epistemic_adequacy_spec "#card-epistemic-adequacy-spec"
   click n_epistemic_adequacy_metamodel "#card-epistemic-adequacy-metamodel"
@@ -183,7 +212,7 @@ graph LR
   click n_dsm_sequencing_probe "#card-dsm-sequencing-probe"
 </pre></div>
 
-<section id="strand-adequacy">
+<section id="strand-adequacy" class="strand-adequacy">
 <h2>Epistemic adequacy</h2>
 <p class="subtitle">Can a record tell an AI what it is authorised to say — and can a substrate refuse a write that it is not?</p>
 <h3>Define</h3>
@@ -278,7 +307,7 @@ graph LR
 <p class="links"><strong>Feeds.</strong> <span class="plain">Thesis-Work-Area</span></p>
 </article>
 </section>
-<section id="strand-method-validation">
+<section id="strand-method-validation" class="strand-method_validation">
 <h2>Do classic SE methods survive an AI practitioner?</h2>
 <p class="subtitle">The same methodological move, turned on the methods systems engineering already relies on.</p>
 <h3>Evidence</h3>
@@ -310,7 +339,7 @@ graph LR
 <p class="links"><strong>Feeds.</strong> <span class="plain">Thesis-Work-Area</span></p>
 </article>
 </section>
-<section id="strand-assembly">
+<section id="strand-assembly" class="strand-assembly">
 <h2>Assembly</h2>
 <p class="subtitle">Where the findings are written up.</p>
 <p class="terminus"><strong>Thesis-Work-Area.</strong> Where the programme&#x27;s findings are written up as the doctoral thesis.</p>
@@ -318,7 +347,7 @@ graph LR
 
 <footer>
 <p>Live repository data last refreshed 2026-08-19T14:53:44+00:00.</p>
-<p>Repositories marked private are readable on request — contact the author.</p>
+<p>Repositories marked private are readable on request: contact the author.</p>
 </footer>
 </main>
 <script type="module">
