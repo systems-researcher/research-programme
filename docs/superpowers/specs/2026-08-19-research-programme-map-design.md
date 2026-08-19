@@ -81,9 +81,11 @@ Thesis framing: *Architecting Trustworthy AI Integration in MBSE*; the MODELS
 
 ### Assembly
 
-`Thesis-Work-Area` is shown as the terminus of both strands. It is a node on the
-diagram and never a dependency of anything: material moves *into* the thesis, and
-no repository is permitted to link back to it or depend on it.
+`Thesis-Work-Area` is shown as the terminus of both strands: a node on the
+diagram, with **no card and no link**. It is never a dependency of anything —
+material moves *into* the thesis, and no repository may depend on it. It carries
+`render: node-only` in `repos.yml`; `build.py` emits the diagram node and skips
+the card.
 
 ## 4. Content model
 
@@ -213,9 +215,12 @@ Mermaid.
 
 Vercel project connected to the private GitHub repository, static output
 directory `site/`, public URL. The repository stays private; the built page is
-public. Nothing in `repos.yml` may contain unpublished results the programme is
-not ready to disclose — the page is world-readable and should be authored on that
-assumption.
+public. Every repository gets a full card, design-stage ones included: the AHP
+flip-rate and DSM sequencing probes publish their objective, question, and method
+before they have been run, which stakes the ground and is a deliberate choice.
+What must never appear is a **result** that has not been produced — that is what
+`--check` rule 5 enforces. The page is world-readable and `repos.yml` is authored
+on that assumption.
 
 Private repository links are rendered with a "private" badge and still point at
 GitHub, so a reader with access lands correctly and a reader without one sees
