@@ -199,7 +199,7 @@ Permitted values, which `--check` enforces:
 |---|---|
 | `strand` | `adequacy`, `method-validation`, `assembly` |
 | `stage` | `define`, `measure`, `evidence`, `architecture`, `assembly` |
-| `status` | `design`, `built-runs-pending`, `results`, `published`, `not-applicable` |
+| `status` | `design`, `built-runs-pending`, `released`, `results`, `published`, `not-applicable` |
 | `render` | `card`, `node-only` |
 | `owner` | the literal `local`, or a non-empty GitHub account name — `--check` verifies it is non-empty and matches `[A-Za-z0-9-]+`, not that the account exists |
 
@@ -216,9 +216,17 @@ Rules on the fields:
   where none does.
 - `status` is the author's judgement, not derived. `built-runs-pending` is a real
   and common state in this programme and must be visible as such.
-  `not-applicable` exists for entries that are not studies and therefore have no
-  run lifecycle; `--check` permits it only on `render: node-only` entries, so it
-  cannot be used to hide a study whose status is simply unknown.
+  `released` is for a versioned artefact that ships without producing a measured
+  result — a specification, a library, an instrument release. It exists because
+  the enum is otherwise a study lifecycle, and calling a released specification
+  "design stage" on a supervisor-facing page understates it. A `released` entry
+  carries no `headline`: a release is not a measurement.
+  `not-applicable` exists for entries that are not studies and have no run
+  lifecycle at all; `--check` permits it only on `render: node-only` entries, so
+  it cannot be used to hide a study whose status is simply unknown.
+- `depends_on` states what a repository consumes **now and going forward**, not
+  what existed when it was committed. Most of the programme predates the
+  specification, so reading the edges as commit order would be wrong.
 - `depends_on` is the **only** authored edge source. The reverse direction
   ("what this feeds") is derived at build time by inverting the graph, so the two
   can never disagree and no edge can be declared twice. Keys are named verbatim,

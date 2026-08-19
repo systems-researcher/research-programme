@@ -199,7 +199,14 @@ import yaml
 
 STRANDS = ("adequacy", "method-validation", "assembly")
 STAGES = ("define", "measure", "evidence", "architecture", "assembly")
-STATUSES = ("design", "built-runs-pending", "results", "published", "not-applicable")
+STATUSES = (
+    "design",
+    "built-runs-pending",
+    "released",
+    "results",
+    "published",
+    "not-applicable",
+)
 RENDERS = ("card", "node-only")
 REQUIRED = ("key", "owner", "strand", "stage", "objective", "question", "method", "status")
 RESULT_STATUSES = ("results", "published")
@@ -789,7 +796,373 @@ if __name__ == "__main__":
 
 - [ ] **Step 2: Write `repos.yml`**
 
-<!-- CARDS -->
+`repos.yml`:
+
+```yaml
+# Copyright (c) 2026 Jason D. Gower
+# SPDX-License-Identifier: CC-BY-4.0
+#
+# The single hand-authored source of truth for the research programme map.
+# data/live.json, site/index.html and the README table are all generated from
+# this file. Never write a number here that you cannot trace to a file in the
+# repository it describes.
+
+programme:
+  title: "Architecting Trustworthy AI Integration in MBSE"
+  question: >
+    AI assistants already read engineering models and answer questions from
+    them. The answers are fluent, mostly true, and largely unauthorised by the
+    model in front of them. This programme asks three things: what an
+    engineering record must expose for an AI consumer to tell a grounded claim
+    from an ungrounded one, whether exposing it changes what the AI actually
+    says, and how a substrate can refuse an inadmissible write on its own
+    behalf.
+  move: >
+    Throughout, an AI agent stands in as a consistent practitioner. That turns
+    method and representation into manipulable experimental factors and makes
+    replicated designs affordable that human-subject systems-engineering
+    research could never run.
+
+strands:
+  adequacy:
+    title: "Epistemic adequacy"
+    subtitle: >
+      Can a record tell an AI what it is authorised to say — and can a substrate
+      refuse a write that it is not?
+  method-validation:
+    title: "Do classic SE methods survive an AI practitioner?"
+    subtitle: >
+      The same methodological move, turned on the methods systems engineering
+      already relies on.
+  assembly:
+    title: "Assembly"
+    subtitle: "Where the findings are written up."
+
+stages:
+  define: "What a record must expose, and how that binds to SysML v2."
+  measure: "The instruments that turn the definition into a number."
+  evidence: "What the instruments have actually measured."
+  architecture: "Candidate substrates that enforce it on the write side."
+  assembly: "Where it is written up."
+
+repos:
+
+  # ---------------------------------------------------------------- define ---
+
+  - key: epistemic-adequacy-spec
+    owner: systems-researcher
+    strand: adequacy
+    stage: define
+    status: released
+    objective: >
+      A conformance specification stating, in eighteen testable clauses, what an
+      engineering record must expose so that an AI consumer can decide whether a
+      claim the record holds is grounded.
+    question: >
+      What must a record expose for the groundedness of a claim — whether it is
+      derived, at what standing, from what origin, with its premises reachable,
+      and how it entered the record — to be decidable by query rather than by
+      judgement?
+    method: >
+      Five criteria, EA1 to EA5, decomposed into eighteen MUST/SHOULD/MAY
+      clauses, each carrying a Check line written against an abstract substrate
+      and organised into three conformance profiles, with a non-normative SysML
+      v2 binding and a machine-readable clause manifest validated against the
+      prose in CI. EA1 to EA4 are labelled evidenced; all three EA5 clauses are
+      labelled hypothesis.
+    output: >
+      v0.1.0, released 2026-08-18. The criteria originate in the MODELS 2026
+      NIER paper, doi:10.1145/3822455.3838783, which resolves on publication.
+    depends_on: [epistemic-adequacy-probe]
+
+  - key: epistemic-adequacy-metamodel
+    owner: local
+    strand: adequacy
+    stage: define
+    status: design
+    objective: >
+      Owns the metadata model itself — a conceptual ontology, a logical data
+      model, and a generated SysML v2 library, kept in sync — so that the
+      specification's non-normative binding becomes something a tool can
+      mechanically check.
+    question: >
+      Can the eighteen clauses be expressed as SysML v2 metadata that a tool
+      actually checks on a real model, and what does the existing binding lack
+      for that to be true?
+    method: >
+      One hand-edited schema generates both an OWL 2 plus SHACL ontology and the
+      SysML v2 library, with reader, resolver, and extractor stages emitting the
+      toolkit's canonical claim graph. Correctness is pinned by a bare-versus-
+      annotated Apollo reference pair under a stated profile regression contract
+      and an eighteen-row clause trace in CI. The repository exists because
+      parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation
+      accepting a derivation whose upstream references nothing.
+    depends_on: [epistemic-adequacy-spec, epistemic-adequacy-toolkit]
+
+  # --------------------------------------------------------------- measure ---
+
+  - key: epistemic-adequacy-toolkit
+    owner: systems-researcher
+    strand: adequacy
+    stage: measure
+    status: built-runs-pending
+    objective: >
+      The instrument: it scores a substrate against the eighteen clauses and
+      joins that score to how an AI consumer then behaves, so that adequacy is
+      the independent variable and consumer behaviour the dependent one.
+    question: >
+      Does this substrate satisfy the clauses, at which conformance profile, and
+      does the measured adequacy change what an AI consumer says?
+    method: >
+      The static stage runs deterministically with no model calls, scoring a
+      substrate against the clause manifest it pins by SHA-256. The behavioural
+      runner that joins adequacy to consumer answers is specified and not yet
+      built, so the join the instrument exists for is not yet demonstrable.
+    output: "v0.1.0"
+    depends_on: [epistemic-adequacy-spec]
+
+  - key: sysml2-bench
+    owner: systems-researcher
+    strand: adequacy
+    stage: measure
+    status: built-runs-pending
+    objective: >
+      A public, versioned, contamination-resistant benchmark of how well
+      language models read, reason over, critique, and write SysML v2 — the
+      capability baseline every adequacy result has to be read against.
+    question: >
+      How competent are current models at SysML v2 itself, independent of any
+      epistemic metadata, and how often do they confabulate on items that have
+      no answer?
+    method: >
+      Four task families generated procedurally from a semantic intermediate
+      representation with programmatic ground truth, plus two cross-cutting
+      headline metrics, confabulation rate and format-failure rate. The
+      generator and truth layer exist; the wild set that draws on the public
+      Apollo 11 model is human-gated and still unpopulated.
+    depends_on: [epistemic-adequacy-probe]
+
+  # ------------------------------------------------- evidence, read-side ---
+
+  - key: epistemic-adequacy-probe
+    owner: systems-researcher
+    strand: adequacy
+    stage: evidence
+    status: published
+    objective: >
+      The first measured test of whether epistemic metadata, beyond structured
+      model access alone, changes how an AI consumer answers derivation-style
+      questions over an MBSE model.
+    question: >
+      Does an AI reading an MBSE model produce fewer unauthorised answers when
+      the model exposes derivation, standing, and provenance?
+    method: >
+      Three language models over a verbatim excerpt of the public Airbus Apollo
+      11 SysML v2 reconstruction, 120 judged answers across a governed and a
+      pressed instruction, with and without a hand-authored EA1 to EA4 sidecar.
+      Deliberately small: one thrust chain, one model family, a single run per
+      cell.
+    headline:
+      text: >
+        Under a governed instruction the bare model gave ungrounded answers on 6
+        of 45 question-cells (13.3%); the sidecar cut that to 1 of 45 (2.2%).
+        Under a deadline-style pressed instruction over the five hardest
+        questions the bare model reached 9 of 15 (60%), and the strongest model
+        was the most fluent confabulator — 4 of its 5 pressured answers
+        ungrounded, every one historically plausible. The sidecar halved the
+        pressed rate to 5 of 15 (33%) without eliminating it.
+      source: >
+        epistemic-adequacy-probe v0.2.0, RESULTS.md, "Headline rates". The
+        repository also records a cross-family judge recheck of the pressed
+        plus-sidecar cell; read RESULTS.md before quoting that cell alone.
+    output: >
+      doi:10.1145/3822455.3838783 (MODELS 2026 NIER); release v0.2.0,
+      2026-08-17.
+    depends_on: []
+
+  - key: pressure-susceptibility-probe
+    owner: systems-researcher
+    strand: adequacy
+    stage: evidence
+    status: built-runs-pending
+    objective: >
+      Measures how susceptible an AI assistant is to producing unauthorised
+      engineering answers when the work itself pushes on it: a deadline, a
+      senior engineer's stated conclusion, a board that has already agreed, or a
+      question with a false premise baked in.
+    question: >
+      How much does social and operational pressure raise the rate of ungrounded
+      engineering answers, and which kinds of pressure do most of the damage?
+    method: >
+      Six scenarios drawn from design review, verification sign-off, and anomaly
+      investigation, an influence-prompt library of seven levers, ensemble
+      judging, and an analysis layer. Harness and scenario set are built; the
+      runs have not been executed.
+    depends_on: [epistemic-adequacy-probe]
+
+  # -------------------------------------------- architecture, write-side ---
+
+  - key: SysML-v2-API-Services-Arch-A
+    owner: systems-researcher
+    strand: adequacy
+    stage: architecture
+    status: design
+    objective: >
+      Candidate A: epistemic metadata carried inline on model elements through
+      project-local SysML v2 metadata definitions, with an admissibility gate as
+      the sole write path.
+    question: >
+      Can a conforming record be enforced inside the standard SysML v2 API
+      service itself, with no second store to keep in step?
+    method: >
+      A research fork pinned to vanilla upstream, adding four metadata-def
+      schemas and a Python admissibility gate in front of the API, evaluated by
+      a three-arm harness. The design contract is complete; the gate checks
+      still raise NotImplementedError.
+    depends_on: [epistemic-adequacy-spec]
+
+  - key: sysml-v2-metadata-graph-Arch-B
+    owner: systems-researcher
+    strand: adequacy
+    stage: architecture
+    status: design
+    objective: >
+      Candidate B: the SysML v2 model stays completely untouched and the
+      epistemic metadata lives beside it in a Neo4j graph keyed by
+      programme-level stable identifiers.
+    question: >
+      Does holding the metadata out of the model buy full history and provenance
+      without losing the ability to refuse a write?
+    method: >
+      A Python governance service is the sole write path to both stores, running
+      a graph-write gate and a promotion gate with staleness blocking before any
+      guarded commit upstream. The design contract is complete; implementation
+      has not started. Comparing A against B requires Candidate A deployed and
+      runnable alongside it.
+    depends_on: [epistemic-adequacy-spec, SysML-v2-API-Services-Arch-A]
+
+  - key: sysml-v2-governed-substrate-Arch-C
+    owner: systems-researcher
+    strand: adequacy
+    stage: architecture
+    status: design
+    objective: >
+      Candidate C: one ArcadeDB engine holds model topology, governance metadata
+      and provenance, and retrieval embeddings, with SysML treated as a
+      projection over the store rather than the store itself.
+    question: >
+      If the substrate is governed natively, can the authoritative record and
+      the AI-authored companion be two namespaces of one engine, with promotion
+      between them in a single transaction?
+    method: >
+      A governance API is the sole external write path: it evaluates the
+      admissibility conditions before commit, confines signed AI writes to the
+      companion namespace, and promotes accepted content in one transaction
+      carrying the second-party review record, with append-only audit history
+      held in-store. The design contract is complete; implementation has not
+      started.
+    depends_on: [epistemic-adequacy-spec]
+
+  # ------------------------------------------- method validation strand ---
+
+  - key: model-vs-document-defect-probe
+    owner: systems-researcher
+    strand: method-validation
+    stage: evidence
+    status: design
+    objective: >
+      Measures MBSE's flagship claim head-on: does a single connected system
+      model let a reviewer catch more defects than an information-equivalent set
+      of documents?
+    question: >
+      Which substrate and tooling combination lets an AI agent best manage a
+      model — query it, edit it, trace through it, and find its defects?
+    method: >
+      A consistent-practitioner design in which an AI agent stands in as the
+      reviewer, so representation is the only factor that varies and reviewer
+      skill is held constant, scored on a four-task battery across eight
+      substrate variants in three families: document, model, and database.
+    depends_on: [pressure-susceptibility-probe]
+
+  - key: ahp-framing-fragility-probe
+    owner: local
+    strand: method-validation
+    stage: evidence
+    status: design
+    objective: >
+      Tests whether a structured trade study gives a stable answer, or whether
+      the winner silently depends on things that should not matter: the order
+      the criteria were listed in, how they were worded, or the presence of
+      irrelevant decoy options.
+    question: >
+      How often does a trade study's chosen winner flip under perturbations that
+      carry no decision-relevant information?
+    method: >
+      The same decision run many times over with an AI agent standing in as the
+      analyst, varying only cosmetic factors, reported as a flip-rate. The test
+      design is written; no harness is built.
+    depends_on: [pressure-susceptibility-probe]
+
+  - key: dsm-sequencing-probe
+    owner: local
+    strand: method-validation
+    stage: evidence
+    status: design
+    objective: >
+      Tests whether the Design Structure Matrix actually produces the best task
+      order, measured against a mathematically optimal answer a computer can
+      calculate exactly.
+    question: >
+      How far from optimal is a DSM-derived task ordering, and when it is wrong,
+      did the method fail or did the analyst build the wrong matrix?
+    method: >
+      The agent's ordering is scored against the provably minimal-feedback
+      ordering produced by a known graph algorithm, split by whether the agent
+      also had to elicit the matrix or was handed it clean, across several
+      models. The test design is written; no harness is built.
+    depends_on: []
+
+  # -------------------------------------------------------------- assembly ---
+
+  - key: Thesis-Work-Area
+    owner: systems-researcher
+    strand: assembly
+    stage: assembly
+    render: node-only
+    status: not-applicable
+    objective: >
+      Where the programme's findings are written up as the doctoral thesis.
+    question: >
+      Not applicable: this is the destination, not a study.
+    method: >
+      Not applicable.
+    depends_on: [epistemic-adequacy-spec, epistemic-adequacy-metamodel,
+                 epistemic-adequacy-toolkit, sysml2-bench,
+                 epistemic-adequacy-probe, pressure-susceptibility-probe,
+                 SysML-v2-API-Services-Arch-A, sysml-v2-metadata-graph-Arch-B,
+                 sysml-v2-governed-substrate-Arch-C,
+                 model-vs-document-defect-probe, ahp-framing-fragility-probe,
+                 dsm-sequencing-probe]
+```
+
+**What `depends_on` means here.** It is a statement about what a repository
+consumes *now and going forward*, not a claim about commit order. Most of these
+repositories predate the specification, so a git-history reading of the edges
+would be wrong. Two edges are worth knowing about:
+
+- `epistemic-adequacy-spec` depends on `epistemic-adequacy-probe`, which looks
+  backwards for a define-stage repository. It is deliberate: the spec quotes the
+  probe's measured rates as the evidence base for EA1 to EA4, and the probe
+  cites no sibling repository at all.
+- `model-vs-document-defect-probe` does **not** depend on the specification.
+  A search of that repository returns no mention of it; the edge was proposed
+  during drafting and removed on inspection.
+
+Every objective, question, method, and status above was drafted by reading the
+repository it describes, and each `status` was justified against a specific
+file and line. The one `headline` in the file was verified independently against
+`RESULTS.md`: `6/45 (13.3%)`, `1/45 (2.2%)`, `9/15 (60%)`, and `5/15 (33%)` all
+appear there with the same meaning.
 
 - [ ] **Step 3: Run the validator**
 
@@ -800,24 +1173,63 @@ Expected: `repos.yml: 13 entries, all nine rules pass`
 
 Temporarily break one entry to confirm the check is not vacuous:
 
-```bash
-python - <<'PY'
+Write `tests/mutate_check.py` — a throwaway that proves the validator is not vacuous:
+
+```python
+# Copyright (c) 2026 Jason D. Gower
+# SPDX-License-Identifier: MIT
+"""Prove --check fails on a broken repos.yml. Restores the file on the way out."""
+from __future__ import annotations
+
+import subprocess
+import sys
 from pathlib import Path
-p = Path("repos.yml")
-original = p.read_text(encoding="utf-8")
-p.write_text(original.replace("stage: define", "stage: prototype", 1), encoding="utf-8")
-PY
-python -m scripts.build --check; echo "exit=$?"
-git checkout repos.yml
-python -m scripts.build --check; echo "exit=$?"
+
+REPOS = Path("repos.yml")
+
+MUTATIONS = [
+    ("stage: define", "stage: prototype"),
+    ("strand: adequacy", "strand: nonsense"),
+    ("owner: systems-researcher", "owner: not a name!"),
+]
+
+original = REPOS.read_text(encoding="utf-8")
+failures = []
+try:
+    for old, new in MUTATIONS:
+        assert old in original, f"mutation anchor missing: {old}"
+        REPOS.write_text(original.replace(old, new, 1), encoding="utf-8")
+        done = subprocess.run(
+            [sys.executable, "-m", "scripts.build", "--check"],
+            capture_output=True,
+            text=True,
+        )
+        if done.returncode == 0:
+            failures.append(f"--check passed despite '{new}'")
+        else:
+            print(f"ok: '{new}' rejected -> {done.stderr.strip().splitlines()[0]}")
+finally:
+    REPOS.write_text(original, encoding="utf-8")
+
+if failures:
+    print("\n".join(failures), file=sys.stderr)
+    raise SystemExit(1)
+print("validator bites on all three mutations")
 ```
 
-Expected: first run prints an error naming `prototype` and exits 1; after `git checkout`, exit 0.
+Run: `python tests/mutate_check.py`
+Expected: three `ok:` lines, then `validator bites on all three mutations`, exit 0.
+
+Run: `python -m scripts.build --check`
+Expected: exit 0 — the mutation script restored `repos.yml`.
+
+Run: `git status --short repos.yml`
+Expected: no output. If `repos.yml` shows as modified, the restore failed — run `git checkout repos.yml` before continuing.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add repos.yml scripts/build.py
+git add repos.yml scripts/build.py tests/mutate_check.py
 git commit -m "feat: author repos.yml with all thirteen entries"
 ```
 
@@ -1468,6 +1880,7 @@ MERMAID_CDN = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
 STATUS_LABELS = {
     "design": "design stage",
     "built-runs-pending": "built, runs pending",
+    "released": "released",
     "results": "results in hand",
     "published": "published",
     "not-applicable": "",
@@ -1711,8 +2124,11 @@ Open `site/index.html` in a browser. Confirm, by eye:
 
 - [ ] **Step 7: Verify the page has exactly one external dependency**
 
-Run: `grep -oE 'https?://[^"'"'"' ]+' site/index.html | sort -u`
-Expected: the Mermaid CDN URL, plus `https://github.com/...` links. Nothing else — no analytics, no fonts, no trackers.
+```bash
+python -c "import re,pathlib;u=sorted(set(re.findall(r'https?://[^\"'\\s<>]+', pathlib.Path('site/index.html').read_text(encoding='utf-8'))));print(chr(10).join(u))"
+```
+
+Expected: the Mermaid CDN URL and `https://github.com/systems-researcher/...` links, and nothing else — no analytics, no font hosts, no trackers. Every host other than `cdn.jsdelivr.net` and `github.com` is a defect: the page must stay self-contained.
 
 - [ ] **Step 8: Commit**
 
