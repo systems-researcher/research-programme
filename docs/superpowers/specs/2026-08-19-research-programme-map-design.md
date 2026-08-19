@@ -7,6 +7,9 @@ SPDX-License-Identifier: CC-BY-4.0
 
 **Date:** 2026-08-19
 **Repo:** `systems-researcher/research-programme` (private)
+**Account:** `systems-researcher` is a second **personal GitHub account**, not an
+organisation (`gh api user` returns it as the authenticated login, type `User`).
+Create the repository while authenticated as that account.
 **Status:** design approved, not yet implemented
 
 ---
@@ -102,8 +105,7 @@ repository:
   headline: >                        # measured result, with its source and version;
     ...                              # omit entirely when there is nothing measured
   output: "doi:10.1145/3822455.3838783"   # optional: paper, artefact, release
-  depends_on: [epistemic-adequacy-spec]
-  feeds: [Thesis-Work-Area]
+  depends_on: [epistemic-adequacy-spec, epistemic-adequacy-toolkit]
 ```
 
 Rules on the fields:
@@ -113,9 +115,18 @@ Rules on the fields:
   `headline` key. The map must never imply a result exists where none does.
 - `status` is the author's judgement, not derived. `built-runs-pending` is a real
   and common state in this programme and must be visible as such.
-- `depends_on` and `feeds` are the only source of diagram edges, and both name
-  keys verbatim, so `SysML-v2-API-Services-Arch-A` and `Thesis-Work-Area` keep
-  their upstream casing.
+- `depends_on` is the **only** authored edge source. The reverse direction
+  ("what this feeds") is derived at build time by inverting the graph, so the two
+  can never disagree and no edge can be declared twice. Keys are named verbatim,
+  so `SysML-v2-API-Services-Arch-A` and `Thesis-Work-Area` keep their upstream
+  casing.
+
+Two repositories, `sysml2-bench` and `model-vs-document-defect-probe`, resolve
+under both `jgsystemsconsulting/` and `systems-researcher/` with identical push
+timestamps: they were transferred, and the old paths are GitHub redirects. The
+map names the `systems-researcher` path in both cases. Several local working
+copies still carry the pre-transfer remote; that is harmless and out of scope
+here.
 
 `data/live.json` holds machine-derived fields only — description, visibility,
 default branch, last push date — keyed by `key`. It is generated, never edited,
@@ -154,7 +165,7 @@ Pure function of `repos.yml` + `data/live.json`. Emits:
 - `site/index.html` — the whole page, CSS inline, one `<script>` tag for Mermaid
   from CDN.
 - The Mermaid graph definition, inlined in that page, with nodes grouped into
-  subgraphs by stage and edges taken from `depends_on`/`feeds`.
+  subgraphs by stage and edges taken from `depends_on` alone.
 - The README table, written between `<!-- BEGIN:repos -->` and
   `<!-- END:repos -->` markers. Content outside the markers is never touched.
 
@@ -164,9 +175,10 @@ Pure function of `repos.yml` + `data/live.json`. Emits:
 2. a `stage` or `strand` outside the permitted sets;
 3. a card missing a required field (`key`, `owner`, `strand`, `stage`,
    `objective`, `question`, `status`);
-4. a `feeds` list on `Thesis-Work-Area` (the terminus rule: the thesis consumes,
-   it never supplies);
-5. a `headline` present on a card whose `status` is `design`.
+4. `Thesis-Work-Area` appearing in any other card's `depends_on` (the terminus
+   rule: the thesis consumes, it never supplies);
+5. a `headline` present on a card whose `status` is not `results` or
+   `published` — a repository whose runs have not happened cannot carry a number.
 
 This is the project's one test. It runs as `python scripts/build.py --check` and
 is the check a future change has to keep passing.
@@ -190,7 +202,8 @@ Structure, top to bottom:
 
 Card rendering: title (links to GitHub), visibility badge, status badge,
 objective, question, method, headline result when present, and two link rows —
-"depends on" and "feeds" — as internal anchors to the other cards on the page.
+"depends on" (authored) and "feeds" (derived by inversion) — as internal anchors
+to the other cards on the page.
 
 Design constraints: readable at 400px wide, works in light and dark, no
 horizontal page scroll, external links marked. No client-side JavaScript beyond
@@ -245,8 +258,9 @@ never leaves a half-written page.
 3. Adding a new repository to the programme costs one `repos.yml` entry and one
    command.
 4. `python scripts/build.py --check` passes, and fails when an edge is broken.
-5. The diagram and the cards cannot disagree, because both are generated from the
-   same edges.
+5. The diagram and the cards cannot disagree, because both are generated from
+   one authored edge list, and the reverse direction is derived rather than
+   written twice.
 
 ## 10. Open questions
 
