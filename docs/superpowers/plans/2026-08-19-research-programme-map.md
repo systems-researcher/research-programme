@@ -18,9 +18,9 @@
 |---|---|
 | `repos.yml` | Source of truth: `programme`, `strands`, `stages`, `repos`. Hand-authored, never generated |
 | `data/live.json` | Generated GitHub fields: `generated_at` plus a `repos` map. Committed, never hand-edited |
-| `scripts/mapdata.py` | Load `repos.yml` and `data/live.json`; the nine validation rules; graph inversion. No rendering, no I/O side effects beyond reading |
+| `scripts/mapdata.py` | Load `repos.yml`; the nine validation rules; graph inversion. Never reads `data/live.json` — validation must not depend on network-derived data |
 | `scripts/render.py` | Pure rendering: data in, HTML and Markdown strings out. No file writes, no validation |
-| `scripts/build.py` | CLI. `--check` validates and exits; no flag validates then writes both outputs atomically |
+| `scripts/build.py` | CLI. Reads `data/live.json` when it exists. `--check` validates and exits; no flag validates then writes both outputs atomically |
 | `scripts/refresh.py` | CLI. Calls `gh`, writes `data/live.json`. The only script that touches the network |
 | `site/index.html` | Generated page. Committed so Vercel needs no build step |
 | `README.md` | Narrative, with the repo table regenerated between markers |
@@ -89,7 +89,9 @@ content — are licensed under Creative Commons Attribution 4.0 International
 **Code** — everything under `scripts/` and `tests/` — is licensed under the MIT
 Licence, reproduced in `LICENSE-MIT`.
 
-Each file carries an SPDX identifier stating which of the two applies.
+Every Markdown, YAML, and Python file that carries content states which of the
+two applies with an SPDX identifier. Empty package markers (`__init__.py`) and
+generated files (`site/index.html`, `data/live.json`) do not.
 ```
 
 `LICENSE-MIT`:
@@ -1262,8 +1264,9 @@ from pathlib import Path
 
 REPOS = Path("repos.yml")
 
-# One mutation per rule class the map depends on: enumerated values (rule 2),
-# owner shape (rule 7), and a dangling edge (rule 1) — the criterion the design
+# Four mutations across three rule classes: two on enumerated values (rule 2,
+# stage and strand, because they are checked against different sets), one on
+# owner shape (rule 7), and one dangling edge (rule 1) — the criterion the design
 # spec names in its success criteria.
 MUTATIONS = [
     ("stage: define", "stage: prototype"),
@@ -1314,7 +1317,7 @@ byte for byte. If it shows as modified, the restore failed: run
 
 ```bash
 git add tests/mutate_check.py
-git commit -m "test: prove --check rejects three classes of malformed entry"
+git commit -m "test: prove --check rejects four classes of malformed entry"
 ```
 
 ---
@@ -2560,7 +2563,21 @@ git push
 - [ ] **Step 6: Confirm the loop closes**
 
 Run: `python -m scripts.refresh && python -m scripts.build && python -m scripts.build --check && git status --short`
-Expected: exit 0 throughout. Any diff should be confined to `data/live.json`, `site/index.html`, and the README's marked block — never to authored prose.
+Expected: exit 0 throughout. The diff should be confined to `data/live.json`,
+`site/index.html`, and the README's marked block — never to authored prose. A
+refresh always rewrites `generated_at`, so a diff here is normal, not a fault.
+
+Commit it, so the published page carries the timestamp the repository claims:
+
+```bash
+git add data/live.json site/index.html README.md
+git commit -m "map: refresh live GitHub data"
+git push
+```
+
+Run: `git status --short`
+Expected: no output. If anything outside those three paths is modified, stop and
+find out what wrote it — nothing but `build.py` and `refresh.py` should.
 
 ---
 

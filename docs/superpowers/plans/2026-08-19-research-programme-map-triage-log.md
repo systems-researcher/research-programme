@@ -90,3 +90,26 @@ Inflation rate: 0% (0 FP/Recurring/Design of 1 CRITICAL+MAJOR)
 Validation: PASS — clean rebuild from the plan: 42 tests pass (18/18/6), `--check` prints the stated line verbatim, four mutations bite, link audit reports 10 URLs across 2 allowed hosts.
 
 Note: two of Round 4's four findings were regressions introduced by Round 3's own fixes, both in prose rather than code. That is the failure mode the Phase 3 post-fix self-check exists to catch, and it caught neither.
+
+## Round 5 Summary
+
+| Finding | Lens | Severity | Verdict | Action |
+|---------|------|----------|---------|--------|
+| File-structure table says mapdata.py loads data/live.json; build.py does | Auditor | ADV | Genuine | Fixed both rows, and stated why: validation must not depend on network-derived data |
+| MUTATIONS comment claims one per rule class and names three, but the list holds four | Auditor | ADV | Genuine | Reworded to four mutations across three rule classes; commit message corrected too |
+| LICENSE.md asserts every file carries an SPDX identifier; empty and generated files do not | Auditor | ADV | Genuine | Claim narrowed to files that carry content, naming the exceptions |
+| Task 9's closing loop restamps generated_at but no step commits or pushes the result | Saboteur | ADV | Genuine | Fixed: commit-and-push added, with a clean `git status` as the closing assertion |
+
+Lens coverage: saboteur 1, new_hire 0, auditor 3.
+Fixes applied: 4
+Inflation rate: 0% (no CRITICAL or MAJOR raised)
+Validation: PASS — clean rebuild: 42 tests (18/18/6), `--check` verbatim, four mutations bite, 10 URLs across 2 allowed hosts.
+
+## Converged — Round 5
+
+Track 1: Reviewer returned NO_CRITICAL_OR_MAJOR, with the New Hire lens honestly reporting 0.
+Total rounds: 5  |  Total fixes: 40 (37 reviewer findings + 3 author self-catches)
+Cumulative severity: 3 CRITICAL, 8 MAJOR, 26 ADVISORY. Every finding across all five rounds triaged Genuine — cumulative inflation 0%.
+Validation at convergence: the repository was reconstructed from the plan's code blocks and executed. 42 tests pass, matching every stated count; `--check` prints the documented line verbatim; four mutations covering three rule classes are all rejected; the link audit reports 10 URLs across 2 allowed hosts; the 23 authored edges classify 16 forward / 5 same-stage / 2 backward, matching the plan's own statement.
+
+Document is ready.
