@@ -114,7 +114,7 @@ repos:
       and an eighteen-row clause trace in CI. The repository exists because
       parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation
       accepting a derivation whose upstream references nothing.
-    depends_on: [epistemic-adequacy-spec, epistemic-adequacy-testing-toolkit]
+    depends_on: [epistemic-adequacy-spec]
 
   # --------------------------------------------------------------- measure ---
 
@@ -234,7 +234,7 @@ repos:
       investigation, an influence-prompt library of seven levers, ensemble
       judging, and an analysis layer. Harness and scenario set are built; the
       runs have not been executed.
-    depends_on: [epistemic-adequacy-probe]
+    depends_on: [epistemic-adequacy-testing-toolkit, epistemic-adequacy-metamodel]
 
   # -------------------------------------------- architecture, write-side ---
 
@@ -255,7 +255,7 @@ repos:
       schemas and a Python admissibility gate in front of the API, evaluated by
       a three-arm harness. The design contract is complete; the gate checks
       still raise NotImplementedError.
-    depends_on: [epistemic-adequacy-spec]
+    depends_on: [epistemic-adequacy-metamodel]
 
   - key: sysml-v2-metadata-graph-Arch-B
     owner: systems-researcher
@@ -275,7 +275,7 @@ repos:
       guarded commit upstream. The design contract is complete; implementation
       has not started. Comparing A against B requires Candidate A deployed and
       runnable alongside it.
-    depends_on: [epistemic-adequacy-spec, SysML-v2-API-Services-Arch-A]
+    depends_on: [SysML-v2-API-Services-Arch-A]
 
   - key: sysml-v2-governed-substrate-Arch-C
     owner: systems-researcher
@@ -297,7 +297,7 @@ repos:
       carrying the second-party review record, with append-only audit history
       held in-store. The design contract is complete; implementation has not
       started.
-    depends_on: [epistemic-adequacy-spec]
+    depends_on: [sysml-v2-metadata-graph-Arch-B]
 
   # ------------------------------------------- method validation strand ---
 
@@ -318,7 +318,7 @@ repos:
       reviewer, so representation is the only factor that varies and reviewer
       skill is held constant, scored on a four-task battery across eight
       substrate variants in three families: document, model, and database.
-    depends_on: [pressure-susceptibility-probe]
+    depends_on: []
 
   - key: ahp-framing-fragility-probe
     owner: local
@@ -337,7 +337,7 @@ repos:
       The same decision run many times over with an AI agent standing in as the
       analyst, varying only cosmetic factors, reported as a flip-rate. The test
       design is written; no harness is built.
-    depends_on: [pressure-susceptibility-probe]
+    depends_on: []
 
   - key: dsm-sequencing-probe
     owner: local

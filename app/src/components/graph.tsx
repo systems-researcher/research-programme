@@ -87,7 +87,14 @@ export function DependencyGraph({
         height={height}
         role="img"
         aria-label="Dependency graph of the twelve studies. Every study it shows is also a tile in the matrix above."
-        className="h-auto w-full min-w-[52rem] max-w-none"
+        // Rendered at its natural size and allowed to scroll, never scaled
+        // to fit: `w-full` shrank a 1800px graph into 1200px, which took the
+        // 10.5px labels down to about 7px and made them unreadable. The
+        // explicit min-width is what makes the parent actually scroll —
+        // without it the SVG shrinks to the container and the last columns
+        // are clipped away with no way to reach them.
+        style={{ minWidth: width }}
+        className="block h-auto max-w-none"
         onMouseLeave={() => setActive(null)}
       >
         <defs>
@@ -96,14 +103,14 @@ export function DependencyGraph({
             viewBox="0 0 8 8"
             refX="7"
             refY="4"
-            markerWidth="6"
-            markerHeight="6"
+            markerWidth="7"
+            markerHeight="7"
             orient="auto-start-reverse"
           >
             {/* A marker is rendered outside the referencing element's
                 context, so currentColor resolves against <defs>, not the
                 edge — which drew the arrowheads invisible. */}
-            <path d="M 0 1 L 7 4 L 0 7 z" className="fill-muted-foreground" />
+            <path d="M 0 1 L 7 4 L 0 7 z" fill="var(--muted-foreground)" />
           </marker>
         </defs>
 
@@ -115,7 +122,9 @@ export function DependencyGraph({
 
             const x1 = a.cx + NODE_W
             const y1 = a.cy + NODE_H / 2
-            const x2 = b.cx
+            // Stop just short of the box: an arrowhead drawn exactly on the
+            // edge is overpainted by the node rendered after it.
+            const x2 = b.cx - 5
             const y2 = b.cy + NODE_H / 2
             // A horizontal-tangent cubic: edges leave and enter side-on, so
             // they never appear to clip the boxes they connect.

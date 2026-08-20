@@ -84,10 +84,6 @@
           ],
           "feeds": [
             {
-              "key": "SysML-v2-API-Services-Arch-A",
-              "linkable": true
-            },
-            {
               "key": "epistemic-adequacy-metamodel",
               "linkable": true
             },
@@ -98,14 +94,6 @@
             {
               "key": "publications",
               "linkable": false
-            },
-            {
-              "key": "sysml-v2-governed-substrate-Arch-C",
-              "linkable": true
-            },
-            {
-              "key": "sysml-v2-metadata-graph-Arch-B",
-              "linkable": true
             }
           ],
           "question": "What must a record expose for the groundedness of a claim — whether it is derived, at what standing, from what origin, with its premises reachable, and how it entered the record — to be decidable by query rather than by judgement?",
@@ -129,13 +117,17 @@
             {
               "key": "epistemic-adequacy-spec",
               "linkable": true
-            },
-            {
-              "key": "epistemic-adequacy-testing-toolkit",
-              "linkable": true
             }
           ],
           "feeds": [
+            {
+              "key": "SysML-v2-API-Services-Arch-A",
+              "linkable": true
+            },
+            {
+              "key": "pressure-susceptibility-probe",
+              "linkable": true
+            },
             {
               "key": "publications",
               "linkable": false
@@ -167,7 +159,7 @@
           ],
           "feeds": [
             {
-              "key": "epistemic-adequacy-metamodel",
+              "key": "pressure-susceptibility-probe",
               "linkable": true
             },
             {
@@ -225,10 +217,6 @@
               "linkable": true
             },
             {
-              "key": "pressure-susceptibility-probe",
-              "linkable": true
-            },
-            {
               "key": "publications",
               "linkable": false
             }
@@ -267,19 +255,15 @@
           ],
           "dependsOn": [
             {
-              "key": "epistemic-adequacy-probe",
+              "key": "epistemic-adequacy-testing-toolkit",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-metamodel",
               "linkable": true
             }
           ],
           "feeds": [
-            {
-              "key": "ahp-framing-fragility-probe",
-              "linkable": true
-            },
-            {
-              "key": "model-vs-document-defect-probe",
-              "linkable": true
-            },
             {
               "key": "publications",
               "linkable": false
@@ -305,7 +289,7 @@
           ],
           "dependsOn": [
             {
-              "key": "epistemic-adequacy-spec",
+              "key": "epistemic-adequacy-metamodel",
               "linkable": true
             }
           ],
@@ -339,10 +323,6 @@
           ],
           "dependsOn": [
             {
-              "key": "epistemic-adequacy-spec",
-              "linkable": true
-            },
-            {
               "key": "SysML-v2-API-Services-Arch-A",
               "linkable": true
             }
@@ -351,6 +331,10 @@
             {
               "key": "publications",
               "linkable": false
+            },
+            {
+              "key": "sysml-v2-governed-substrate-Arch-C",
+              "linkable": true
             }
           ],
           "question": "Does holding the metadata out of the model buy full history and provenance without losing the ability to refuse a write?",
@@ -373,7 +357,7 @@
           ],
           "dependsOn": [
             {
-              "key": "epistemic-adequacy-spec",
+              "key": "sysml-v2-metadata-graph-Arch-B",
               "linkable": true
             }
           ],
@@ -409,12 +393,7 @@
             "design",
             "last commit 2026-07-02"
           ],
-          "dependsOn": [
-            {
-              "key": "pressure-susceptibility-probe",
-              "linkable": true
-            }
-          ],
+          "dependsOn": [],
           "feeds": [
             {
               "key": "publications",
@@ -438,12 +417,7 @@
             "not yet published",
             "design"
           ],
-          "dependsOn": [
-            {
-              "key": "pressure-susceptibility-probe",
-              "linkable": true
-            }
-          ],
+          "dependsOn": [],
           "feeds": [
             {
               "key": "publications",
@@ -560,7 +534,7 @@
         "key": "sysml2-bench",
         "x": 0,
         "y": 0,
-        "column": 3,
+        "column": 5,
         "strand": "adequacy",
         "token": "adequacy"
       },
@@ -568,15 +542,31 @@
         "key": "epistemic-adequacy-probe",
         "x": 0,
         "y": 1,
-        "column": 3,
+        "column": 5,
         "strand": "adequacy",
         "token": "adequacy"
       },
       {
-        "key": "dsm-sequencing-probe",
+        "key": "model-vs-document-defect-probe",
         "x": 0,
         "y": 2,
-        "column": 3,
+        "column": 5,
+        "strand": "method-validation",
+        "token": "method"
+      },
+      {
+        "key": "ahp-framing-fragility-probe",
+        "x": 0,
+        "y": 3,
+        "column": 5,
+        "strand": "method-validation",
+        "token": "method"
+      },
+      {
+        "key": "dsm-sequencing-probe",
+        "x": 0,
+        "y": 4,
+        "column": 5,
         "strand": "method-validation",
         "token": "method"
       },
@@ -584,14 +574,14 @@
         "key": "epistemic-adequacy-spec",
         "x": 1,
         "y": 0,
-        "column": 2,
+        "column": 1,
         "strand": "adequacy",
         "token": "adequacy"
       },
       {
-        "key": "pressure-susceptibility-probe",
-        "x": 1,
-        "y": 1,
+        "key": "epistemic-adequacy-metamodel",
+        "x": 2,
+        "y": 0,
         "column": 2,
         "strand": "adequacy",
         "token": "adequacy"
@@ -599,56 +589,40 @@
       {
         "key": "epistemic-adequacy-testing-toolkit",
         "x": 2,
+        "y": 1,
+        "column": 2,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "pressure-susceptibility-probe",
+        "x": 3,
         "y": 0,
-        "column": 5,
+        "column": 2,
         "strand": "adequacy",
         "token": "adequacy"
       },
       {
         "key": "SysML-v2-API-Services-Arch-A",
-        "x": 2,
-        "y": 1,
-        "column": 5,
-        "strand": "adequacy",
-        "token": "adequacy"
-      },
-      {
-        "key": "sysml-v2-governed-substrate-Arch-C",
-        "x": 2,
-        "y": 2,
-        "column": 5,
-        "strand": "adequacy",
-        "token": "adequacy"
-      },
-      {
-        "key": "model-vs-document-defect-probe",
-        "x": 2,
-        "y": 3,
-        "column": 5,
-        "strand": "method-validation",
-        "token": "method"
-      },
-      {
-        "key": "ahp-framing-fragility-probe",
-        "x": 2,
-        "y": 4,
-        "column": 5,
-        "strand": "method-validation",
-        "token": "method"
-      },
-      {
-        "key": "epistemic-adequacy-metamodel",
         "x": 3,
-        "y": 0,
+        "y": 1,
         "column": 2,
         "strand": "adequacy",
         "token": "adequacy"
       },
       {
         "key": "sysml-v2-metadata-graph-Arch-B",
-        "x": 3,
-        "y": 1,
-        "column": 2,
+        "x": 4,
+        "y": 0,
+        "column": 1,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "sysml-v2-governed-substrate-Arch-C",
+        "x": 5,
+        "y": 0,
+        "column": 1,
         "strand": "adequacy",
         "token": "adequacy"
       }
@@ -663,43 +637,31 @@
         "to": "epistemic-adequacy-metamodel"
       },
       {
-        "from": "epistemic-adequacy-testing-toolkit",
-        "to": "epistemic-adequacy-metamodel"
-      },
-      {
         "from": "epistemic-adequacy-spec",
         "to": "epistemic-adequacy-testing-toolkit"
       },
       {
-        "from": "epistemic-adequacy-probe",
+        "from": "epistemic-adequacy-testing-toolkit",
         "to": "pressure-susceptibility-probe"
       },
       {
-        "from": "epistemic-adequacy-spec",
-        "to": "SysML-v2-API-Services-Arch-A"
+        "from": "epistemic-adequacy-metamodel",
+        "to": "pressure-susceptibility-probe"
       },
       {
-        "from": "epistemic-adequacy-spec",
-        "to": "sysml-v2-metadata-graph-Arch-B"
+        "from": "epistemic-adequacy-metamodel",
+        "to": "SysML-v2-API-Services-Arch-A"
       },
       {
         "from": "SysML-v2-API-Services-Arch-A",
         "to": "sysml-v2-metadata-graph-Arch-B"
       },
       {
-        "from": "epistemic-adequacy-spec",
+        "from": "sysml-v2-metadata-graph-Arch-B",
         "to": "sysml-v2-governed-substrate-Arch-C"
-      },
-      {
-        "from": "pressure-susceptibility-probe",
-        "to": "model-vs-document-defect-probe"
-      },
-      {
-        "from": "pressure-susceptibility-probe",
-        "to": "ahp-framing-fragility-probe"
       }
     ],
-    "columns": 4
+    "columns": 6
   },
   "refreshedAt": "2026-08-20T11:29:58+00:00"
 }
