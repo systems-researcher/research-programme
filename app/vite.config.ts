@@ -12,12 +12,12 @@ export default defineConfig({
   build: { outDir: "../site", emptyOutDir: true },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(import.meta.dirname, "./src"),
       // The generated payload is imported from its canonical location so
       // there is exactly one map.json in the repository. Copying it into
       // src/ would let the app drift from what `python -m scripts.build`
       // last wrote.
-      "@data": path.resolve(__dirname, "../data"),
+      "@data": path.resolve(import.meta.dirname, "../data"),
     },
   },
 })

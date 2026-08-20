@@ -1,0 +1,84 @@
+# Copyright (c) 2026 Jason D. Gower
+# SPDX-License-Identifier: MIT
+name: check
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  data:
+    name: repos.yml and the payload
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # The nine validation rules, before anything is generated from the file.
+      - name: Validate repos.yml
+        run: python -m scripts.build --check
+
+      - name: Tests
+        run: python -m pytest -q
+
+      # Not collected by pytest (it is check_*, not test_*), so it needs
+      # naming here or it silently stops running again.
+      - name: Validator bites on malformed entries
+        run: python tests/mutate_check.py
+
+      # repos.yml is the source of truth but data/map.json is what ships.
+      # Rebuilding and diffing is the only thing that catches a repos.yml edit
+      # committed without its regenerated payload — the page would quietly
+      # serve stale content with every other check green.
+      - name: data/map.json and the README table are current
+        run: |
+          python -m scripts.build
+          if ! git diff --quiet -- data/map.json README.md; then
+            echo "::error::data/map.json or the README table is stale."
+            echo "Run 'python -m scripts.build' and commit the result."
+            git diff --stat -- data/map.json README.md
+            exit 1
+          fi
+          echo "generated files match repos.yml"
+
+  site:
+    name: the page builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      # npm ci, not npm install: it installs the locked tree and fails on a
+      # lockfile that has drifted from package.json, which is what the
+      # deployment build would hit.
+      - run: npm ci
+        working-directory: app
+
+      # tsc -b runs first inside this script, so a type error fails here.
+      - run: npm run build
+        working-directory: app
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # Fonts are bundled and Mermaid is an npm dependency precisely so the
+      # page contacts nothing but github.com. This is what keeps that true.
+      - name: The built page fetches nothing off-origin
+        run: python tests/check_external_links.py
