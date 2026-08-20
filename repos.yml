@@ -51,14 +51,15 @@ strands:
       already relies on.
   assembly:
     title: "Assembly"
-    subtitle: "Where the findings are written up."
+    subtitle: >
+      Where the findings enter the written record, one report per study.
 
 stages:
   define: "What a record must expose, and how that binds to SysML v2."
   measure: "The instruments that turn the definition into a number."
   evidence: "What the instruments have actually measured."
   architecture: "Candidate substrates that enforce it on the write side."
-  assembly: "Where it is written up."
+  assembly: "The frozen report for each study, and the papers."
 
 repos:
 
@@ -358,14 +359,15 @@ repos:
 
   # -------------------------------------------------------------- assembly ---
 
-  - key: Thesis-Work-Area
+  - key: publications
     owner: systems-researcher
     strand: assembly
     stage: assembly
     render: node-only
     status: not-applicable
     objective: >
-      Where the programme's findings are written up as the doctoral thesis.
+      The written column of the programme: one frozen report per study, and
+      the author's copy of every paper. Venues hold the public copy.
     question: >
       Not applicable: this is the destination, not a study.
     method: >

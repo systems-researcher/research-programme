@@ -11,7 +11,7 @@ import type { Entry } from "@/lib/map"
  * place that decides whether a DOI is safe to link. */
 export function Publications({ entries }: { entries: Entry[] }) {
   const papers = entries.filter((entry) => entry.paper)
-  // The thesis terminus is not a study, so it is not part of the denominator.
+  // The written column is not a study, so it is not part of the denominator.
   const studies = entries.filter((entry) => entry.card)
 
   return (

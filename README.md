@@ -45,7 +45,7 @@ optimal order.
 | `model-vs-document-defect-probe` | evidence | design | Measures MBSE's flagship claim head-on: does a single connected system model let a reviewer catch more defects than an information-equivalent set of documents? |
 | `ahp-framing-fragility-probe` | evidence | design | Tests whether a structured trade study gives a stable answer, or whether the winner silently depends on things that should not matter: the order the criteria were listed in, how they were worded, or the presence of irrelevant decoy options. |
 | `dsm-sequencing-probe` | evidence | design | Tests whether the Design Structure Matrix actually produces the best task order, measured against a mathematically optimal answer a computer can calculate exactly. |
-| `Thesis-Work-Area` | assembly | not-applicable | Where the programme's findings are written up as the doctoral thesis. |
+| `publications` | assembly | not-applicable | The written column of the programme: one frozen report per study, and the author's copy of every paper. Venues hold the public copy. |
 
 <!-- END:repos -->
 

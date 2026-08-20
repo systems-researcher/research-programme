@@ -129,7 +129,7 @@ export default function App() {
               Select a repository for its question, method, and dependencies.
             </p>
           </div>
-          <Matrix strands={strands} stages={stages} onOpen={openEntry} />
+          <Matrix strands={strands} stages={stages} statuses={statuses} onOpen={openEntry} />
         </section>
 
         <Legend statuses={statuses} counts={byStatus} />

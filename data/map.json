@@ -2,13 +2,13 @@
   "statuses": [
     {
       "id": "design",
-      "label": "design stage",
+      "label": "design",
       "note": "Written down and specified. No code that runs yet."
     },
     {
       "id": "built-runs-pending",
-      "label": "built, runs pending",
-      "note": "The instrument exists and executes. It has not been run for record."
+      "label": "built",
+      "note": "The instrument exists and runs. Not yet run for record."
     },
     {
       "id": "released",
@@ -17,7 +17,7 @@
     },
     {
       "id": "results",
-      "label": "results in hand",
+      "label": "results",
       "note": "Run for record. The numbers are in hand and being read."
     },
     {
@@ -55,7 +55,7 @@
     {
       "id": "assembly",
       "title": "Assembly",
-      "note": "Where it is written up."
+      "note": "The frozen report for each study, and the papers."
     }
   ],
   "strands": [
@@ -94,16 +94,16 @@
               "linkable": true
             },
             {
-              "key": "Thesis-Work-Area",
-              "linkable": false
-            },
-            {
               "key": "epistemic-adequacy-metamodel",
               "linkable": true
             },
             {
               "key": "epistemic-adequacy-testing-toolkit",
               "linkable": true
+            },
+            {
+              "key": "publications",
+              "linkable": false
             },
             {
               "key": "sysml-v2-governed-substrate-Arch-C",
@@ -123,7 +123,7 @@
           "url": null,
           "badges": [
             "not yet published",
-            "design stage"
+            "design"
           ],
           "question": "Can the eighteen clauses be expressed as SysML v2 metadata that a tool actually checks on a real model, and what does the existing binding lack for that to be true?",
           "method": "One hand-edited schema generates both an OWL 2 plus SHACL ontology and the SysML v2 library, with reader, resolver, and extractor stages emitting the toolkit's canonical claim graph. Correctness is pinned by a bare-versus- annotated Apollo reference pair under a stated profile regression contract and an eighteen-row clause trace in CI. The repository exists because parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation accepting a derivation whose upstream references nothing.",
@@ -143,7 +143,7 @@
           ],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
+              "key": "publications",
               "linkable": false
             }
           ]
@@ -156,7 +156,7 @@
           "url": "https://github.com/systems-researcher/epistemic-adequacy-testing-toolkit",
           "badges": [
             "private",
-            "built, runs pending",
+            "built",
             "last commit 2026-08-19"
           ],
           "question": "Does this substrate satisfy the clauses, at which conformance profile, and does the measured adequacy change what an AI consumer says?",
@@ -173,12 +173,12 @@
           ],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
-              "linkable": false
-            },
-            {
               "key": "epistemic-adequacy-metamodel",
               "linkable": true
+            },
+            {
+              "key": "publications",
+              "linkable": false
             }
           ]
         },
@@ -190,7 +190,7 @@
           "url": "https://github.com/systems-researcher/sysml2-bench",
           "badges": [
             "private",
-            "built, runs pending",
+            "built",
             "last commit 2026-06-11"
           ],
           "question": "How competent are current models at SysML v2 itself, independent of any epistemic metadata, and how often do they confabulate on items that have no answer?",
@@ -202,7 +202,7 @@
           "dependsOn": [],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
+              "key": "publications",
               "linkable": false
             }
           ]
@@ -241,16 +241,16 @@
           "dependsOn": [],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
-              "linkable": false
-            },
-            {
               "key": "epistemic-adequacy-spec",
               "linkable": true
             },
             {
               "key": "pressure-susceptibility-probe",
               "linkable": true
+            },
+            {
+              "key": "publications",
+              "linkable": false
             }
           ]
         },
@@ -262,7 +262,7 @@
           "url": "https://github.com/systems-researcher/pressure-susceptibility-probe",
           "badges": [
             "private",
-            "built, runs pending",
+            "built",
             "last commit 2026-07-30"
           ],
           "question": "How much does social and operational pressure raise the rate of ungrounded engineering answers, and which kinds of pressure do most of the damage?",
@@ -279,16 +279,16 @@
           ],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
-              "linkable": false
-            },
-            {
               "key": "ahp-framing-fragility-probe",
               "linkable": true
             },
             {
               "key": "model-vs-document-defect-probe",
               "linkable": true
+            },
+            {
+              "key": "publications",
+              "linkable": false
             }
           ]
         },
@@ -300,7 +300,7 @@
           "url": "https://github.com/systems-researcher/SysML-v2-API-Services-Arch-A",
           "badges": [
             "private",
-            "design stage",
+            "design",
             "last commit 2026-07-06"
           ],
           "question": "Can a conforming record be enforced inside the standard SysML v2 API service itself, with no second store to keep in step?",
@@ -317,7 +317,7 @@
           ],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
+              "key": "publications",
               "linkable": false
             },
             {
@@ -334,7 +334,7 @@
           "url": "https://github.com/systems-researcher/sysml-v2-metadata-graph-Arch-B",
           "badges": [
             "private",
-            "design stage",
+            "design",
             "last commit 2026-07-06"
           ],
           "question": "Does holding the metadata out of the model buy full history and provenance without losing the ability to refuse a write?",
@@ -355,7 +355,7 @@
           ],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
+              "key": "publications",
               "linkable": false
             }
           ]
@@ -368,7 +368,7 @@
           "url": "https://github.com/systems-researcher/sysml-v2-governed-substrate-Arch-C",
           "badges": [
             "private",
-            "design stage",
+            "design",
             "last commit 2026-07-06"
           ],
           "question": "If the substrate is governed natively, can the authoritative record and the AI-authored companion be two namespaces of one engine, with promotion between them in a single transaction?",
@@ -385,7 +385,7 @@
           ],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
+              "key": "publications",
               "linkable": false
             }
           ]
@@ -406,7 +406,7 @@
           "url": "https://github.com/systems-researcher/model-vs-document-defect-probe",
           "badges": [
             "private",
-            "design stage",
+            "design",
             "last commit 2026-07-02"
           ],
           "question": "Which substrate and tooling combination lets an AI agent best manage a model — query it, edit it, trace through it, and find its defects?",
@@ -423,7 +423,7 @@
           ],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
+              "key": "publications",
               "linkable": false
             }
           ]
@@ -436,7 +436,7 @@
           "url": null,
           "badges": [
             "not yet published",
-            "design stage"
+            "design"
           ],
           "question": "How often does a trade study's chosen winner flip under perturbations that carry no decision-relevant information?",
           "method": "The same decision run many times over with an AI agent standing in as the analyst, varying only cosmetic factors, reported as a flip-rate. The test design is written; no harness is built.",
@@ -452,7 +452,7 @@
           ],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
+              "key": "publications",
               "linkable": false
             }
           ]
@@ -465,7 +465,7 @@
           "url": null,
           "badges": [
             "not yet published",
-            "design stage"
+            "design"
           ],
           "question": "How far from optimal is a DSM-derived task ordering, and when it is wrong, did the method fail or did the analyst build the wrong matrix?",
           "method": "The agent's ordering is scored against the provably minimal-feedback ordering produced by a known graph algorithm, split by whether the agent also had to elicit the matrix or was handed it clean, across several models. The test design is written; no harness is built.",
@@ -476,7 +476,7 @@
           "dependsOn": [],
           "feeds": [
             {
-              "key": "Thesis-Work-Area",
+              "key": "publications",
               "linkable": false
             }
           ]
@@ -487,13 +487,13 @@
       "id": "assembly",
       "token": "assembly",
       "title": "Assembly",
-      "subtitle": "Where the findings are written up.",
+      "subtitle": "Where the findings enter the written record, one report per study.",
       "entries": [
         {
-          "key": "Thesis-Work-Area",
+          "key": "publications",
           "stage": "assembly",
           "card": false,
-          "objective": "Where the programme's findings are written up as the doctoral thesis."
+          "objective": "The written column of the programme: one frozen report per study, and the author's copy of every paper. Venues hold the public copy."
         }
       ]
     }

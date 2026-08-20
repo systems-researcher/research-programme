@@ -28,7 +28,7 @@ STATUSES = (
 RENDERS = ("card", "node-only")
 REQUIRED = ("key", "owner", "strand", "stage", "objective", "question", "method", "status")
 RESULT_STATUSES = ("results", "published")
-TERMINUS = "Thesis-Work-Area"
+TERMINUS = "publications"
 OWNER_RE = re.compile(r"^[A-Za-z0-9-]+$")
 
 
@@ -131,7 +131,7 @@ def _rule_2_enumerated_values(data: MapData) -> list[str]:
 
 def _rule_4_terminus_supplies_nothing(data: MapData) -> list[str]:
     return [
-        f"{entry.get('key')}: depends_on names {TERMINUS}; the thesis consumes, it never supplies"
+        f"{entry.get('key')}: depends_on names {TERMINUS}; the written column consumes, it never supplies"
         for entry in data.repos
         if TERMINUS in entry.get("depends_on", [])
     ]

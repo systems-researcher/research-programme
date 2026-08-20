@@ -238,9 +238,39 @@ def test_live_visibility_and_push_date_are_carried_as_badges() -> None:
 
 
 def test_status_is_badged_in_words_not_in_its_slug() -> None:
+    """The badge says what the reader sees in the legend, not the enum key."""
     payload = render.payload(data_with(entry(status="built-runs-pending")), LIVE_EMPTY)
 
-    assert "built, runs pending" in find(payload, "alpha")["badges"]
+    badges = find(payload, "alpha")["badges"]
+
+    assert "built" in badges
+    assert "built-runs-pending" not in badges
+
+
+def test_a_status_label_is_one_word_so_a_cell_and_the_legend_can_share_it() -> None:
+    """The cell showed "design" while the legend said "design stage", which
+    read as two vocabularies for one thing. The fix was one label used in both
+    places — which only works while the label fits in a cell.
+
+    A multi-word label would push the matrix back into abbreviating, and the
+    two vocabularies would silently diverge again. The explanation belongs in
+    STATUS_NOTES, which the legend shows and the cell does not.
+    """
+    for status, label in render.STATUS_LABELS.items():
+        if not label:
+            continue
+        assert " " not in label and "," not in label, (
+            f"{status}: label {label!r} will not fit a matrix cell; "
+            "put the explanation in STATUS_NOTES instead"
+        )
+
+
+def test_every_labelled_status_explains_itself_in_the_legend() -> None:
+    """The cell shows the word; the legend is the only place that says what
+    the word means, so a state without a note is undocumented."""
+    for status in mapdata.STATUSES:
+        if render.STATUS_LABELS[status]:
+            assert render.STATUS_NOTES.get(status), f"{status} has no explanation"
 
 
 def test_headline_is_carried_with_its_source() -> None:

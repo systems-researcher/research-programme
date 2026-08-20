@@ -3,7 +3,7 @@
 import { Fragment } from "react"
 import { BookOpen, ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { Entry, Stage, Strand } from "@/lib/map"
+import type { Entry, Stage, Status, Strand } from "@/lib/map"
 
 /** The programme as a stage x strand matrix.
  *
@@ -17,30 +17,24 @@ import type { Entry, Stage, Strand } from "@/lib/map"
  * supervisor reads this page to get. Empty cells are rendered, never
  * collapsed, or the finding disappears. */
 
-const SHORT_STATUS: Record<string, string> = {
-  "design stage": "design",
-  "built, runs pending": "built",
-  released: "released",
-  "results in hand": "results",
-  published: "published",
-}
-
 /** The one badge a cell has room for. Visibility and commit date are detail,
- *  and live in the sheet; status is what a reader scans the grid for. */
-function cellStatus(entry: Entry): string | null {
-  for (const badge of entry.badges ?? []) {
-    if (badge in SHORT_STATUS) return SHORT_STATUS[badge]
-  }
-  return null
+ *  and live in the sheet; status is what a reader scans the grid for.
+ *
+ *  The label is whatever the payload's status vocabulary calls it, so the
+ *  cell and the legend below always read the same word. */
+function cellStatus(entry: Entry, vocabulary: Set<string>): string | null {
+  return (entry.badges ?? []).find((badge) => vocabulary.has(badge)) ?? null
 }
 
 function Cell({
   entries,
   strand,
+  vocabulary,
   onOpen,
 }: {
   entries: Entry[]
   strand: Strand
+  vocabulary: Set<string>
   onOpen: (entry: Entry) => void
 }) {
   if (!entries.length) {
@@ -55,7 +49,7 @@ function Cell({
     <td className="border-b border-l border-border p-1.5 align-top">
       <div className="flex flex-col gap-1.5">
         {entries.map((entry) => {
-          const status = cellStatus(entry)
+          const status = cellStatus(entry, vocabulary)
           return (
             <button
               key={entry.key}
@@ -110,12 +104,16 @@ function Cell({
 export function Matrix({
   strands,
   stages,
+  statuses,
   onOpen,
 }: {
   strands: Strand[]
   stages: Stage[]
+  statuses: Status[]
   onOpen: (entry: Entry) => void
 }) {
+  const vocabulary = new Set(statuses.map((status) => status.label))
+
   return (
     // Five columns cannot fit a phone. Rather than inventing a second layout,
     // the table scrolls sideways with the strand column pinned, so the matrix
@@ -179,6 +177,7 @@ export function Matrix({
                   <Cell
                     key={stage.id}
                     strand={strand}
+                    vocabulary={vocabulary}
                     entries={strand.entries.filter((e) => e.stage === stage.id)}
                     onOpen={onOpen}
                   />

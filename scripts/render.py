@@ -29,11 +29,16 @@ STRAND_TOKEN = {
 # code released, its runs produce results, and the result is published. The
 # page relies on that order for the legend, so it is stated here rather than
 # left as an accident of how the tuple was typed.
+# One label per status, used verbatim by both the matrix cell and the legend.
+# They used to differ — cells said "design", the legend said "design stage" —
+# which read as two vocabularies for one thing. A cell has room for a single
+# word, so the label IS the single word and the legend carries the
+# explanation in STATUS_NOTES instead.
 STATUS_LABELS = {
-    "design": "design stage",
-    "built-runs-pending": "built, runs pending",
+    "design": "design",
+    "built-runs-pending": "built",
     "released": "released",
-    "results": "results in hand",
+    "results": "results",
     "published": "published",
     "not-applicable": "",
 }
@@ -43,7 +48,7 @@ STATUS_LABELS = {
 # badge", the note answers "what has actually happened to the study".
 STATUS_NOTES = {
     "design": "Written down and specified. No code that runs yet.",
-    "built-runs-pending": "The instrument exists and executes. It has not been run for record.",
+    "built-runs-pending": "The instrument exists and runs. Not yet run for record.",
     "released": "Tagged and versioned. Others can depend on it.",
     "results": "Run for record. The numbers are in hand and being read.",
     "published": "The result is in the written record, in a venue or a frozen report.",
