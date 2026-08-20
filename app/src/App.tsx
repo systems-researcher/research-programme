@@ -5,6 +5,7 @@ import { Monitor, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Detail } from "@/components/detail"
 import { DependencyGraph } from "@/components/graph"
+import { GetInvolved } from "@/components/involved"
 import { Legend } from "@/components/legend"
 import { Matrix } from "@/components/matrix"
 import { Publications } from "@/components/publications"
@@ -149,10 +150,19 @@ export default function App() {
 
         <Publications entries={all} />
 
+        <GetInvolved />
+
         <footer className="border-t border-border pt-6 text-xs text-muted-foreground">
           {refreshedAt && <p>Live repository data last refreshed {refreshedAt}.</p>}
           <p className="mt-1">
-            Repositories marked private are readable on request: contact the author.
+            Repositories marked private are readable on request — see{" "}
+            <a
+              href="#involved"
+              className="underline decoration-border underline-offset-4 hover:decoration-foreground"
+            >
+              Get involved
+            </a>
+            .
           </p>
         </footer>
       </main>
