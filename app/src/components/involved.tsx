@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Jason D. Gower
 // SPDX-License-Identifier: MIT
-import { GitPullRequest, Mail, Lock } from "lucide-react"
+import { Mail, Lock } from "lucide-react"
 
 /** How to make contact.
  *
@@ -13,7 +13,6 @@ import { GitPullRequest, Mail, Lock } from "lucide-react"
  * not a directory of everyone connected to the work. */
 
 const EMAIL = "J.Gower@lboro.ac.uk"
-const REPO = "https://github.com/systems-researcher/research-programme"
 
 function mailto(subject: string, body: string): string {
   return `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
@@ -22,9 +21,9 @@ function mailto(subject: string, body: string): string {
 const ROUTES = [
   {
     icon: Lock,
-    title: "Read a private study",
-    body: "Most of these repositories are private while the work is in progress. Say which one and what you are looking for, and I will share it.",
-    action: "Request access",
+    title: "Read a study",
+    body: "Most of these repositories stay private while the work is in progress. Tell me which one interests you and what you are looking for, and I will open it up.",
+    action: "Ask for access",
     href: mailto(
       "Research programme: access request",
       "Which repository, and what you would like to see:\n\n",
@@ -32,20 +31,13 @@ const ROUTES = [
   },
   {
     icon: Mail,
-    title: "Collaborate on the research",
-    body: "If any of these questions overlaps something you are working on \u2014 in systems engineering, MBSE, or AI evaluation \u2014 I would like to hear about it.",
-    action: "Get in touch",
+    title: "Work on it together",
+    body: "If one of these questions overlaps something you are working on, or you think a study is asking the wrong thing, I would like to hear from you.",
+    action: "Start a conversation",
     href: mailto(
       "Research programme: collaboration",
       "What you are working on, and where it overlaps:\n\n",
     ),
-  },
-  {
-    icon: GitPullRequest,
-    title: "Contribute to this map",
-    body: "The map itself is open source. Corrections, issues, and pull requests are welcome, and need no prior arrangement.",
-    action: "Open an issue",
-    href: `${REPO}/issues`,
   },
 ]
 
@@ -61,7 +53,7 @@ export function GetInvolved() {
         </p>
       </div>
 
-      <ul className="grid gap-px overflow-hidden rounded-md border border-border bg-border md:grid-cols-3">
+      <ul className="grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2">
         {ROUTES.map((route) => (
           <li key={route.title} className="flex flex-col bg-card p-4">
             <route.icon

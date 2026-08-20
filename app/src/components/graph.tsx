@@ -20,6 +20,18 @@ import type { Entry, Graph, GraphNode } from "@/lib/map"
 // identifier a reader may need to go and find, so it is never truncated.
 const NODE_W = 242
 const NODE_H = 44
+
+/** Where on a node's edge an arrow attaches.
+ *
+ * A single connection uses the vertical centre. Several share the height
+ * between them, kept inside the middle two thirds so an arrow never touches
+ * a corner. Without this, two edges into one box land on the same pixel and
+ * read as a single line. */
+function port(index: number, count: number): number {
+  if (count <= 1) return NODE_H / 2
+  const usable = NODE_H * 0.66
+  return NODE_H / 2 - usable / 2 + (usable * index) / (count - 1)
+}
 const GAP_X = 64
 const GAP_Y = 14
 const PAD = 14
@@ -66,6 +78,57 @@ export function DependencyGraph({
 
   // Everything the active node touches, in either direction, so hovering a
   // study shows its whole neighbourhood rather than only what it feeds.
+  // Which edges leave and enter each node, ordered by where the other end
+  // sits vertically. Sorting here is what stops the fanned ports crossing:
+  // the topmost target gets the topmost port.
+  const { outgoing, incoming } = useMemo(() => {
+    const out = new Map<string, string[]>()
+    const inc = new Map<string, string[]>()
+    for (const edge of graph.edges) {
+      out.set(edge.from, [...(out.get(edge.from) ?? []), edge.to])
+      inc.set(edge.to, [...(inc.get(edge.to) ?? []), edge.from])
+    }
+    const byRow = (a: string, b: string) =>
+      (placed.get(a)?.cy ?? 0) - (placed.get(b)?.cy ?? 0)
+    for (const list of out.values()) list.sort(byRow)
+    for (const list of inc.values()) list.sort(byRow)
+    return { outgoing: out, incoming: inc }
+  }, [graph.edges, placed])
+
+  // Where to bow an edge that skips a column, so it passes through the gap
+  // between rows rather than across the box sitting in its way. Returns null
+  // when the straight cubic is already clear.
+  const detourFor = useMemo(() => {
+    const nodes = [...placed.values()]
+    return (
+      edge: { from: string; to: string },
+      a: { cx: number; cy: number },
+      b: { cx: number; cy: number },
+    ) => {
+      const midX = (a.cx + NODE_W + b.cx) / 2
+      const blocking = nodes.filter(
+        (n) =>
+          n.node.key !== edge.from &&
+          n.node.key !== edge.to &&
+          n.cx < midX + NODE_W / 2 &&
+          n.cx + NODE_W > midX - NODE_W / 2,
+      )
+      if (!blocking.length) return null
+
+      const midY = (a.cy + b.cy) / 2 + NODE_H / 2
+      const hits = blocking.filter(
+        (n) => midY > n.cy - GAP_Y && midY < n.cy + NODE_H + GAP_Y,
+      )
+      if (!hits.length) return null
+
+      // Clear the obstacle on whichever side is nearer, so the detour stays
+      // as small as the geometry allows.
+      const top = Math.min(...hits.map((n) => n.cy)) - GAP_Y
+      const bottom = Math.max(...hits.map((n) => n.cy + NODE_H)) + GAP_Y
+      return { x: midX, y: midY - top < bottom - midY ? top : bottom }
+    }
+  }, [placed])
+
   const related = useMemo(() => {
     if (!active) return null
     const keep = new Set<string>([active])
@@ -120,21 +183,42 @@ export function DependencyGraph({
             const b = placed.get(edge.to)
             if (!a || !b) return null
 
+            // Fan the ports. Every edge used to leave and enter at the node's
+            // vertical centre, so two edges into the same box arrived on the
+            // same pixel and looked like one line. Each edge gets its own
+            // slot, ordered by where the other end sits, so they arrive in
+            // the same order they come from and never cross needlessly.
+            const outIndex = outgoing.get(edge.from)?.indexOf(edge.to) ?? 0
+            const outCount = outgoing.get(edge.from)?.length ?? 1
+            const inIndex = incoming.get(edge.to)?.indexOf(edge.from) ?? 0
+            const inCount = incoming.get(edge.to)?.length ?? 1
+
             const x1 = a.cx + NODE_W
-            const y1 = a.cy + NODE_H / 2
+            const y1 = a.cy + port(outIndex, outCount)
             // Stop just short of the box: an arrowhead drawn exactly on the
             // edge is overpainted by the node rendered after it.
             const x2 = b.cx - 5
-            const y2 = b.cy + NODE_H / 2
+            const y2 = b.cy + port(inIndex, inCount)
             // A horizontal-tangent cubic: edges leave and enter side-on, so
             // they never appear to clip the boxes they connect.
             const bend = Math.max(28, (x2 - x1) * 0.45)
             const lit = !related || (related.has(edge.from) && related.has(edge.to))
 
+            // An edge that skips a column would otherwise run straight
+            // through whatever sits in the column between. Bow it into the
+            // gutter above or below that row instead, whichever is nearer.
+            const detour = detourFor(edge, a, b)
+            // Both control points are lifted to the gutter height rather than
+            // the curve being forced through a waypoint: the line clears the
+            // obstacle without the long overshoot a hard waypoint produced.
+            const c1y = detour ? (y1 + detour.y) / 2 : y1
+            const c2y = detour ? (y2 + detour.y) / 2 : y2
+            const d = `M ${x1} ${y1} C ${x1 + bend} ${c1y}, ${x2 - bend} ${c2y}, ${x2} ${y2}`
+
             return (
               <path
                 key={`${edge.from}->${edge.to}`}
-                d={`M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`}
+                d={d}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={related && lit ? 1.75 : 1.25}
