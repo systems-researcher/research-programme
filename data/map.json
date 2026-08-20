@@ -363,10 +363,11 @@
           "stage": "evidence",
           "card": true,
           "objective": "Crosses the two effects the programme has established separately: that epistemic metadata reduces ungrounded answers, and that pressure increases them. It asks whether the protection survives the pressure.",
-          "url": null,
+          "url": "https://github.com/systems-researcher/epistemic-adequacy-under-pressure-probe",
           "badges": [
-            "not yet published",
-            "design"
+            "private",
+            "design",
+            "last commit 2026-08-20"
           ],
           "dependsOn": [
             {
@@ -833,5 +834,5 @@
     ],
     "columns": 6
   },
-  "refreshedAt": "2026-08-20T17:14:08+00:00"
+  "refreshedAt": "2026-08-20T17:45:58+00:00"
 }
