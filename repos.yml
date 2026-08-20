@@ -117,7 +117,7 @@ repos:
     depends_on: [epistemic-adequacy-spec, admissibility-spec]
 
   - key: admissibility-spec
-    owner: local
+    owner: systems-researcher
     strand: adequacy
     stage: define
     status: design

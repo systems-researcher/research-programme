@@ -153,10 +153,11 @@
           "stage": "define",
           "card": true,
           "objective": "The write-side counterpart to the epistemic adequacy specification: what an AI-authored contribution must carry, and what conditions a substrate must check, before that contribution may enter the authoritative engineering record.",
-          "url": null,
+          "url": "https://github.com/systems-researcher/admissibility-spec",
           "badges": [
-            "not yet published",
-            "design"
+            "private",
+            "design",
+            "last commit 2026-08-20"
           ],
           "dependsOn": [
             {
@@ -832,5 +833,5 @@
     ],
     "columns": 6
   },
-  "refreshedAt": "2026-08-20T11:29:58+00:00"
+  "refreshedAt": "2026-08-20T17:14:08+00:00"
 }
