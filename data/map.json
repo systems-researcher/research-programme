@@ -363,7 +363,7 @@
           "key": "epistemic-adequacy-under-pressure-probe",
           "stage": "evidence",
           "card": true,
-          "objective": "Crosses the two effects the programme has established separately: that epistemic metadata reduces ungrounded answers, and that pressure increases them. It asks whether the protection survives the pressure.",
+          "objective": "Widens the one governed-and-pressed cell the adequacy probe already ran into a designed two-by-two. That cell — 5 of 15 ungrounded, 33%, against 60% bare — was a completion run over five questions at one pressure lever, and it is the whole of what the programme knows about metadata under pressure.",
           "url": "https://github.com/systems-researcher/epistemic-adequacy-under-pressure-probe",
           "badges": [
             "private",
@@ -382,7 +382,7 @@
           ],
           "feeds": [],
           "question": "Does the protection epistemic metadata gives against ungrounded engineering answers hold when the work pushes on the AI consumer, and by how much is it eroded under deadline, seniority, and false-premise pressure?",
-          "method": "A two-by-two design — governed against ungoverned record, calm against pressed instruction — reusing the influence-prompt library from the pressure susceptibility probe and the annotated sidecar from the metamodel, so neither factor is newly invented here. Reported as the ungrounded-answer rate per cell and, as the headline, how much of the metadata's benefit remains once pressure is applied.",
+          "method": "A two-by-two design — governed against ungoverned record, calm against pressed instruction — reusing the influence-prompt library from the pressure susceptibility probe and the annotated sidecar from the metamodel, so neither factor is newly invented here. The published governed-pressed cell is one lever over five questions; this varies the lever and widens the question set, so the 33% can be read as an estimate rather than a single observation. Reported as the ungrounded-answer rate per cell and, as the headline, how much of the metadata's benefit remains once pressure is applied.",
           "headline": null,
           "output": null,
           "site": null,

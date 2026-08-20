@@ -1,13 +1,15 @@
 // Copyright (c) 2026 Jason D. Gower
 // SPDX-License-Identifier: MIT
-import { Mail, Lock } from "lucide-react"
+import { GitPullRequest, Mail, Lock } from "lucide-react"
 
 /** How to make contact.
  *
  * The page tells a reader that private repositories are readable on request
  * and, until this section existed, gave them no way to make one. Three routes
  * because "collaborate" means three different things: read a study that is
- * closed, work on the research together, or contribute to this map.
+ * closed, work on the research together, or contribute to this map — and only
+ * the last of those needs no prior arrangement, because the map is the one
+ * public repository.
  *
  * One address, deliberately: this is the programme's first point of contact,
  * not a directory of everyone connected to the work. */
@@ -39,6 +41,13 @@ const ROUTES = [
       "What you are working on, and where it overlaps:\n\n",
     ),
   },
+  {
+    icon: GitPullRequest,
+    title: "Contribute to this map",
+    body: "The map itself is public and open source. Corrections, issues, and pull requests are welcome, and unlike the studies they need no prior arrangement.",
+    action: "Open an issue",
+    href: "https://github.com/systems-researcher/research-programme/issues",
+  },
 ]
 
 export function GetInvolved() {
@@ -53,7 +62,7 @@ export function GetInvolved() {
         </p>
       </div>
 
-      <ul className="grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2">
+      <ul className="grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
         {ROUTES.map((route) => (
           <li key={route.title} className="flex flex-col bg-card p-4">
             <route.icon
