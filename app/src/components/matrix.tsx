@@ -49,7 +49,7 @@ function Cell({
 
   return (
     <td className="border-b border-l border-border p-1.5 align-top">
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col items-stretch gap-1.5">
         {entries.map((entry) => {
           const status = cellStatus(entry, vocabulary)
 
@@ -59,41 +59,28 @@ function Cell({
           // that says how much of the programme has been written up.
           if (!entry.card) {
             return (
-              <div
+              <button
                 key={entry.key}
+                type="button"
+                onClick={() => onOpen(entry)}
                 style={{ ["--accent" as string]: `var(--strand-${strand.token}-line)` }}
-                className="cell-card relative rounded-md border border-dashed p-2"
+                className="cell-card group relative w-full rounded-md border border-dashed p-2 text-left transition-colors focus-visible:outline-none"
               >
                 <span
                   aria-hidden="true"
                   className="cell-spine absolute inset-y-1 left-0 w-[3px] rounded-full opacity-60"
                 />
-                <span className="block pl-2 font-mono text-[11px] leading-tight break-words">
-                  {entry.url ? (
-                    <a
-                      href={entry.url}
-                      rel="noopener"
-                      className="underline decoration-border underline-offset-2 hover:decoration-foreground"
-                    >
-                      {entry.key}
-                      <ExternalLink aria-hidden="true" className="ml-0.5 inline size-3 align-text-top" />
-                      <span className="sr-only">(opens GitHub)</span>
-                    </a>
-                  ) : (
-                    entry.key
-                  )}
+                <span className="block pl-2 font-mono text-[11px] leading-tight break-words text-foreground">
+                  {entry.key}
                 </span>
-                {!!entry.dependsOn?.length && (
-                  <span className="mt-1 block pl-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {reported} of {entry.dependsOn.length} written up
+                <span className="mt-1 flex min-h-4 items-center gap-1.5 pl-2 text-muted-foreground">
+                  <span className="text-[10px] uppercase tracking-wider">
+                    {entry.dependsOn?.length
+                      ? `${reported} of ${entry.dependsOn.length} written up`
+                      : "written column"}
                   </span>
-                )}
-                {!!entry.badges?.length && (
-                  <span className="mt-1 block pl-2 text-[10px] text-muted-foreground/80">
-                    {entry.badges.join(" · ")}
-                  </span>
-                )}
-              </div>
+                </span>
+              </button>
             )
           }
 
@@ -117,29 +104,24 @@ function Cell({
               <span className="block pl-2 font-mono text-[11px] leading-tight break-words text-foreground">
                 {entry.key}
               </span>
-              {/* Which cells have more than a repository behind them: a
-                  published paper, or a result site to read. */}
-              {(entry.paper || entry.site) && (
-                <span className="mt-1 flex items-center gap-1 pl-2 text-muted-foreground">
-                  {entry.paper && (
-                    <>
-                      <BookOpen aria-hidden="true" className="size-3" />
-                      <span className="sr-only">Has a published paper.</span>
-                    </>
-                  )}
-                  {entry.site && (
-                    <>
-                      <ExternalLink aria-hidden="true" className="size-3" />
-                      <span className="sr-only">Has a published result site.</span>
-                    </>
-                  )}
-                </span>
-              )}
-              {status && (
-                <span className="mt-1 block pl-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {status}
-                </span>
-              )}
+              {/* Status and markers share one row, so a tile is the same
+                  height whether or not it has a paper or a result site to
+                  advertise. Icons on their own line made the grid ragged. */}
+              <span className="mt-1 flex min-h-4 items-center gap-1.5 pl-2 text-muted-foreground">
+                <span className="text-[10px] uppercase tracking-wider">{status}</span>
+                {entry.paper && (
+                  <>
+                    <BookOpen aria-hidden="true" className="size-3 shrink-0" />
+                    <span className="sr-only">Has a published paper.</span>
+                  </>
+                )}
+                {entry.site && (
+                  <>
+                    <ExternalLink aria-hidden="true" className="size-3 shrink-0" />
+                    <span className="sr-only">Has a published result site.</span>
+                  </>
+                )}
+              </span>
             </button>
           )
         })}

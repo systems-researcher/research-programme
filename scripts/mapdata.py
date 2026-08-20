@@ -16,7 +16,7 @@ from typing import Any
 import yaml
 
 STRANDS = ("adequacy", "method-validation", "assembly")
-STAGES = ("define", "measure", "evidence", "architecture", "assembly")
+STAGES = ("define", "measure", "evidence", "architecture", "release")
 STATUSES = (
     "design",
     "built-runs-pending",

@@ -53,8 +53,8 @@
       "note": "Candidate substrates that enforce it on the write side."
     },
     {
-      "id": "assembly",
-      "title": "Assembly",
+      "id": "release",
+      "title": "Release",
       "note": "The frozen report for each study, and the papers."
     }
   ],
@@ -486,12 +486,12 @@
     {
       "id": "assembly",
       "token": "assembly",
-      "title": "Assembly",
+      "title": "Release",
       "subtitle": "Where the findings enter the written record, one report per study.",
       "entries": [
         {
           "key": "publications",
-          "stage": "assembly",
+          "stage": "release",
           "card": false,
           "objective": "The written column of the programme: one frozen report per study, and the author's copy of every paper. Venues hold the public copy.",
           "url": "https://github.com/systems-researcher/publications",

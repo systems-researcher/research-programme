@@ -50,7 +50,7 @@ strands:
       The same methodological move, turned on the methods systems engineering
       already relies on.
   assembly:
-    title: "Assembly"
+    title: "Release"
     subtitle: >
       Where the findings enter the written record, one report per study.
 
@@ -59,7 +59,7 @@ stages:
   measure: "The instruments that turn the definition into a number."
   evidence: "What the instruments have actually measured."
   architecture: "Candidate substrates that enforce it on the write side."
-  assembly: "The frozen report for each study, and the papers."
+  release: "The frozen report for each study, and the papers."
 
 repos:
 
@@ -362,7 +362,7 @@ repos:
   - key: publications
     owner: systems-researcher
     strand: assembly
-    stage: assembly
+    stage: release
     render: node-only
     status: not-applicable
     objective: >

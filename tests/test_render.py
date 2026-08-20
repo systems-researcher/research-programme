@@ -19,7 +19,7 @@ def data_with(*entries: dict) -> mapdata.MapData:
             "adequacy": {"title": "Adequacy", "subtitle": "sub"},
             "assembly": {"title": "Assembly", "subtitle": "sub"},
         },
-        stages={"define": "d", "evidence": "e", "assembly": "a"},
+        stages={"define": "d", "evidence": "e", "release": "a"},
         repos=list(entries),
     )
     data.by_key = {entry["key"]: entry for entry in entries}
@@ -130,7 +130,7 @@ LIVE_EMPTY = {"generated_at": "t", "repos": {}}
 def test_payload_marks_node_only_entries_as_rendering_no_card() -> None:
     data = data_with(
         entry(),
-        entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
+        entry(key="Thesis-Work-Area", strand="assembly", stage="release",
               render="node-only", status="not-applicable"),
     )
 
@@ -145,7 +145,7 @@ def test_a_card_less_strand_still_carries_its_entries_and_their_objective() -> N
     emitting a heading over nothing."""
     data = data_with(
         entry(),
-        entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
+        entry(key="Thesis-Work-Area", strand="assembly", stage="release",
               render="node-only", status="not-applicable",
               objective="Where the findings are written up."),
     )
@@ -161,7 +161,7 @@ def test_a_reference_to_a_node_only_entry_is_not_linkable() -> None:
     """node-only entries render no card, so an anchor would go nowhere."""
     data = data_with(
         entry(),
-        entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
+        entry(key="Thesis-Work-Area", strand="assembly", stage="release",
               render="node-only", status="not-applicable", depends_on=["alpha"]),
     )
 
@@ -191,7 +191,7 @@ def test_within_a_stage_entries_keep_their_authored_order() -> None:
 
 def test_strands_and_stages_arrive_in_programme_order() -> None:
     data = data_with(
-        entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
+        entry(key="Thesis-Work-Area", strand="assembly", stage="release",
               render="node-only", status="not-applicable"),
         entry(),
     )
@@ -318,7 +318,7 @@ def test_every_entry_lands_in_a_stage_the_page_renders() -> None:
     data = data_with(
         entry(),
         entry(key="beta", stage="evidence"),
-        entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
+        entry(key="Thesis-Work-Area", strand="assembly", stage="release",
               render="node-only", status="not-applicable"),
     )
     payload = render.payload(data, LIVE_EMPTY)
@@ -429,7 +429,7 @@ def test_a_node_only_entry_still_carries_its_repository_and_badges() -> None:
     neighbour showed its state."""
     data = data_with(
         entry(),
-        entry(key="publications", strand="assembly", stage="assembly",
+        entry(key="publications", strand="assembly", stage="release",
               render="node-only", status="not-applicable", depends_on=["alpha"]),
     )
     payload = render.payload(
@@ -452,7 +452,7 @@ def test_a_node_only_entry_carries_no_study_fields() -> None:
     """It is not a study: it has no question, method, or result to show."""
     data = data_with(
         entry(),
-        entry(key="publications", strand="assembly", stage="assembly",
+        entry(key="publications", strand="assembly", stage="release",
               render="node-only", status="not-applicable"),
     )
     column = find(render.payload(data, LIVE_EMPTY), "publications")
