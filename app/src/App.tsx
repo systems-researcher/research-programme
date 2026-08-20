@@ -4,9 +4,11 @@ import { useCallback, useMemo, useState } from "react"
 import { Monitor, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Detail } from "@/components/detail"
+import { DependencyGraph } from "@/components/graph"
 import { Legend } from "@/components/legend"
 import { Matrix } from "@/components/matrix"
 import { Publications } from "@/components/publications"
+import { Questions } from "@/components/questions"
 import { useTheme } from "@/components/theme"
 import type { Entry, MapPayload } from "@/lib/map"
 import payload from "@data/map.json"
@@ -35,7 +37,7 @@ function ThemeToggle() {
 }
 
 export default function App() {
-  const { programme, strands, stages, statuses, refreshedAt } = map
+  const { programme, strands, stages, statuses, graph, refreshedAt } = map
   const [openKey, setOpenKey] = useState<string | null>(null)
 
   // One flat index, so the sheet's own dependency links can open a sibling
@@ -131,6 +133,20 @@ export default function App() {
           </div>
           <Matrix strands={strands} stages={stages} statuses={statuses} onOpen={openEntry} />
         </section>
+
+        <section id="dependencies" className="scroll-mt-4 border-t border-border py-10">
+          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-foreground">
+              How the studies depend on each other
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Left to right is dependency order. Hover a study to see what it touches.
+            </p>
+          </div>
+          <DependencyGraph graph={graph} entries={all} onOpen={openEntry} />
+        </section>
+
+        <Questions strands={strands} statuses={statuses} onOpen={openEntry} />
 
         <Legend statuses={statuses} counts={byStatus} />
 

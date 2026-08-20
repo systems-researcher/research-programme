@@ -153,6 +153,68 @@ def _link_refs(keys: list[str], data: mapdata.MapData) -> list[dict]:
     return refs
 
 
+def graph(data: mapdata.MapData) -> dict:
+    """The dependency graph, with every node already positioned.
+
+    Position is computed here rather than by a layout library in the browser,
+    because auto-layout cannot be told what the picture means: it produced the
+    diagram this replaced. Longest-path layering puts a study one column right
+    of its deepest prerequisite, which guarantees every edge flows left to
+    right and no edge doubles back.
+
+    The written column is excluded. It consumes all twelve studies, so drawing
+    it would add twelve edges converging on one node and bury the eleven that
+    say how the research actually connects.
+    """
+    studies = [e for e in _ordered(data) if e["key"] != mapdata.TERMINUS]
+    keys = {e["key"] for e in studies}
+
+    edges = [
+        {"from": dependency, "to": entry["key"]}
+        for entry in studies
+        for dependency in entry.get("depends_on", [])
+        if dependency in keys
+    ]
+
+    prerequisites: dict[str, list[str]] = {}
+    for edge in edges:
+        prerequisites.setdefault(edge["to"], []).append(edge["from"])
+
+    # Longest path to a root. Recursion is safe because rule 9 already proved
+    # the graph acyclic; without that guarantee this would not terminate.
+    depth: dict[str, int] = {}
+
+    def column(key: str) -> int:
+        if key not in depth:
+            parents = prerequisites.get(key, [])
+            depth[key] = 1 + max((column(p) for p in parents), default=-1)
+        return depth[key]
+
+    strand_of = {e["key"]: e["strand"] for e in studies}
+    columns: dict[int, list[str]] = {}
+    for entry in studies:
+        columns.setdefault(column(entry["key"]), []).append(entry["key"])
+
+    nodes = []
+    for x in sorted(columns):
+        # Group a column by strand so a strand's studies sit together
+        # vertically, which keeps its colour readable as a band.
+        members = sorted(columns[x], key=lambda k: STRAND_ORDER.index(strand_of[k]))
+        for y, key in enumerate(members):
+            nodes.append(
+                {
+                    "key": key,
+                    "x": x,
+                    "y": y,
+                    "column": len(members),
+                    "strand": strand_of[key],
+                    "token": STRAND_TOKEN[strand_of[key]],
+                }
+            )
+
+    return {"nodes": nodes, "edges": edges, "columns": len(columns)}
+
+
 def payload(data: mapdata.MapData, live: dict | None) -> dict:
     """The whole page as data, in final render order.
 
@@ -269,5 +331,6 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
             for stage in STAGE_ORDER
         ],
         "strands": strands,
+        "graph": graph(data),
         "refreshedAt": (live or {}).get("generated_at"),
     }

@@ -554,5 +554,152 @@
       ]
     }
   ],
+  "graph": {
+    "nodes": [
+      {
+        "key": "sysml2-bench",
+        "x": 0,
+        "y": 0,
+        "column": 3,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "epistemic-adequacy-probe",
+        "x": 0,
+        "y": 1,
+        "column": 3,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "dsm-sequencing-probe",
+        "x": 0,
+        "y": 2,
+        "column": 3,
+        "strand": "method-validation",
+        "token": "method"
+      },
+      {
+        "key": "epistemic-adequacy-spec",
+        "x": 1,
+        "y": 0,
+        "column": 2,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "pressure-susceptibility-probe",
+        "x": 1,
+        "y": 1,
+        "column": 2,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "epistemic-adequacy-testing-toolkit",
+        "x": 2,
+        "y": 0,
+        "column": 5,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "SysML-v2-API-Services-Arch-A",
+        "x": 2,
+        "y": 1,
+        "column": 5,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "sysml-v2-governed-substrate-Arch-C",
+        "x": 2,
+        "y": 2,
+        "column": 5,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "model-vs-document-defect-probe",
+        "x": 2,
+        "y": 3,
+        "column": 5,
+        "strand": "method-validation",
+        "token": "method"
+      },
+      {
+        "key": "ahp-framing-fragility-probe",
+        "x": 2,
+        "y": 4,
+        "column": 5,
+        "strand": "method-validation",
+        "token": "method"
+      },
+      {
+        "key": "epistemic-adequacy-metamodel",
+        "x": 3,
+        "y": 0,
+        "column": 2,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "sysml-v2-metadata-graph-Arch-B",
+        "x": 3,
+        "y": 1,
+        "column": 2,
+        "strand": "adequacy",
+        "token": "adequacy"
+      }
+    ],
+    "edges": [
+      {
+        "from": "epistemic-adequacy-probe",
+        "to": "epistemic-adequacy-spec"
+      },
+      {
+        "from": "epistemic-adequacy-spec",
+        "to": "epistemic-adequacy-metamodel"
+      },
+      {
+        "from": "epistemic-adequacy-testing-toolkit",
+        "to": "epistemic-adequacy-metamodel"
+      },
+      {
+        "from": "epistemic-adequacy-spec",
+        "to": "epistemic-adequacy-testing-toolkit"
+      },
+      {
+        "from": "epistemic-adequacy-probe",
+        "to": "pressure-susceptibility-probe"
+      },
+      {
+        "from": "epistemic-adequacy-spec",
+        "to": "SysML-v2-API-Services-Arch-A"
+      },
+      {
+        "from": "epistemic-adequacy-spec",
+        "to": "sysml-v2-metadata-graph-Arch-B"
+      },
+      {
+        "from": "SysML-v2-API-Services-Arch-A",
+        "to": "sysml-v2-metadata-graph-Arch-B"
+      },
+      {
+        "from": "epistemic-adequacy-spec",
+        "to": "sysml-v2-governed-substrate-Arch-C"
+      },
+      {
+        "from": "pressure-susceptibility-probe",
+        "to": "model-vs-document-defect-probe"
+      },
+      {
+        "from": "pressure-susceptibility-probe",
+        "to": "ahp-framing-fragility-probe"
+      }
+    ],
+    "columns": 4
+  },
   "refreshedAt": "2026-08-20T11:29:58+00:00"
 }

@@ -62,8 +62,29 @@ export type Stage = { id: string; title: string; note: string }
  *  own enum so the legend cannot drift from the vocabulary. */
 export type Status = { id: string; label: string; note: string }
 
+/** A study in the dependency picture, already positioned by Python.
+ *  `x` is dependency depth, `y` the slot within that column. */
+export type GraphNode = {
+  key: string
+  x: number
+  y: number
+  /** How many nodes share this column, so it can be centred vertically. */
+  column: number
+  strand: string
+  token: string
+}
+
+export type GraphEdge = { from: string; to: string }
+
+export type Graph = {
+  nodes: GraphNode[]
+  edges: GraphEdge[]
+  columns: number
+}
+
 export type MapPayload = {
   statuses: Status[]
+  graph: Graph
   programme: { title: string; question: string; move: string }
   stages: Stage[]
   strands: Strand[]

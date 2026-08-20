@@ -8,6 +8,8 @@ from pathlib import Path
 
 from scripts import mapdata, render
 
+REPOS_YML = Path(__file__).resolve().parent.parent / "repos.yml"
+
 BEGIN = "<!-- BEGIN:repos -->"
 END = "<!-- END:repos -->"
 
@@ -490,3 +492,112 @@ def test_a_public_repository_still_advertises_its_result_site() -> None:
     )
 
     assert find(payload, "alpha")["site"] == "https://x.github.io/alpha/"
+
+
+# ---------------------------------------------------------------------------
+# graph(): the dependency picture, positioned in Python.
+#
+# Layout is computed here so the diagram can be drawn deliberately. These
+# guard the properties that make it readable; a layout library would give
+# none of them.
+# ---------------------------------------------------------------------------
+
+
+def graph_of(*entries: dict) -> dict:
+    return render.graph(data_with(*entries))
+
+
+def test_every_edge_flows_left_to_right() -> None:
+    """The whole point of layering by dependency depth: an edge that doubled
+    back would have to be drawn as a curve fighting the reading order."""
+    data = mapdata.load(REPOS_YML)
+    result = render.graph(data)
+    column = {node["key"]: node["x"] for node in result["nodes"]}
+
+    for edge in result["edges"]:
+        assert column[edge["from"]] < column[edge["to"]], (
+            f"{edge['from']} -> {edge['to']} does not flow forward"
+        )
+
+
+def test_a_study_sits_one_column_right_of_its_deepest_prerequisite() -> None:
+    data = data_with(
+        entry(key="root"),
+        entry(key="middle", depends_on=["root"]),
+        entry(key="leaf", depends_on=["root", "middle"]),
+    )
+
+    column = {n["key"]: n["x"] for n in render.graph(data)["nodes"]}
+
+    assert column["root"] == 0
+    assert column["middle"] == 1
+    # Deepest prerequisite is `middle` at 1, not `root` at 0.
+    assert column["leaf"] == 2
+
+
+def test_no_two_nodes_share_a_position() -> None:
+    """Overlapping nodes would render as one box with two labels."""
+    data = mapdata.load(REPOS_YML)
+    positions = [(n["x"], n["y"]) for n in render.graph(data)["nodes"]]
+
+    assert len(positions) == len(set(positions))
+
+
+def test_the_written_column_is_not_drawn() -> None:
+    """It consumes every study, so drawing it would bury the eleven edges
+    that say how the research actually connects under twelve that do not."""
+    data = data_with(
+        entry(),
+        entry(key=mapdata.TERMINUS, strand="formalisation", stage="release",
+              render="node-only", status="not-applicable", depends_on=["alpha"]),
+    )
+    result = render.graph(data)
+
+    assert [n["key"] for n in result["nodes"]] == ["alpha"]
+    assert result["edges"] == []
+
+
+def test_every_node_carries_the_token_that_colours_it() -> None:
+    """Node colour is the same strand colour as the matrix tile, so a reader
+    can move between the two pictures."""
+    for node in graph_of(entry())["nodes"]:
+        assert node["token"] in render.STRAND_TOKEN.values()
+
+
+def test_an_edge_to_an_undrawn_entry_is_dropped_not_dangling() -> None:
+    """A dependency on the terminus, or on anything not drawn, would
+    otherwise become an edge pointing at no node."""
+    data = data_with(
+        entry(),
+        entry(key=mapdata.TERMINUS, strand="formalisation", stage="release",
+              render="node-only", status="not-applicable"),
+        entry(key="beta", stage="evidence", depends_on=["alpha", mapdata.TERMINUS]),
+    )
+    result = render.graph(data)
+    drawn = {n["key"] for n in result["nodes"]}
+
+    for edge in result["edges"]:
+        assert edge["from"] in drawn and edge["to"] in drawn
+
+
+def test_every_study_carries_the_question_and_objective_the_page_lists() -> None:
+    """The questions section renders one row per study from these two fields.
+    A study missing either would render a row with a blank half rather than
+    reporting anything."""
+    payload = render.payload(
+        data_with(
+            entry(),
+            entry(key="beta", stage="evidence"),
+            entry(key="publications", strand="formalisation", stage="release",
+                  render="node-only", status="not-applicable"),
+        ),
+        LIVE_EMPTY,
+    )
+
+    for item in entries_of(payload):
+        if item["card"]:
+            assert item["question"], f"{item['key']} has no question"
+            assert item["objective"], f"{item['key']} has no objective"
+        else:
+            # The written column is not a study and asks nothing.
+            assert "question" not in item

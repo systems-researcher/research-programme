@@ -191,3 +191,30 @@
 .cell-spine { background: var(--accent); }
 
 .strand-rule { background: var(--accent); }
+
+/* ------------------------------------------------------------------
+   Dependency graph.
+
+   SVG needs fill/stroke rather than background/border, so the node
+   boxes cannot reuse the card utilities and are written against the
+   same tokens directly.
+   ------------------------------------------------------------------ */
+
+.graph-node-box {
+    fill: var(--card);
+    stroke: color-mix(in oklab, var(--accent) 22%, var(--border));
+    transition: fill 150ms, stroke 150ms;
+}
+.graph-node:hover .graph-node-box,
+.graph-node:focus-visible .graph-node-box {
+    fill: color-mix(in oklab, var(--accent) 7%, var(--card));
+    stroke: color-mix(in oklab, var(--accent) 55%, var(--border));
+}
+/* SVG ignores outline in some engines, so focus is drawn on the box. */
+.graph-node:focus-visible .graph-node-box {
+    stroke: var(--ring);
+    stroke-width: 2;
+}
+@media (prefers-reduced-motion: reduce) {
+    .graph-node-box { transition: none; }
+}
