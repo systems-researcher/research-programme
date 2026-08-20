@@ -185,7 +185,7 @@ repos:
     depends_on: []
 
   - key: governed-interaction-cost-probe
-    owner: local
+    owner: systems-researcher
     strand: adequacy
     stage: measure
     status: design

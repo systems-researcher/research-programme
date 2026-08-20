@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-20T17:45:58+00:00",
+  "generated_at": "2026-08-20T17:59:16+00:00",
   "repos": {
     "SysML-v2-API-Services-Arch-A": {
       "homepage": "",
@@ -29,6 +29,11 @@
     "epistemic-adequacy-under-pressure-probe": {
       "homepage": null,
       "pushed_at": "2026-08-20T17:45:25Z",
+      "visibility": "private"
+    },
+    "governed-interaction-cost-probe": {
+      "homepage": null,
+      "pushed_at": "2026-08-20T17:58:14Z",
       "visibility": "private"
     },
     "model-vs-document-defect-probe": {
