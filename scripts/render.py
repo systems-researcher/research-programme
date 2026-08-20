@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import re
 
+
 from scripts import mapdata
 
 BEGIN = "<!-- BEGIN:repos -->"
@@ -15,20 +16,9 @@ STAGE_ORDER = mapdata.STAGES
 STRAND_ORDER = mapdata.STRANDS
 
 
-# The CSS class each strand's nodes carry in the diagram, and the token stem
-# that paints it. Colours live in design/tokens.css, never here: a Mermaid
-# classDef writes inline "!important" onto every node, which outranks any
-# stylesheet and would freeze the diagram in light mode. Emitting a bare
-# "class" statement attaches the class without an inline style, so the same
-# tokens drive the page and the diagram, and dark mode follows for free.
-#
-# Stems must differ: the strand is carried by colour, not by layout, so a
-# shared stem would silently erase the distinction.
-STRAND_CLASS = {
-    "adequacy": "adequacy",
-    "method-validation": "method_validation",
-    "assembly": "assembly",
-}
+# The token stem that paints each strand. Stems must differ: the strand is
+# carried by colour, not by layout, so a shared stem would silently erase the
+# distinction between two strands.
 STRAND_TOKEN = {
     "adequacy": "adequacy",
     "method-validation": "method",
@@ -91,43 +81,6 @@ def readme_block(current: str, data: mapdata.MapData) -> str:
         )
     replacement = f"{BEGIN}\n\n{readme_table(data)}\n\n{END}"
     return pattern.sub(lambda _: replacement, current, count=1)
-
-
-def node_id(key: str) -> str:
-    """A Mermaid-safe node id. Keys carry hyphens and mixed case; ids may not."""
-    return "n_" + re.sub(r"[^A-Za-z0-9]", "_", key)
-
-
-def mermaid(data: mapdata.MapData) -> str:
-    """One subgraph per stage, strand carried by CSS class, edges from depends_on."""
-    lines = ["graph LR"]
-    for stage in STAGE_ORDER:
-        members = [e for e in _ordered(data) if e["stage"] == stage]
-        if not members:
-            continue
-        # The stage name alone. Its one-line explanation already renders as the
-        # stage-note under the matching heading, and repeating it here only
-        # widened every cluster to the length of a sentence.
-        lines.append(f'  subgraph stage_{stage}["{stage.title()}"]')
-        for member in members:
-            lines.append(f'    {node_id(member["key"])}["{member["key"]}"]')
-        lines.append("  end")
-
-    for member in _ordered(data):
-        for dependency in member.get("depends_on", []):
-            lines.append(f'  {node_id(dependency)} --> {node_id(member["key"])}')
-
-    for strand in STRAND_ORDER:
-        members = [e for e in data.repos if e["strand"] == strand]
-        if members:
-            names = ",".join(node_id(m["key"]) for m in members)
-            lines.append(f"  class {names} {STRAND_CLASS[strand]};")
-
-    for member in data.repos:
-        if member.get("render", "card") == "card":
-            lines.append(f'  click {node_id(member["key"])} "#card-{member["key"]}"')
-
-    return "\n".join(lines)
 
 
 def _collapse(value: object) -> str:
@@ -236,7 +189,6 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
         strands.append(
             {
                 "id": strand,
-                "cssClass": STRAND_CLASS[strand],
                 "token": STRAND_TOKEN[strand],
                 "title": str(heading.get("title", strand)),
                 "subtitle": _collapse(heading.get("subtitle", "")),
@@ -255,6 +207,5 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
             for stage in STAGE_ORDER
         ],
         "strands": strands,
-        "diagram": mermaid(data),
         "refreshedAt": (live or {}).get("generated_at"),
     }

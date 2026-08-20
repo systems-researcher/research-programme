@@ -74,49 +74,15 @@ def test_readme_table_lists_stage_status_and_objective() -> None:
     assert "What alpha is for." in updated
 
 
-def test_mermaid_edges_run_from_dependency_to_consumer() -> None:
-    data = data_with(
-        entry(),
-        entry(key="beta", stage="evidence", depends_on=["alpha"]),
-    )
-
-    diagram = render.mermaid(data)
-
-    assert "n_alpha --> n_beta" in diagram
-    assert "n_beta --> n_alpha" not in diagram
-
-
-def test_mermaid_groups_by_stage_and_classes_by_strand() -> None:
-    data = data_with(entry(), entry(key="beta", stage="evidence"))
-
-    diagram = render.mermaid(data)
-
-    assert 'subgraph stage_define["' in diagram
-    assert 'subgraph stage_evidence["' in diagram
-    assert "class n_alpha,n_beta adequacy;" in diagram
-
-
-def test_diagram_carries_no_inline_colour() -> None:
-    """A Mermaid classDef writes inline '!important' onto every node, which
-    outranks the stylesheet and freezes the diagram in light mode. The strand
-    must travel as a bare class so design/tokens.css can repaint it."""
-    diagram = render.mermaid(data_with(entry()))
-
-    assert "classDef" not in diagram
-    assert "fill:#" not in diagram
-
-
 def test_every_strand_has_a_visually_distinct_style() -> None:
     """Strand is carried by colour, so identical palettes would erase it silently."""
-    assert set(render.STRAND_CLASS) == set(mapdata.STRANDS)
     assert set(render.STRAND_TOKEN) == set(mapdata.STRANDS)
-    assert len(set(render.STRAND_CLASS.values())) == len(render.STRAND_CLASS)
     assert len(set(render.STRAND_TOKEN.values())) == len(render.STRAND_TOKEN)
 
 
 def test_every_strand_token_resolves_in_both_colour_schemes() -> None:
     """The dark block must redefine every strand colour the light block sets,
-    or the diagram silently keeps its light fills on a dark page."""
+    or the matrix silently keeps its light accents on a dark page."""
     css = (
         Path(__file__).resolve().parent.parent / "app" / "src" / "index.css"
     ).read_text(encoding="utf-8")
@@ -135,31 +101,18 @@ def test_every_strand_token_resolves_in_both_colour_schemes() -> None:
 
     light, dark = bodies(":root"), bodies(".dark")
 
+    # One value per strand now: the cell tints are derived from the line
+    # colour with colour-mix, so there is no separate fill to keep in step.
     for token in render.STRAND_TOKEN.values():
-        for part in ("fill", "line"):
-            assert f"--strand-{token}-{part}:" in light
-            assert f"--strand-{token}-{part}:" in dark
-
-
-def test_node_only_entries_get_no_click_target() -> None:
-    data = data_with(
-        entry(),
-        entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
-              render="node-only", status="not-applicable", depends_on=["alpha"]),
-    )
-
-    diagram = render.mermaid(data)
-
-    assert "click n_alpha" in diagram
-    assert "click n_Thesis_Work_Area" not in diagram
+        assert f"--strand-{token}-line:" in light
+        assert f"--strand-{token}-line:" in dark
 
 
 # ---------------------------------------------------------------------------
 # payload(): the data the React app renders.
 #
-# These replace the assertions that used to run against the generated HTML.
-# The app derives nothing, so every ordering, inversion and badge rule is
-# still a Python rule and still tested here — only the surface changed.
+# The app derives nothing, so every ordering, inversion and badge rule is a
+# Python rule and is tested here.
 # ---------------------------------------------------------------------------
 
 
@@ -327,25 +280,30 @@ def test_folded_scalars_are_collapsed_but_not_escaped() -> None:
     assert alpha["question"] == "A & B"
 
 
-def test_payload_carries_the_diagram_source_for_the_app_to_draw() -> None:
-    payload = render.payload(data_with(entry()), LIVE_EMPTY)
-
-    assert payload["diagram"] == render.mermaid(data_with(entry()))
-    assert "classDef" not in payload["diagram"]
-
-
-def test_every_click_target_in_the_diagram_resolves_to_a_card() -> None:
-    """A click on a node scrolls to `#card-<key>`; a target with no card is a
-    dead link the reader can only discover by clicking it."""
+def test_every_entry_lands_in_a_stage_the_page_renders() -> None:
+    """The matrix draws one column per stage in payload["stages"]. An entry
+    whose stage is not among them would be silently dropped from the page —
+    present in repos.yml, absent from the map, with nothing to show it went
+    missing."""
     data = data_with(
         entry(),
+        entry(key="beta", stage="evidence"),
         entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
               render="node-only", status="not-applicable"),
     )
     payload = render.payload(data, LIVE_EMPTY)
 
-    targets = set(re.findall(r'click \S+ "#card-([^"]+)"', payload["diagram"]))
-    cards = {e["key"] for e in entries_of(payload) if e["card"]}
+    columns = {stage["id"] for stage in payload["stages"]}
+    placed = {e["key"] for e in entries_of(payload) if e["stage"] in columns}
 
-    assert targets <= cards
-    assert targets == {"alpha"}
+    assert placed == {"alpha", "beta", "Thesis-Work-Area"}
+
+
+def test_every_strand_carries_the_token_that_colours_its_row() -> None:
+    """Strand colour is how the matrix distinguishes the rows; a strand
+    arriving without its token stem would render an uncoloured row."""
+    data = data_with(entry())
+    payload = render.payload(data, LIVE_EMPTY)
+
+    for strand in payload["strands"]:
+        assert strand["token"] in render.STRAND_TOKEN.values()

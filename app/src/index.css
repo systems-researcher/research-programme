@@ -131,101 +131,24 @@
 /* ------------------------------------------------------------------
    Research programme additions on top of the shadcn token set.
 
-   Strand colour is programme meaning, not decoration: it is the only
-   thing distinguishing the three research strands in both the cards
-   and the diagram, so each strand needs a visibly distinct hue that
-   is defined in BOTH colour schemes. Chart tokens are reused so the
-   palette stays inside the theme rather than beside it.
+   Strand colour is programme meaning, not decoration: it is what
+   distinguishes the three research strands down the matrix, so each
+   strand needs a visibly distinct hue defined in BOTH colour schemes.
+   Cell tints are derived from these with colour-mix, so one value per
+   strand drives the row marker, the cell accent, and the sheet.
    ------------------------------------------------------------------ */
 
 :root {
-    --strand-adequacy-fill: oklch(0.955 0.026 250);
     --strand-adequacy-line: oklch(0.55 0.16 250);
-    --strand-method-fill: oklch(0.955 0.03 305);
     --strand-method-line: oklch(0.55 0.17 305);
-    --strand-assembly-fill: oklch(0.955 0.033 165);
     --strand-assembly-line: oklch(0.52 0.12 165);
-
-    --diagram-cluster-fill: oklch(0.985 0 0);
-    --diagram-cluster-line: var(--border);
-    --diagram-edge: oklch(0.6 0 0);
 }
 
 .dark {
-    --strand-adequacy-fill: oklch(0.28 0.05 250);
     --strand-adequacy-line: oklch(0.72 0.14 250);
-    --strand-method-fill: oklch(0.28 0.055 305);
     --strand-method-line: oklch(0.74 0.14 305);
-    --strand-assembly-fill: oklch(0.28 0.05 165);
     --strand-assembly-line: oklch(0.74 0.12 165);
-
-    --diagram-cluster-fill: oklch(0.22 0 0);
-    --diagram-cluster-line: var(--border);
-    --diagram-edge: oklch(0.65 0 0);
 }
-
-/* Mermaid injects its own stylesheet INSIDE the rendered SVG, after this
-   file, so equal specificity loses on source order. These need !important
-   to land. They live here rather than in a component, and outside
-   @layer base, so Tailwind's preflight cannot reorder them.
-
-   The Python renderer deliberately emits no classDef and no inline fill:
-   an inline style would outrank this and freeze the diagram in one theme.
-   Do not "simplify" the diagram source back to classDef. */
-#diagram .cluster rect {
-    fill: var(--diagram-cluster-fill) !important;
-    stroke: var(--diagram-cluster-line) !important;
-}
-#diagram .cluster-label .nodeLabel,
-#diagram .cluster-label text,
-#diagram .cluster-label span {
-    color: var(--muted-foreground) !important;
-    fill: var(--muted-foreground) !important;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.72rem;
-}
-/* Mermaid sizes the cluster label's foreignObject from the untransformed
-   text, so uppercasing and tracking it in CSS overflows the box and clips
-   the last character. Widening the wrapper restores the full word. */
-#diagram .cluster-label foreignObject { overflow: visible; width: 100% !important; }
-#diagram .cluster-label div { width: max-content !important; }
-#diagram .node rect {
-    fill: var(--card) !important;
-    stroke: var(--border) !important;
-}
-#diagram .nodeLabel,
-#diagram .nodeLabel p {
-    color: var(--foreground) !important;
-}
-#diagram .flowchart-link { stroke: var(--diagram-edge) !important; }
-#diagram .arrowMarkerPath {
-    fill: var(--diagram-edge) !important;
-    stroke: var(--diagram-edge) !important;
-}
-#diagram a .node rect { cursor: pointer; }
-#diagram a:focus-visible .node rect {
-    stroke: var(--ring) !important;
-    stroke-width: 3px !important;
-}
-
-#diagram .node.adequacy rect {
-    fill: var(--strand-adequacy-fill) !important;
-    stroke: var(--strand-adequacy-line) !important;
-}
-#diagram .node.method_validation rect {
-    fill: var(--strand-method-fill) !important;
-    stroke: var(--strand-method-line) !important;
-}
-#diagram .node.assembly rect {
-    fill: var(--strand-assembly-fill) !important;
-    stroke: var(--strand-assembly-line) !important;
-}
-
-/* The diagram links to #card-<key>; without scroll-margin the sticky
-   masthead covers the card the reader was just sent to. */
-[id^="card-"] { scroll-margin-top: 5rem; }
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -234,3 +157,37 @@
         scroll-behavior: auto !important;
     }
 }
+
+/* ------------------------------------------------------------------
+   Matrix cells.
+
+   Written as real CSS rather than Tailwind utilities: the tints are
+   derived from the strand colour with colour-mix, which arbitrary
+   utilities cannot express, and it keeps one strand value driving the
+   row marker, the cell spine, and the hover state together.
+   ------------------------------------------------------------------ */
+
+.cell-empty {
+    background-image: repeating-linear-gradient(
+        -45deg,
+        transparent 0 6px,
+        color-mix(in oklab, var(--border) 45%, transparent) 6px 7px
+    );
+    opacity: 0.5;
+}
+
+.cell-card {
+    border-color: color-mix(in oklab, var(--accent) 22%, var(--border));
+    background: var(--card);
+}
+.cell-card:hover {
+    border-color: color-mix(in oklab, var(--accent) 55%, var(--border));
+    background: color-mix(in oklab, var(--accent) 6%, var(--card));
+}
+.cell-card:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
+}
+.cell-spine { background: var(--accent); }
+
+.strand-rule { background: var(--accent); }

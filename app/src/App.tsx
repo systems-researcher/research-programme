@@ -1,12 +1,12 @@
 // Copyright (c) 2026 Jason D. Gower
 // SPDX-License-Identifier: MIT
+import { useCallback, useMemo, useState } from "react"
 import { Monitor, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Diagram } from "@/components/diagram"
-import { RepoCard } from "@/components/repo-card"
+import { Detail } from "@/components/detail"
+import { Matrix } from "@/components/matrix"
 import { useTheme } from "@/components/theme"
-import type { MapPayload, Stage, Strand } from "@/lib/map"
+import type { Entry, MapPayload } from "@/lib/map"
 import payload from "@data/map.json"
 
 const map = payload as MapPayload
@@ -20,118 +20,115 @@ function ThemeToggle() {
     <Button
       variant="ghost"
       size="sm"
-      className="text-neutral-50 hover:bg-white/10 hover:text-neutral-50"
+      className="h-8 gap-1.5 px-2 text-muted-foreground hover:text-foreground"
       onClick={() => setChoice(order[(order.indexOf(choice) + 1) % order.length])}
     >
-      <Icon className="size-4" aria-hidden="true" />
-      <span className="sr-only">
-        Colour scheme: {choice}. Activate to change.
+      <Icon className="size-3.5" aria-hidden="true" />
+      <span className="sr-only">Colour scheme: {choice}. Activate to change.</span>
+      <span aria-hidden="true" className="text-[11px] capitalize">
+        {choice}
       </span>
-      <span aria-hidden="true" className="ml-1.5 text-xs capitalize">{choice}</span>
     </Button>
   )
 }
 
-/** A strand: its heading, then its entries grouped under the stages that
- *  actually contain one. Stage order comes from the payload, so a stage
- *  cannot appear here in an order the programme did not author. */
-function StrandSection({ strand, stages }: { strand: Strand; stages: Stage[] }) {
-  const cards = strand.entries.filter((entry) => entry.card)
-
-  return (
-    <section id={`strand-${strand.id}`} className="scroll-mt-20 pt-14">
-      <div className="flex items-center gap-3">
-        <span
-          aria-hidden="true"
-          className="size-3 shrink-0 rounded-full"
-          style={{ backgroundColor: `var(--strand-${strand.token}-line)` }}
-        />
-        <h2 className="text-2xl font-semibold tracking-tight">{strand.title}</h2>
-      </div>
-      <p className="mt-2 max-w-3xl text-muted-foreground">{strand.subtitle}</p>
-      <Separator className="mt-5" />
-
-      {/* Every member is node-only (the thesis terminus). The section still
-          belongs on the page, but an empty one reads as a rendering fault,
-          so the entries are named in a line instead. */}
-      {cards.length === 0 &&
-        strand.entries.map((entry) => (
-          <p key={entry.key} className="mt-5 text-sm text-muted-foreground">
-            <span className="font-mono font-semibold text-foreground">{entry.key}.</span>{" "}
-            {entry.objective}
-          </p>
-        ))}
-
-      {stages.map((stage) => {
-        const inStage = cards.filter((entry) => entry.stage === stage.id)
-        if (!inStage.length) return null
-        return (
-          <div key={stage.id} className="mt-8">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {stage.title}
-            </h3>
-            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{stage.note}</p>
-            <div className="mt-4 grid gap-4">
-              {inStage.map((entry) => (
-                <RepoCard key={entry.key} entry={entry} accent={strand.token} />
-              ))}
-            </div>
-          </div>
-        )
-      })}
-    </section>
-  )
-}
-
 export default function App() {
-  const { programme, strands, stages, diagram, refreshedAt } = map
+  const { programme, strands, stages, refreshedAt } = map
+  const [openKey, setOpenKey] = useState<string | null>(null)
+
+  // One flat index, so the sheet's own dependency links can open a sibling
+  // without the matrix having to hand its position down.
+  const index = useMemo(() => {
+    const byKey = new Map<string, { entry: Entry; strandId: string }>()
+    for (const strand of strands) {
+      for (const entry of strand.entries) {
+        byKey.set(entry.key, { entry, strandId: strand.id })
+      }
+    }
+    return byKey
+  }, [strands])
+
+  const current = openKey ? index.get(openKey) : undefined
+  const openEntry = useCallback((entry: Entry) => setOpenKey(entry.key), [])
+
+  const counts = useMemo(() => {
+    const all = strands.flatMap((s) => s.entries)
+    return { repos: all.length, published: all.filter((e) => e.headline).length }
+  }, [strands])
 
   return (
     <div className="min-h-dvh bg-background">
       <a
-        href="#main"
+        href="#matrix"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:ring-2 focus:ring-ring"
       >
-        Skip to content
+        Skip to the map
       </a>
 
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-neutral-950 text-neutral-50 supports-[backdrop-filter]:bg-neutral-950/90 supports-[backdrop-filter]:backdrop-blur">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-6 py-3">
-          <a href="#main" className="text-sm font-semibold tracking-tight">
+      <header className="border-b border-border">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Loughborough University
-            <span className="ml-2 font-normal opacity-70">Doctoral research programme</span>
-          </a>
+            <span className="mx-2 text-border">/</span>
+            Doctoral research programme
+          </span>
           <ThemeToggle />
         </div>
       </header>
 
-      <main id="main" className="mx-auto max-w-5xl px-6 pb-24">
-        <section className="pt-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Programme map
-          </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            {programme.title}
-          </h1>
-          <p className="mt-6 max-w-3xl leading-relaxed text-muted-foreground">
-            {programme.question}
-          </p>
-          <p className="mt-4 max-w-3xl leading-relaxed font-medium">{programme.move}</p>
+      <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
+        <section className="border-b border-border py-9">
+          <div className="max-w-3xl">
+            <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+              {programme.title}
+            </h1>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              {programme.question}
+            </p>
+            <p className="mt-4 text-sm leading-relaxed text-foreground">{programme.move}</p>
+          </div>
+          <dl className="mt-7 flex flex-wrap gap-x-10 gap-y-3">
+            {[
+              { label: "Repositories", value: counts.repos },
+              { label: "With results", value: counts.published },
+              { label: "Strands", value: strands.length },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <dt className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  {stat.label}
+                </dt>
+                <dd className="mt-0.5 font-mono text-xl tabular-nums">{stat.value}</dd>
+              </div>
+            ))}
+          </dl>
         </section>
 
-        <Diagram source={diagram} />
+        <section id="matrix" className="scroll-mt-4 py-8">
+          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-foreground">
+              The programme
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Select a repository for its question, method, and dependencies.
+            </p>
+          </div>
+          <Matrix strands={strands} stages={stages} onOpen={openEntry} />
+        </section>
 
-        {strands.map((strand) => (
-          <StrandSection key={strand.id} strand={strand} stages={stages} />
-        ))}
-
-        <footer className="mt-20 border-t pt-6 text-sm text-muted-foreground">
+        <footer className="border-t border-border pt-6 text-xs text-muted-foreground">
           {refreshedAt && <p>Live repository data last refreshed {refreshedAt}.</p>}
           <p className="mt-1">
             Repositories marked private are readable on request: contact the author.
           </p>
         </footer>
       </main>
+
+      <Detail
+        entry={current?.entry ?? null}
+        strand={strands.find((s) => s.id === current?.strandId)}
+        onOpenKey={setOpenKey}
+        onClose={() => setOpenKey(null)}
+      />
     </div>
   )
 }

@@ -34,7 +34,6 @@ export type Entry = {
 
 export type Strand = {
   id: string
-  cssClass: string
   token: string
   title: string
   subtitle: string
@@ -47,7 +46,5 @@ export type MapPayload = {
   programme: { title: string; question: string; move: string }
   stages: Stage[]
   strands: Strand[]
-  /** Mermaid source, emitted by Python and carrying no inline colour. */
-  diagram: string
   refreshedAt: string | null
 }

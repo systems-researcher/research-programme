@@ -34,7 +34,6 @@
   "strands": [
     {
       "id": "adequacy",
-      "cssClass": "adequacy",
       "token": "adequacy",
       "title": "Epistemic adequacy",
       "subtitle": "Can a record tell an AI what it is authorised to say — and can a substrate refuse a write that it is not?",
@@ -339,7 +338,6 @@
     },
     {
       "id": "method-validation",
-      "cssClass": "method_validation",
       "token": "method",
       "title": "Do classic SE methods survive an AI practitioner?",
       "subtitle": "The same methodological move, turned on the methods systems engineering already relies on.",
@@ -425,7 +423,6 @@
     },
     {
       "id": "assembly",
-      "cssClass": "assembly",
       "token": "assembly",
       "title": "Assembly",
       "subtitle": "Where the findings are written up.",
@@ -439,6 +436,5 @@
       ]
     }
   ],
-  "diagram": "graph LR\n  subgraph stage_define[\"Define\"]\n    n_epistemic_adequacy_spec[\"epistemic-adequacy-spec\"]\n    n_epistemic_adequacy_metamodel[\"epistemic-adequacy-metamodel\"]\n  end\n  subgraph stage_measure[\"Measure\"]\n    n_epistemic_adequacy_toolkit[\"epistemic-adequacy-toolkit\"]\n    n_sysml2_bench[\"sysml2-bench\"]\n  end\n  subgraph stage_evidence[\"Evidence\"]\n    n_epistemic_adequacy_probe[\"epistemic-adequacy-probe\"]\n    n_pressure_susceptibility_probe[\"pressure-susceptibility-probe\"]\n    n_model_vs_document_defect_probe[\"model-vs-document-defect-probe\"]\n    n_ahp_framing_fragility_probe[\"ahp-framing-fragility-probe\"]\n    n_dsm_sequencing_probe[\"dsm-sequencing-probe\"]\n  end\n  subgraph stage_architecture[\"Architecture\"]\n    n_SysML_v2_API_Services_Arch_A[\"SysML-v2-API-Services-Arch-A\"]\n    n_sysml_v2_metadata_graph_Arch_B[\"sysml-v2-metadata-graph-Arch-B\"]\n    n_sysml_v2_governed_substrate_Arch_C[\"sysml-v2-governed-substrate-Arch-C\"]\n  end\n  subgraph stage_assembly[\"Assembly\"]\n    n_Thesis_Work_Area[\"Thesis-Work-Area\"]\n  end\n  n_epistemic_adequacy_probe --> n_epistemic_adequacy_spec\n  n_epistemic_adequacy_spec --> n_epistemic_adequacy_metamodel\n  n_epistemic_adequacy_toolkit --> n_epistemic_adequacy_metamodel\n  n_epistemic_adequacy_spec --> n_epistemic_adequacy_toolkit\n  n_epistemic_adequacy_probe --> n_pressure_susceptibility_probe\n  n_epistemic_adequacy_spec --> n_SysML_v2_API_Services_Arch_A\n  n_epistemic_adequacy_spec --> n_sysml_v2_metadata_graph_Arch_B\n  n_SysML_v2_API_Services_Arch_A --> n_sysml_v2_metadata_graph_Arch_B\n  n_epistemic_adequacy_spec --> n_sysml_v2_governed_substrate_Arch_C\n  n_pressure_susceptibility_probe --> n_model_vs_document_defect_probe\n  n_pressure_susceptibility_probe --> n_ahp_framing_fragility_probe\n  n_epistemic_adequacy_spec --> n_Thesis_Work_Area\n  n_epistemic_adequacy_metamodel --> n_Thesis_Work_Area\n  n_epistemic_adequacy_toolkit --> n_Thesis_Work_Area\n  n_sysml2_bench --> n_Thesis_Work_Area\n  n_epistemic_adequacy_probe --> n_Thesis_Work_Area\n  n_pressure_susceptibility_probe --> n_Thesis_Work_Area\n  n_SysML_v2_API_Services_Arch_A --> n_Thesis_Work_Area\n  n_sysml_v2_metadata_graph_Arch_B --> n_Thesis_Work_Area\n  n_sysml_v2_governed_substrate_Arch_C --> n_Thesis_Work_Area\n  n_model_vs_document_defect_probe --> n_Thesis_Work_Area\n  n_ahp_framing_fragility_probe --> n_Thesis_Work_Area\n  n_dsm_sequencing_probe --> n_Thesis_Work_Area\n  class n_epistemic_adequacy_spec,n_epistemic_adequacy_metamodel,n_epistemic_adequacy_toolkit,n_sysml2_bench,n_epistemic_adequacy_probe,n_pressure_susceptibility_probe,n_SysML_v2_API_Services_Arch_A,n_sysml_v2_metadata_graph_Arch_B,n_sysml_v2_governed_substrate_Arch_C adequacy;\n  class n_model_vs_document_defect_probe,n_ahp_framing_fragility_probe,n_dsm_sequencing_probe method_validation;\n  class n_Thesis_Work_Area assembly;\n  click n_epistemic_adequacy_spec \"#card-epistemic-adequacy-spec\"\n  click n_epistemic_adequacy_metamodel \"#card-epistemic-adequacy-metamodel\"\n  click n_epistemic_adequacy_toolkit \"#card-epistemic-adequacy-toolkit\"\n  click n_sysml2_bench \"#card-sysml2-bench\"\n  click n_epistemic_adequacy_probe \"#card-epistemic-adequacy-probe\"\n  click n_pressure_susceptibility_probe \"#card-pressure-susceptibility-probe\"\n  click n_SysML_v2_API_Services_Arch_A \"#card-SysML-v2-API-Services-Arch-A\"\n  click n_sysml_v2_metadata_graph_Arch_B \"#card-sysml-v2-metadata-graph-Arch-B\"\n  click n_sysml_v2_governed_substrate_Arch_C \"#card-sysml-v2-governed-substrate-Arch-C\"\n  click n_model_vs_document_defect_probe \"#card-model-vs-document-defect-probe\"\n  click n_ahp_framing_fragility_probe \"#card-ahp-framing-fragility-probe\"\n  click n_dsm_sequencing_probe \"#card-dsm-sequencing-probe\"",
   "refreshedAt": "2026-08-19T14:53:44+00:00"
 }
