@@ -22,11 +22,11 @@ const ROUTES = [
   {
     icon: Lock,
     title: "Read a study",
-    body: "Most of these repositories stay private while the work is in progress. Tell me which one interests you and what you are looking for, and I will open it up.",
+    body: "Most of these repositories stay private while the work is in progress. If you are a researcher working in this area, tell me which one interests you and why, and I will usually share it.",
     action: "Ask for access",
     href: mailto(
       "Research programme: access request",
-      "Which repository, and what you would like to see:\n\n",
+      "Which repository, and what you are working on:\n\n",
     ),
   },
   {
