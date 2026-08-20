@@ -141,13 +141,13 @@
 :root {
     --strand-adequacy-line: oklch(0.55 0.16 250);
     --strand-method-line: oklch(0.55 0.17 305);
-    --strand-assembly-line: oklch(0.52 0.12 165);
+    --strand-formalisation-line: oklch(0.52 0.12 165);
 }
 
 .dark {
     --strand-adequacy-line: oklch(0.72 0.14 250);
     --strand-method-line: oklch(0.74 0.14 305);
-    --strand-assembly-line: oklch(0.74 0.12 165);
+    --strand-formalisation-line: oklch(0.74 0.12 165);
 }
 
 @media (prefers-reduced-motion: reduce) {

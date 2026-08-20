@@ -49,10 +49,11 @@ strands:
     subtitle: >
       The same methodological move, turned on the methods systems engineering
       already relies on.
-  assembly:
-    title: "Release"
+  formalisation:
+    title: "Formalisation"
     subtitle: >
-      Where the findings enter the written record, one report per study.
+      Turning what the studies establish into the written record: one frozen
+      report per study, and the papers that carry them to a venue.
 
 stages:
   define: "What a record must expose, and how that binds to SysML v2."
@@ -357,11 +358,11 @@ repos:
       models. The test design is written; no harness is built.
     depends_on: []
 
-  # -------------------------------------------------------------- assembly ---
+  # --------------------------------------------------------- formalisation ---
 
   - key: publications
     owner: systems-researcher
-    strand: assembly
+    strand: formalisation
     stage: release
     render: node-only
     status: not-applicable

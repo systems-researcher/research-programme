@@ -484,10 +484,10 @@
       ]
     },
     {
-      "id": "assembly",
-      "token": "assembly",
-      "title": "Release",
-      "subtitle": "Where the findings enter the written record, one report per study.",
+      "id": "formalisation",
+      "token": "formalisation",
+      "title": "Formalisation",
+      "subtitle": "Turning what the studies establish into the written record: one frozen report per study, and the papers that carry them to a venue.",
       "entries": [
         {
           "key": "publications",

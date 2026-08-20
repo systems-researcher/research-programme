@@ -22,7 +22,7 @@ STRAND_ORDER = mapdata.STRANDS
 STRAND_TOKEN = {
     "adequacy": "adequacy",
     "method-validation": "method",
-    "assembly": "assembly",
+    "formalisation": "formalisation",
 }
 
 # STATUSES is ordered as the lifecycle runs: a study is designed, built, its
