@@ -52,7 +52,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if args.check:
-        print(f"{REPOS_YML.name}: {len(data.repos)} entries, all nine rules pass")
+        print(f"{REPOS_YML.name}: {len(data.repos)} entries, all ten rules pass")
         return 0
 
     live = None
@@ -73,8 +73,15 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     write_atomic(readme, rendered_readme)
-    write_atomic(ROOT / "site" / "index.html", render.page(data, live))
-    print(f"wrote README.md and site/index.html ({len(data.repos)} entries)")
+    # The app reads this and derives nothing: ordering, dependency inversion,
+    # badges and card/node-only are all resolved here, under test. It is
+    # committed so the deployment build needs Node only, never Python.
+    write_atomic(
+        ROOT / "data" / "map.json",
+        json.dumps(render.payload(data, live), indent=2, ensure_ascii=False)
+        + chr(10),
+    )
+    print(f"wrote README.md and data/map.json ({len(data.repos)} entries)")
     return 0
 
 

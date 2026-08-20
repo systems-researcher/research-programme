@@ -5,6 +5,22 @@
 # data/live.json, site/index.html and the README table are all generated from
 # this file. Never write a number here that you cannot trace to a file in the
 # repository it describes.
+#
+# Optional per-entry block, validated by rule 10:
+#   paper:
+#     title: "..."          # every field below is required together
+#     authors: ["Family, Given", ...]
+#     venue: "..."          # the proceedings title, as the venue prints it
+#     year: 2026
+#     doi: "10.1145/..."    # bare DOI, not a URL and not a 'doi:' prefix
+#     status: accepted      # in-preparation | submitted | in-review |
+#                           # accepted | published. Only 'published' renders
+#                           # the DOI as a link; until then it does not
+#                           # resolve. This is the PAPER's lifecycle, which is
+#                           # not the study's `status` field above.
+#
+# Transcribe a paper from the study's CITATION.cff. Never type one from
+# memory: a citation is a claim about the published record.
 
 programme:
   title: "Architecting Trustworthy AI Integration in MBSE"
@@ -33,16 +49,18 @@ strands:
     subtitle: >
       The same methodological move, turned on the methods systems engineering
       already relies on.
-  assembly:
-    title: "Assembly"
-    subtitle: "Where the findings are written up."
+  formalisation:
+    title: "Formalisation"
+    subtitle: >
+      Turning what the studies establish into the written record: one frozen
+      report per study, and the papers that carry them to a venue.
 
 stages:
   define: "What a record must expose, and how that binds to SysML v2."
   measure: "The instruments that turn the definition into a number."
   evidence: "What the instruments have actually measured."
   architecture: "Candidate substrates that enforce it on the write side."
-  assembly: "Where it is written up."
+  release: "The frozen report for each study, and the papers."
 
 repos:
 
@@ -96,11 +114,11 @@ repos:
       and an eighteen-row clause trace in CI. The repository exists because
       parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation
       accepting a derivation whose upstream references nothing.
-    depends_on: [epistemic-adequacy-spec, epistemic-adequacy-toolkit]
+    depends_on: [epistemic-adequacy-spec, epistemic-adequacy-testing-toolkit]
 
   # --------------------------------------------------------------- measure ---
 
-  - key: epistemic-adequacy-toolkit
+  - key: epistemic-adequacy-testing-toolkit
     owner: systems-researcher
     strand: adequacy
     stage: measure
@@ -176,8 +194,26 @@ repos:
         repository also records a cross-family judge recheck of the pressed
         plus-sidecar cell; read RESULTS.md before quoting that cell alone.
     output: >
-      doi:10.1145/3822455.3838783 (MODELS 2026 NIER); release v0.2.0,
-      2026-08-17.
+      Release v0.2.0, 2026-08-17.
+    # Transcribed from publications/epistemic-adequacy-probe/CITATION.cff,
+    # which is the authoritative record. Do not retype it from memory.
+    paper:
+      title: >
+        Models as Governed Interfaces for AI-Native MBSE: Read-Side Adequacy
+        and Write-Side Admissibility
+      authors:
+        - "Gower, Jason D."
+        - "Henshaw, Michael J. de C."
+        - "Ji, Siyuan"
+      venue: >
+        Proceedings of the ACM/IEEE 29th International Conference on Model
+        Driven Engineering Languages and Systems (MODELS 2026), New Ideas and
+        Emerging Results Track
+      year: 2026
+      doi: "10.1145/3822455.3838783"
+      # Accepted, not yet live: the DOI resolves when ACM posts the
+      # proceedings. Until then the page must not render it as a link.
+      status: accepted
     depends_on: []
 
   - key: pressure-susceptibility-probe
@@ -322,22 +358,23 @@ repos:
       models. The test design is written; no harness is built.
     depends_on: []
 
-  # -------------------------------------------------------------- assembly ---
+  # --------------------------------------------------------- formalisation ---
 
-  - key: Thesis-Work-Area
+  - key: publications
     owner: systems-researcher
-    strand: assembly
-    stage: assembly
+    strand: formalisation
+    stage: release
     render: node-only
     status: not-applicable
     objective: >
-      Where the programme's findings are written up as the doctoral thesis.
+      The written column of the programme: one frozen report per study, and
+      the author's copy of every paper. Venues hold the public copy.
     question: >
       Not applicable: this is the destination, not a study.
     method: >
       Not applicable.
     depends_on: [epistemic-adequacy-spec, epistemic-adequacy-metamodel,
-                 epistemic-adequacy-toolkit, sysml2-bench,
+                 epistemic-adequacy-testing-toolkit, sysml2-bench,
                  epistemic-adequacy-probe, pressure-susceptibility-probe,
                  SysML-v2-API-Services-Arch-A, sysml-v2-metadata-graph-Arch-B,
                  sysml-v2-governed-substrate-Arch-C,

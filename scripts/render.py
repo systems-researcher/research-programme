@@ -1,10 +1,12 @@
 # Copyright (c) 2026 Jason D. Gower
 # SPDX-License-Identifier: MIT
-"""Pure rendering: MapData in, strings out. No file writes, no validation."""
+"""Pure rendering: MapData in, the README table and the app payload out.
+
+No file writes, no validation."""
 from __future__ import annotations
 
-import html
 import re
+
 
 from scripts import mapdata
 
@@ -13,23 +15,43 @@ END = "<!-- END:repos -->"
 STAGE_ORDER = mapdata.STAGES
 STRAND_ORDER = mapdata.STRANDS
 
-MERMAID_CDN = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
 
-# One fill per strand. These must differ: the strand is carried by colour, not by
-# layout, so identical palettes would silently erase the distinction.
-STRAND_STYLE = {
-    "adequacy": "fill:#e7effc,stroke:#3f6bb5,color:#10203a;",
-    "method-validation": "fill:#f2ecfb,stroke:#7a5bb0,color:#241436;",
-    "assembly": "fill:#eaf3ec,stroke:#4f8b62,color:#12291a;",
+# The token stem that paints each strand. Stems must differ: the strand is
+# carried by colour, not by layout, so a shared stem would silently erase the
+# distinction between two strands.
+STRAND_TOKEN = {
+    "adequacy": "adequacy",
+    "method-validation": "method",
+    "formalisation": "formalisation",
 }
 
+# STATUSES is ordered as the lifecycle runs: a study is designed, built, its
+# code released, its runs produce results, and the result is published. The
+# page relies on that order for the legend, so it is stated here rather than
+# left as an accident of how the tuple was typed.
+# One label per status, used verbatim by both the matrix cell and the legend.
+# They used to differ — cells said "design", the legend said "design stage" —
+# which read as two vocabularies for one thing. A cell has room for a single
+# word, so the label IS the single word and the legend carries the
+# explanation in STATUS_NOTES instead.
 STATUS_LABELS = {
-    "design": "design stage",
-    "built-runs-pending": "built, runs pending",
+    "design": "design",
+    "built-runs-pending": "built",
     "released": "released",
-    "results": "results in hand",
+    "results": "results",
     "published": "published",
     "not-applicable": "",
+}
+
+
+# What each state means, for the legend. The label answers "what is this
+# badge", the note answers "what has actually happened to the study".
+STATUS_NOTES = {
+    "design": "Written down and specified. No code that runs yet.",
+    "built-runs-pending": "The instrument exists and runs. Not yet run for record.",
+    "released": "Tagged and versioned. Others can depend on it.",
+    "results": "Run for record. The numbers are in hand and being read.",
+    "published": "The result is in the written record, in a venue or a frozen report.",
 }
 
 
@@ -81,216 +103,163 @@ def readme_block(current: str, data: mapdata.MapData) -> str:
     return pattern.sub(lambda _: replacement, current, count=1)
 
 
-def node_id(key: str) -> str:
-    """A Mermaid-safe node id. Keys carry hyphens and mixed case; ids may not."""
-    return "n_" + re.sub(r"[^A-Za-z0-9]", "_", key)
+def _collapse(value: object) -> str:
+    """Collapse the newlines a YAML folded scalar leaves behind.
+
+    Escaping is deliberately NOT done here. The README and the JSON payload
+    both want the plain text; only the HTML renderer needs entities.
+    """
+    return " ".join(str(value).split())
 
 
-def mermaid(data: mapdata.MapData) -> str:
-    """One subgraph per stage, strand carried by classDef, edges from depends_on."""
-    lines = ["graph LR"]
-    for stage in STAGE_ORDER:
-        members = [e for e in _ordered(data) if e["stage"] == stage]
-        if not members:
-            continue
-        label = html.escape(str(data.stages.get(stage, stage)))
-        lines.append(f'  subgraph stage_{stage}["{stage.title()} — {label}"]')
-        for member in members:
-            lines.append(f'    {node_id(member["key"])}["{member["key"]}"]')
-        lines.append("  end")
-
-    for member in _ordered(data):
-        for dependency in member.get("depends_on", []):
-            lines.append(f'  {node_id(dependency)} --> {node_id(member["key"])}')
-
-    for strand in STRAND_ORDER:
-        members = [e for e in data.repos if e["strand"] == strand]
-        if members:
-            lines.append(f"  classDef {strand.replace('-', '_')} {STRAND_STYLE[strand]}")
-            names = ",".join(node_id(m["key"]) for m in members)
-            lines.append(f"  class {names} {strand.replace('-', '_')};")
-
-    for member in data.repos:
-        if member.get("render", "card") == "card":
-            lines.append(f'  click {node_id(member["key"])} "#card-{member["key"]}"')
-
-    return "\n".join(lines)
+# ---------------------------------------------------------------------------
+# Payload for the React app.
+#
+# Every ordering, inversion, badge and card/node-only decision is resolved
+# HERE, in Python, under the tests that already cover those rules. The app
+# maps over what this produces and derives nothing, so a change to programme
+# logic stays a change to tested Python rather than drifting into TypeScript.
+# ---------------------------------------------------------------------------
 
 
-def _tidy(value: object) -> str:
-    """Collapse the newlines a YAML folded scalar leaves behind, then escape."""
-    return html.escape(" ".join(str(value).split()))
-
-
-def _anchor(key: str, data: mapdata.MapData) -> str:
-    """Link to a card, or plain text when the target renders no card."""
-    target = data.by_key.get(key, {})
-    if target.get("render", "card") == "node-only":
-        return f'<span class="plain">{html.escape(key)}</span>'
-    return f'<a href="#card-{html.escape(key)}">{html.escape(key)}</a>'
-
-
-def _card(entry: dict, data: mapdata.MapData, inverted: dict, live: dict | None) -> str:
+def _badges(entry: dict, live_repos: dict) -> list[str]:
+    """Visibility, status, and last-commit, in the order the card shows them."""
     key = entry["key"]
-    live_repos = (live or {}).get("repos", {})
-    known = key in live_repos
-
     if entry["owner"] == "local":
-        badge, title = "not yet published", html.escape(key)
+        first = "not yet published"
     else:
-        badge = live_repos.get(key, {}).get("visibility", "awaiting refresh")
-        if not known:
-            badge = "awaiting refresh"
-        url = f"https://github.com/{entry['owner']}/{key}"
-        title = (
-            f'<a href="{html.escape(url)}" rel="noopener">{html.escape(key)}'
-            '<span class="ext" aria-hidden="true">\u2197</span>'
-            '<span class="sr">(opens GitHub)</span></a>'
-        )
+        first = live_repos.get(key, {}).get("visibility") or "awaiting refresh"
+        if key not in live_repos:
+            first = "awaiting refresh"
 
-    parts = [f'<article class="card" id="card-{html.escape(key)}">']
-    parts.append(f"<h4>{title}</h4>")
-    badges = [badge, STATUS_LABELS.get(entry["status"], "")]
+    badges = [first, STATUS_LABELS.get(entry["status"], "")]
     pushed = live_repos.get(key, {}).get("pushed_at")
     if pushed:
         badges.append(f"last commit {str(pushed)[:10]}")
-    parts.append(
-        '<p class="badges">'
-        + "".join(f'<span class="badge">{html.escape(str(b))}</span>' for b in badges if b)
-        + "</p>"
-    )
-    for label, field_name in (
-        ("What it is for", "objective"),
-        ("Question", "question"),
-        ("Method", "method"),
-    ):
-        parts.append(f"<p><strong>{label}.</strong> {_tidy(entry[field_name])}</p>")
-
-    headline = entry.get("headline")
-    if headline:
-        parts.append(
-            '<p class="headline"><strong>Result.</strong> '
-            f'{_tidy(headline["text"])} '
-            f'<span class="source">Source: {_tidy(headline["source"])}</span></p>'
-        )
-    if entry.get("output"):
-        parts.append(f'<p class="output">{_tidy(entry["output"])}</p>')
-
-    depends = entry.get("depends_on", [])
-    feeds_into = inverted.get(key, [])
-    if depends:
-        parts.append(
-            '<p class="links"><strong>Depends on.</strong> '
-            + ", ".join(_anchor(k, data) for k in depends)
-            + "</p>"
-        )
-    if feeds_into:
-        parts.append(
-            '<p class="links"><strong>Feeds.</strong> '
-            + ", ".join(_anchor(k, data) for k in feeds_into)
-            + "</p>"
-        )
-    parts.append("</article>")
-    return "\n".join(parts)
+    return [b for b in badges if b]
 
 
-def page(data: mapdata.MapData, live: dict | None) -> str:
+def _link_refs(keys: list[str], data: mapdata.MapData) -> list[dict]:
+    """A dependency reference, already told whether it can be linked.
+
+    node-only entries render no card, so there is nothing to anchor to; the
+    app prints them as plain text. Deciding that here keeps the app from
+    needing to know what "render" means.
+    """
+    refs = []
+    for key in keys:
+        target = data.by_key.get(key, {})
+        refs.append({"key": key, "linkable": target.get("render", "card") == "card"})
+    return refs
+
+
+def payload(data: mapdata.MapData, live: dict | None) -> dict:
+    """The whole page as data, in final render order.
+
+    Text is collapsed but NOT html-escaped: React escapes on insertion, and
+    pre-escaping would double-encode. The newline collapse still belongs here
+    because it repairs YAML folded scalars, which React knows nothing about.
+    """
     inverted = mapdata.feeds(data)
-    programme = data.programme
+    live_repos = (live or {}).get("repos", {})
+    ordered = _ordered(data)
 
-    sections = []
+    strands = []
     for strand in STRAND_ORDER:
-        members = [e for e in _ordered(data) if e["strand"] == strand]
-        cards = [e for e in members if e.get("render", "card") == "card"]
+        members = [e for e in ordered if e["strand"] == strand]
         if not members:
             continue
         heading = data.strands.get(strand, {})
-        sections.append(f'<section id="strand-{strand}">')
-        sections.append(f'<h2>{html.escape(str(heading.get("title", strand)))}</h2>')
-        sections.append(f'<p class="subtitle">{_tidy(heading.get("subtitle", ""))}</p>')
-        if not cards:
-            # Every member renders node-only (the thesis terminus). The section still
-            # belongs on the page, but an empty one reads as a rendering fault, so
-            # name the entries in a line instead of emitting a bare heading.
-            for member in members:
-                sections.append(
-                    f'<p class="terminus"><strong>{html.escape(member["key"])}.</strong> '
-                    f'{_tidy(member["objective"])}</p>'
+        entries = []
+        for entry in members:
+            key = entry["key"]
+            is_card = entry.get("render", "card") == "card"
+            # Every entry carries its repository and its live badges, card or
+            # not. `render: node-only` means "no card in the strand section",
+            # not "no data": the written column is a real repository with a
+            # visibility and a last commit, and dropping them left it on the
+            # page as a bare name while every neighbour showed its state.
+            item = {
+                "key": key,
+                "stage": entry["stage"],
+                "card": is_card,
+                "objective": _collapse(entry["objective"]),
+                "url": (
+                    None
+                    if entry["owner"] == "local"
+                    else f"https://github.com/{entry['owner']}/{key}"
+                ),
+                "badges": _badges(entry, live_repos),
+                "dependsOn": _link_refs(entry.get("depends_on", []), data),
+                "feeds": _link_refs(inverted.get(key, []), data),
+            }
+            if is_card:
+                item.update(
+                    {
+                        "question": _collapse(entry["question"]),
+                        "method": _collapse(entry["method"]),
+                        "headline": (
+                            {
+                                "text": _collapse(entry["headline"]["text"]),
+                                "source": _collapse(entry["headline"]["source"]),
+                            }
+                            if entry.get("headline")
+                            else None
+                        ),
+                        "output": _collapse(entry["output"]) if entry.get("output") else None,
+                        # The repository's own result site, when it publishes
+                        # one. A reader wants the finding, not a file tree.
+                        "site": (live_repos.get(key, {}).get("homepage") or None),
+                        "paper": (
+                            {
+                                "title": _collapse(entry["paper"]["title"]),
+                                "authors": [
+                                    _collapse(a) for a in entry["paper"]["authors"]
+                                ],
+                                "venue": _collapse(entry["paper"]["venue"]),
+                                "year": entry["paper"]["year"],
+                                "doi": _collapse(entry["paper"]["doi"]),
+                                "status": entry["paper"]["status"],
+                            }
+                            if entry.get("paper")
+                            else None
+                        ),
+                    }
                 )
-        for stage in STAGE_ORDER:
-            in_stage = [e for e in cards if e["stage"] == stage]
-            if not in_stage:
-                continue
-            sections.append(f"<h3>{stage.title()}</h3>")
-            sections.append(f'<p class="stage-note">{_tidy(data.stages.get(stage, ""))}</p>')
-            sections.extend(_card(e, data, inverted, live) for e in in_stage)
-        sections.append("</section>")
+            entries.append(item)
 
-    footer = []
-    if live and live.get("generated_at"):
-        footer.append(
-            f'<p>Live repository data last refreshed {html.escape(str(live["generated_at"]))}.</p>'
+        strands.append(
+            {
+                "id": strand,
+                "token": STRAND_TOKEN[strand],
+                "title": str(heading.get("title", strand)),
+                "subtitle": _collapse(heading.get("subtitle", "")),
+                "entries": entries,
+            }
         )
-    footer.append(
-        "<p>Repositories marked private are readable on request — contact the author.</p>"
-    )
 
-    return f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{html.escape(str(programme.get("title", "Research programme")))}</title>
-<style>
-:root {{ --bg:#fbfbfd; --fg:#14161a; --muted:#5a6270; --line:#dfe3ea; --card:#ffffff; --accent:#2f4f8f; }}
-@media (prefers-color-scheme: dark) {{
-  :root {{ --bg:#111318; --fg:#e8eaee; --muted:#98a1b0; --line:#272b33; --card:#171a20; --accent:#9db6f0; }}
-}}
-* {{ box-sizing: border-box; }}
-body {{ margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; }}
-main {{ max-width: 62rem; margin: 0 auto; padding: 2rem 1.25rem 5rem; }}
-h1 {{ font-size: 1.9rem; line-height:1.25; margin:0 0 .5rem; }}
-h2 {{ font-size: 1.4rem; margin: 3rem 0 .25rem; padding-top:1.5rem; border-top:1px solid var(--line); }}
-h3 {{ font-size: 1.05rem; margin: 2rem 0 .25rem; }}
-.subtitle, .stage-note {{ color: var(--muted); margin:.25rem 0 1rem; }}
-.card {{ background:var(--card); border:1px solid var(--line); border-radius:.6rem; padding:1rem 1.15rem; margin:1rem 0; }}
-.card h4 {{ margin:0 0 .5rem; font-size:1.05rem; }}
-.ext {{ font-size:.75em; margin-left:.15em; }}
-.sr {{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }}
-.badges {{ margin:0 0 .75rem; }}
-.badge {{ display:inline-block; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em;
-  border:1px solid var(--line); border-radius:1rem; padding:.1rem .6rem; margin-right:.4rem; color:var(--muted); }}
-.card p {{ margin:.4rem 0; }}
-.headline {{ border-left:3px solid var(--accent); padding-left:.75rem; }}
-.source, .output {{ color:var(--muted); font-size:.85rem; }}
-.links {{ font-size:.9rem; }}
-.plain {{ color:var(--muted); }}
-.terminus {{ color:var(--muted); }}
-a {{ color:var(--accent); }}
-#diagram {{ overflow-x:auto; border:1px solid var(--line); border-radius:.6rem; padding:1rem; background:var(--card); }}
-footer {{ margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }}
-</style>
-</head>
-<body>
-<main>
-<h1>{html.escape(str(programme.get("title", "")))}</h1>
-<p>{html.escape(" ".join(str(programme.get("question", "")).split()))}</p>
-<p><strong>{html.escape(" ".join(str(programme.get("move", "")).split()))}</strong></p>
-
-<div id="diagram"><pre class="mermaid">
-{mermaid(data)}
-</pre></div>
-
-{chr(10).join(sections)}
-
-<footer>
-{chr(10).join(footer)}
-</footer>
-</main>
-<script type="module">
-import mermaid from "{MERMAID_CDN}";
-mermaid.initialize({{ startOnLoad: true, theme: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "default" }});
-</script>
-</body>
-</html>
-"""
+    return {
+        # The lifecycle, in order, for the legend. Generated from the same
+        # enum the validator uses, so the key on the page cannot document a
+        # vocabulary the data does not have.
+        "statuses": [
+            {
+                "id": status,
+                "label": STATUS_LABELS[status],
+                "note": STATUS_NOTES[status],
+            }
+            for status in mapdata.STATUSES
+            if status != "not-applicable"
+        ],
+        "programme": {
+            "title": str(data.programme.get("title", "Research programme")),
+            "question": _collapse(data.programme.get("question", "")),
+            "move": _collapse(data.programme.get("move", "")),
+        },
+        "stages": [
+            {"id": stage, "title": stage.title(), "note": _collapse(data.stages.get(stage, ""))}
+            for stage in STAGE_ORDER
+        ],
+        "strands": strands,
+        "refreshedAt": (live or {}).get("generated_at"),
+    }

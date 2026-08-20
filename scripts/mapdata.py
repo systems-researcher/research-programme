@@ -3,7 +3,7 @@
 """Load, validate, and invert the research-programme map data.
 
 This module knows nothing about rendering. It turns repos.yml into a MapData
-object, checks it against the nine rules in the design spec (§5), and derives
+object, checks it against the ten rules in the design spec (§5), and derives
 the reverse edge direction ("what feeds this") from the authored depends_on.
 """
 from __future__ import annotations
@@ -15,8 +15,8 @@ from typing import Any
 
 import yaml
 
-STRANDS = ("adequacy", "method-validation", "assembly")
-STAGES = ("define", "measure", "evidence", "architecture", "assembly")
+STRANDS = ("adequacy", "method-validation", "formalisation")
+STAGES = ("define", "measure", "evidence", "architecture", "release")
 STATUSES = (
     "design",
     "built-runs-pending",
@@ -28,7 +28,7 @@ STATUSES = (
 RENDERS = ("card", "node-only")
 REQUIRED = ("key", "owner", "strand", "stage", "objective", "question", "method", "status")
 RESULT_STATUSES = ("results", "published")
-TERMINUS = "Thesis-Work-Area"
+TERMINUS = "publications"
 OWNER_RE = re.compile(r"^[A-Za-z0-9-]+$")
 
 
@@ -86,6 +86,7 @@ def check(data: MapData) -> list[str]:
     errors += _rule_7_owner_and_duplicates(data)
     errors += _rule_8_blocks_cover_every_entry(data)
     errors += _rule_9_acyclic(data)
+    errors += _rule_10_paper_citation(data)
     return errors
 
 
@@ -130,7 +131,7 @@ def _rule_2_enumerated_values(data: MapData) -> list[str]:
 
 def _rule_4_terminus_supplies_nothing(data: MapData) -> list[str]:
     return [
-        f"{entry.get('key')}: depends_on names {TERMINUS}; the thesis consumes, it never supplies"
+        f"{entry.get('key')}: depends_on names {TERMINUS}; the written column consumes, it never supplies"
         for entry in data.repos
         if TERMINUS in entry.get("depends_on", [])
     ]
@@ -173,6 +174,63 @@ def _rule_6_headline_attribution(data: MapData) -> list[str]:
                     f"{entry.get('key')}: headline is missing '{part}'; "
                     "every published number must name the artefact it came from"
                 )
+    return errors
+
+
+DOI_PREFIX = "10."
+PAPER_FIELDS = ("title", "authors", "venue", "year", "doi", "status")
+# A publication's own lifecycle, which is not the study's. A study can be
+# `released` with its paper still `submitted`, and the probe is `published` as
+# a study while its paper is only `accepted` — the proceedings are not out.
+# Keeping the two apart is what stops the page claiming a DOI resolves when
+# it does not.
+PAPER_STATUSES = ("in-preparation", "submitted", "in-review", "accepted", "published")
+
+
+def _rule_10_paper_citation(data: MapData) -> list[str]:
+    """A paper must carry a whole citation, and say whether its DOI resolves.
+
+    A citation is a claim about the published record, so a partial one is a
+    false one. Authors are required because a co-authored paper exported with
+    no author list credits nobody. Status is required because an accepted
+    paper's DOI does not resolve until the venue posts the proceedings, and a
+    page that links it anyway sends the reader to a 404.
+
+    This rule checks shape, not truth. It cannot tell whether a title is the
+    real one — only transcribing from the study's CITATION.cff can do that.
+    """
+    errors = []
+    for entry in data.repos:
+        paper = entry.get("paper")
+        if not paper:
+            continue
+        name = entry.get("key")
+        if not isinstance(paper, dict):
+            errors.append(
+                f"{name}: paper must be a mapping of {', '.join(PAPER_FIELDS)}"
+            )
+            continue
+        for part in PAPER_FIELDS:
+            if not paper.get(part):
+                errors.append(
+                    f"{name}: paper is missing '{part}'; "
+                    "a partial citation is a false claim about the record"
+                )
+        authors = paper.get("authors")
+        if authors and not isinstance(authors, list):
+            errors.append(f"{name}: paper authors must be a list, one per author")
+        doi = str(paper.get("doi", ""))
+        if doi and not doi.startswith(DOI_PREFIX):
+            errors.append(
+                f"{name}: doi '{doi}' does not start with '{DOI_PREFIX}'; "
+                "write the bare DOI, not a URL or a 'doi:' prefix"
+            )
+        status = paper.get("status")
+        if status and status not in PAPER_STATUSES:
+            errors.append(
+                f"{name}: paper status is '{status}', not one of "
+                + ", ".join(PAPER_STATUSES)
+            )
     return errors
 
 

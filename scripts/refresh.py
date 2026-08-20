@@ -20,7 +20,10 @@ from scripts import mapdata
 ROOT = Path(__file__).resolve().parent.parent
 REPOS_YML = ROOT / "repos.yml"
 LIVE_JSON = ROOT / "data" / "live.json"
-LIVE_FIELDS = ("visibility", "pushed_at")
+# Only fields the page actually renders. homepage is the repository's own
+# result site: three of these repos publish their findings to GitHub Pages,
+# and a reader sent "look at my research" wants the finding, not a file tree.
+LIVE_FIELDS = ("visibility", "pushed_at", "homepage")
 
 
 class GhError(Exception):
