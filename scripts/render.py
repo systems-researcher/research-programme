@@ -186,9 +186,13 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
                         "paper": (
                             {
                                 "title": _collapse(entry["paper"]["title"]),
+                                "authors": [
+                                    _collapse(a) for a in entry["paper"]["authors"]
+                                ],
                                 "venue": _collapse(entry["paper"]["venue"]),
                                 "year": entry["paper"]["year"],
                                 "doi": _collapse(entry["paper"]["doi"]),
+                                "status": entry["paper"]["status"],
                             }
                             if entry.get("paper")
                             else None

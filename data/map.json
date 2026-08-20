@@ -75,7 +75,7 @@
               "linkable": true
             },
             {
-              "key": "epistemic-adequacy-toolkit",
+              "key": "epistemic-adequacy-testing-toolkit",
               "linkable": true
             },
             {
@@ -110,7 +110,7 @@
               "linkable": true
             },
             {
-              "key": "epistemic-adequacy-toolkit",
+              "key": "epistemic-adequacy-testing-toolkit",
               "linkable": true
             }
           ],
@@ -122,11 +122,11 @@
           ]
         },
         {
-          "key": "epistemic-adequacy-toolkit",
+          "key": "epistemic-adequacy-testing-toolkit",
           "stage": "measure",
           "card": true,
           "objective": "The instrument: it scores a substrate against the eighteen clauses and joins that score to how an AI consumer then behaves, so that adequacy is the independent variable and consumer behaviour the dependent one.",
-          "url": "https://github.com/systems-researcher/epistemic-adequacy-toolkit",
+          "url": "https://github.com/systems-researcher/epistemic-adequacy-testing-toolkit",
           "badges": [
             "private",
             "built, runs pending",
@@ -200,10 +200,16 @@
           "output": "Release v0.2.0, 2026-08-17.",
           "site": "https://systems-researcher.github.io/epistemic-adequacy-probe/",
           "paper": {
-            "title": "Epistemic Adequacy for AI Consumers of Engineering Models",
-            "venue": "MODELS 2026 (NIER)",
+            "title": "Models as Governed Interfaces for AI-Native MBSE: Read-Side Adequacy and Write-Side Admissibility",
+            "authors": [
+              "Gower, Jason D.",
+              "Henshaw, Michael J. de C.",
+              "Ji, Siyuan"
+            ],
+            "venue": "Proceedings of the ACM/IEEE 29th International Conference on Model Driven Engineering Languages and Systems (MODELS 2026), New Ideas and Emerging Results Track",
             "year": 2026,
-            "doi": "10.1145/3822455.3838783"
+            "doi": "10.1145/3822455.3838783",
+            "status": "accepted"
           },
           "dependsOn": [],
           "feeds": [
@@ -465,5 +471,5 @@
       ]
     }
   ],
-  "refreshedAt": "2026-08-20T10:23:06+00:00"
+  "refreshedAt": "2026-08-20T10:57:12+00:00"
 }

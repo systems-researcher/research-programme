@@ -64,8 +64,11 @@ for strand in payload["strands"]:
         for url in (entry.get("url"), entry.get("site")):
             if url:
                 links.add(url)
-        if entry.get("paper"):
-            links.add(f"https://doi.org/{entry['paper']['doi']}")
+        # Only a published paper is linked. An accepted one's DOI is shown as
+        # text because it does not resolve until the venue posts.
+        paper = entry.get("paper")
+        if paper and paper.get("status") == "published":
+            links.add(f"https://doi.org/{paper['doi']}")
 links = sorted(links)
 for link in links:
     print(link)

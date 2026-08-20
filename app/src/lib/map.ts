@@ -17,12 +17,15 @@ export type LinkRef = {
 export type Headline = { text: string; source: string }
 
 /** A peer-reviewed paper this repository is the artefact for. Validated in
- *  Python (rule 10): all four fields present, and a bare DOI. */
+ *  Python (rule 10): every field present, a bare DOI, and a known status. */
 export type Paper = {
   title: string
+  authors: string[]
   venue: string
   year: number
   doi: string
+  /** "accepted" means the DOI does not resolve yet, so it must not be a link. */
+  status: "accepted" | "published"
 }
 
 export type Entry = {

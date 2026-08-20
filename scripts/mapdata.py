@@ -178,14 +178,21 @@ def _rule_6_headline_attribution(data: MapData) -> list[str]:
 
 
 DOI_PREFIX = "10."
+PAPER_FIELDS = ("title", "authors", "venue", "year", "doi", "status")
+PAPER_STATUSES = ("accepted", "published")
 
 
 def _rule_10_paper_citation(data: MapData) -> list[str]:
-    """A paper must carry enough to cite it, and a real DOI.
+    """A paper must carry a whole citation, and say whether its DOI resolves.
 
-    The DOI is the strongest claim on the page: it says this work is in the
-    published record. A half-filled citation would put a venue on the page
-    with nothing a reader could follow, which is worse than no citation.
+    A citation is a claim about the published record, so a partial one is a
+    false one. Authors are required because a co-authored paper exported with
+    no author list credits nobody. Status is required because an accepted
+    paper's DOI does not resolve until the venue posts the proceedings, and a
+    page that links it anyway sends the reader to a 404.
+
+    This rule checks shape, not truth. It cannot tell whether a title is the
+    real one — only transcribing from the study's CITATION.cff can do that.
     """
     errors = []
     for entry in data.repos:
@@ -194,19 +201,30 @@ def _rule_10_paper_citation(data: MapData) -> list[str]:
             continue
         name = entry.get("key")
         if not isinstance(paper, dict):
-            errors.append(f"{name}: paper must be a mapping of title, venue, year and doi")
+            errors.append(
+                f"{name}: paper must be a mapping of {', '.join(PAPER_FIELDS)}"
+            )
             continue
-        for part in ("title", "venue", "year", "doi"):
+        for part in PAPER_FIELDS:
             if not paper.get(part):
                 errors.append(
                     f"{name}: paper is missing '{part}'; "
-                    "a citation the reader cannot follow is worse than none"
+                    "a partial citation is a false claim about the record"
                 )
+        authors = paper.get("authors")
+        if authors and not isinstance(authors, list):
+            errors.append(f"{name}: paper authors must be a list, one per author")
         doi = str(paper.get("doi", ""))
         if doi and not doi.startswith(DOI_PREFIX):
             errors.append(
                 f"{name}: doi '{doi}' does not start with '{DOI_PREFIX}'; "
                 "write the bare DOI, not a URL or a 'doi:' prefix"
+            )
+        status = paper.get("status")
+        if status and status not in PAPER_STATUSES:
+            errors.append(
+                f"{name}: paper status is '{status}', not one of "
+                + ", ".join(PAPER_STATUSES)
             )
     return errors
 

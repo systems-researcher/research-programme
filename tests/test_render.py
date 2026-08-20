@@ -340,10 +340,12 @@ def test_a_paper_is_carried_whole_so_the_page_can_cite_it() -> None:
             entry(
                 status="published",
                 paper={
-                    "title": "Epistemic Adequacy",
-                    "venue": "MODELS 2026 (NIER)",
+                    "title": "Models as Governed Interfaces",
+                    "authors": ["Gower, Jason D.", "Ji, Siyuan"],
+                    "venue": "Proceedings of MODELS 2026, NIER Track",
                     "year": 2026,
                     "doi": "10.1145/3822455.3838783",
+                    "status": "accepted",
                 },
             )
         ),
@@ -351,10 +353,12 @@ def test_a_paper_is_carried_whole_so_the_page_can_cite_it() -> None:
     )
 
     assert find(payload, "alpha")["paper"] == {
-        "title": "Epistemic Adequacy",
-        "venue": "MODELS 2026 (NIER)",
+        "title": "Models as Governed Interfaces",
+        "authors": ["Gower, Jason D.", "Ji, Siyuan"],
+        "venue": "Proceedings of MODELS 2026, NIER Track",
         "year": 2026,
         "doi": "10.1145/3822455.3838783",
+        "status": "accepted",
     }
 
 
