@@ -111,7 +111,7 @@ export function Matrix({
           <tr>
             <th
               scope="col"
-              className="sticky left-0 z-20 w-40 border-b border-border bg-background pb-2 pr-3 text-left align-bottom"
+              className="sticky left-0 z-20 w-56 border-b border-border bg-background pb-2 pr-4 text-left align-bottom"
             >
               <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
                 Strand
@@ -148,6 +148,12 @@ export function Matrix({
                   />
                   <span className="block text-xs font-semibold leading-tight text-foreground">
                     {strand.title}
+                  </span>
+                  {/* The strand's own question, hand-authored in repos.yml.
+                      It is the reason the row exists, so it belongs beside
+                      the name rather than only in the data. */}
+                  <span className="mt-1.5 block text-[11px] font-normal leading-snug text-muted-foreground">
+                    {strand.subtitle}
                   </span>
                 </th>
                 {stages.map((stage) => (
