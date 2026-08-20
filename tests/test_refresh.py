@@ -49,6 +49,7 @@ def test_successful_refresh_records_only_the_fields_the_page_renders() -> None:
                 "default_branch": "main",
                 "pushed_at": "2026-08-19T08:00:00Z",
                 "stargazers_count": 3,
+                "homepage": "https://example.github.io/alpha/",
             }
         }
     )
@@ -58,6 +59,7 @@ def test_successful_refresh_records_only_the_fields_the_page_renders() -> None:
     assert result.repos["alpha"] == {
         "visibility": "private",
         "pushed_at": "2026-08-19T08:00:00Z",
+        "homepage": "https://example.github.io/alpha/",
     }
     assert result.stale == []
 

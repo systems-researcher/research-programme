@@ -307,3 +307,58 @@ def test_every_strand_carries_the_token_that_colours_its_row() -> None:
 
     for strand in payload["strands"]:
         assert strand["token"] in render.STRAND_TOKEN.values()
+
+
+def test_a_published_result_site_is_carried_when_github_reports_one() -> None:
+    """Three of these repositories publish their findings to GitHub Pages.
+    The reader wants the finding, so the map has to be able to link it."""
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {"alpha": {"visibility": "public", "homepage": "https://x.github.io/alpha/"}},
+        },
+    )
+
+    assert find(payload, "alpha")["site"] == "https://x.github.io/alpha/"
+
+
+def test_an_empty_homepage_is_carried_as_absent_not_as_a_blank_link() -> None:
+    """GitHub returns "" rather than null for a repository with no homepage,
+    which would render as a link to nowhere."""
+    payload = render.payload(
+        data_with(entry()),
+        {"generated_at": "t", "repos": {"alpha": {"visibility": "public", "homepage": ""}}},
+    )
+
+    assert find(payload, "alpha")["site"] is None
+
+
+def test_a_paper_is_carried_whole_so_the_page_can_cite_it() -> None:
+    payload = render.payload(
+        data_with(
+            entry(
+                status="published",
+                paper={
+                    "title": "Epistemic Adequacy",
+                    "venue": "MODELS 2026 (NIER)",
+                    "year": 2026,
+                    "doi": "10.1145/3822455.3838783",
+                },
+            )
+        ),
+        LIVE_EMPTY,
+    )
+
+    assert find(payload, "alpha")["paper"] == {
+        "title": "Epistemic Adequacy",
+        "venue": "MODELS 2026 (NIER)",
+        "year": 2026,
+        "doi": "10.1145/3822455.3838783",
+    }
+
+
+def test_an_entry_without_a_paper_carries_none() -> None:
+    payload = render.payload(data_with(entry()), LIVE_EMPTY)
+
+    assert find(payload, "alpha")["paper"] is None

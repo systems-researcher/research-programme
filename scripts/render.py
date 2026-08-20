@@ -180,6 +180,19 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
                             else None
                         ),
                         "output": _collapse(entry["output"]) if entry.get("output") else None,
+                        # The repository's own result site, when it publishes
+                        # one. A reader wants the finding, not a file tree.
+                        "site": (live_repos.get(key, {}).get("homepage") or None),
+                        "paper": (
+                            {
+                                "title": _collapse(entry["paper"]["title"]),
+                                "venue": _collapse(entry["paper"]["venue"]),
+                                "year": entry["paper"]["year"],
+                                "doi": _collapse(entry["paper"]["doi"]),
+                            }
+                            if entry.get("paper")
+                            else None
+                        ),
                         "dependsOn": _link_refs(entry.get("depends_on", []), data),
                         "feeds": _link_refs(inverted.get(key, []), data),
                     }

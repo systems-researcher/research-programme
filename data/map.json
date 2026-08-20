@@ -53,6 +53,8 @@
           "method": "Five criteria, EA1 to EA5, decomposed into eighteen MUST/SHOULD/MAY clauses, each carrying a Check line written against an abstract substrate and organised into three conformance profiles, with a non-normative SysML v2 binding and a machine-readable clause manifest validated against the prose in CI. EA1 to EA4 are labelled evidenced; all three EA5 clauses are labelled hypothesis.",
           "headline": null,
           "output": "v0.1.0, released 2026-08-18. The criteria originate in the MODELS 2026 NIER paper, doi:10.1145/3822455.3838783, which resolves on publication.",
+          "site": null,
+          "paper": null,
           "dependsOn": [
             {
               "key": "epistemic-adequacy-probe",
@@ -100,6 +102,8 @@
           "method": "One hand-edited schema generates both an OWL 2 plus SHACL ontology and the SysML v2 library, with reader, resolver, and extractor stages emitting the toolkit's canonical claim graph. Correctness is pinned by a bare-versus- annotated Apollo reference pair under a stated profile regression contract and an eighteen-row clause trace in CI. The repository exists because parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation accepting a derivation whose upstream references nothing.",
           "headline": null,
           "output": null,
+          "site": null,
+          "paper": null,
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
@@ -132,6 +136,8 @@
           "method": "The static stage runs deterministically with no model calls, scoring a substrate against the clause manifest it pins by SHA-256. The behavioural runner that joins adequacy to consumer answers is specified and not yet built, so the join the instrument exists for is not yet demonstrable.",
           "headline": null,
           "output": "v0.1.0",
+          "site": null,
+          "paper": null,
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
@@ -164,6 +170,8 @@
           "method": "Four task families generated procedurally from a semantic intermediate representation with programmatic ground truth, plus two cross-cutting headline metrics, confabulation rate and format-failure rate. The generator and truth layer exist; the wild set that draws on the public Apollo 11 model is human-gated and still unpopulated, so the bench does not yet consume anything the probe produced.",
           "headline": null,
           "output": null,
+          "site": null,
+          "paper": null,
           "dependsOn": [],
           "feeds": [
             {
@@ -189,7 +197,14 @@
             "text": "Under a governed instruction the bare model gave ungrounded answers on 6 of 45 question-cells (13.3%); the sidecar cut that to 1 of 45 (2.2%). Under a deadline-style pressed instruction over the five hardest questions the bare model reached 9 of 15 (60%), and the strongest model was the most fluent confabulator — 4 of its 5 pressured answers ungrounded, every one historically plausible. The sidecar halved the pressed rate to 5 of 15 (33%) without eliminating it.",
             "source": "epistemic-adequacy-probe v0.2.0, RESULTS.md, \"Headline rates\". The repository also records a cross-family judge recheck of the pressed plus-sidecar cell; read RESULTS.md before quoting that cell alone."
           },
-          "output": "doi:10.1145/3822455.3838783 (MODELS 2026 NIER); release v0.2.0, 2026-08-17.",
+          "output": "Release v0.2.0, 2026-08-17.",
+          "site": "https://systems-researcher.github.io/epistemic-adequacy-probe/",
+          "paper": {
+            "title": "Epistemic Adequacy for AI Consumers of Engineering Models",
+            "venue": "MODELS 2026 (NIER)",
+            "year": 2026,
+            "doi": "10.1145/3822455.3838783"
+          },
           "dependsOn": [],
           "feeds": [
             {
@@ -221,6 +236,8 @@
           "method": "Six scenarios drawn from design review, verification sign-off, and anomaly investigation, an influence-prompt library of seven levers, ensemble judging, and an analysis layer. Harness and scenario set are built; the runs have not been executed.",
           "headline": null,
           "output": null,
+          "site": "https://jgsystemsconsulting.github.io/pressure-susceptibility-probe/",
+          "paper": null,
           "dependsOn": [
             {
               "key": "epistemic-adequacy-probe",
@@ -257,6 +274,8 @@
           "method": "A research fork pinned to vanilla upstream, adding four metadata-def schemas and a Python admissibility gate in front of the API, evaluated by a three-arm harness. The design contract is complete; the gate checks still raise NotImplementedError.",
           "headline": null,
           "output": null,
+          "site": null,
+          "paper": null,
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
@@ -289,6 +308,8 @@
           "method": "A Python governance service is the sole write path to both stores, running a graph-write gate and a promotion gate with staleness blocking before any guarded commit upstream. The design contract is complete; implementation has not started. Comparing A against B requires Candidate A deployed and runnable alongside it.",
           "headline": null,
           "output": null,
+          "site": null,
+          "paper": null,
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
@@ -321,6 +342,8 @@
           "method": "A governance API is the sole external write path: it evaluates the admissibility conditions before commit, confines signed AI writes to the companion namespace, and promotes accepted content in one transaction carrying the second-party review record, with append-only audit history held in-store. The design contract is complete; implementation has not started.",
           "headline": null,
           "output": null,
+          "site": null,
+          "paper": null,
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
@@ -357,6 +380,8 @@
           "method": "A consistent-practitioner design in which an AI agent stands in as the reviewer, so representation is the only factor that varies and reviewer skill is held constant, scored on a four-task battery across eight substrate variants in three families: document, model, and database.",
           "headline": null,
           "output": null,
+          "site": "https://systems-researcher.github.io/model-vs-document-defect-probe/",
+          "paper": null,
           "dependsOn": [
             {
               "key": "pressure-susceptibility-probe",
@@ -384,6 +409,8 @@
           "method": "The same decision run many times over with an AI agent standing in as the analyst, varying only cosmetic factors, reported as a flip-rate. The test design is written; no harness is built.",
           "headline": null,
           "output": null,
+          "site": null,
+          "paper": null,
           "dependsOn": [
             {
               "key": "pressure-susceptibility-probe",
@@ -411,6 +438,8 @@
           "method": "The agent's ordering is scored against the provably minimal-feedback ordering produced by a known graph algorithm, split by whether the agent also had to elicit the matrix or was handed it clean, across several models. The test design is written; no harness is built.",
           "headline": null,
           "output": null,
+          "site": null,
+          "paper": null,
           "dependsOn": [],
           "feeds": [
             {
@@ -436,5 +465,5 @@
       ]
     }
   ],
-  "refreshedAt": "2026-08-19T14:53:44+00:00"
+  "refreshedAt": "2026-08-20T10:23:06+00:00"
 }

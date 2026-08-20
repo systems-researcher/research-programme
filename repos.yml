@@ -5,6 +5,13 @@
 # data/live.json, site/index.html and the README table are all generated from
 # this file. Never write a number here that you cannot trace to a file in the
 # repository it describes.
+#
+# Optional per-entry block, validated by rule 10:
+#   paper:
+#     title: "..."          # all four required together
+#     venue: "MODELS 2026 (NIER)"
+#     year: 2026
+#     doi: "10.1145/..."    # bare DOI, not a URL and not a 'doi:' prefix
 
 programme:
   title: "Architecting Trustworthy AI Integration in MBSE"
@@ -176,8 +183,13 @@ repos:
         repository also records a cross-family judge recheck of the pressed
         plus-sidecar cell; read RESULTS.md before quoting that cell alone.
     output: >
-      doi:10.1145/3822455.3838783 (MODELS 2026 NIER); release v0.2.0,
-      2026-08-17.
+      Release v0.2.0, 2026-08-17.
+    paper:
+      title: >
+        Epistemic Adequacy for AI Consumers of Engineering Models
+      venue: "MODELS 2026 (NIER)"
+      year: 2026
+      doi: "10.1145/3822455.3838783"
     depends_on: []
 
   - key: pressure-susceptibility-probe

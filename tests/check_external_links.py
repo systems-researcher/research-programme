@@ -23,10 +23,20 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-# GitHub is the only host the programme links to. Fonts are bundled, not
-# fetched, and Mermaid is an npm dependency rather than a CDN script — the
-# whole point of both decisions is that this set stays at one entry.
-ALLOWED = {"github.com"}
+# Every host the page is allowed to send a reader to. Fonts are bundled and
+# there is no CDN script, so nothing here is fetched on load — these are
+# destinations a reader clicks.
+#
+# github.io is where the result sites live; the exact subdomain follows
+# whoever owns the repository, so it is matched as a suffix rather than
+# listed. Adding to this set should be a deliberate act: an unexpected host
+# is how a tracking pixel or a dead redirect gets onto a research page.
+ALLOWED = {"github.com", "doi.org"}
+ALLOWED_SUFFIXES = ("github.io",)
+
+
+def permitted(host: str) -> bool:
+    return host in ALLOWED or host.endswith(ALLOWED_SUFFIXES)
 
 ROOT = Path(__file__).resolve().parent.parent
 URL = re.compile(r"""https?://[^\s"'<>)]+""")
@@ -46,12 +56,17 @@ def hosts_in(text: str) -> set[str]:
 
 
 payload = json.loads((ROOT / "data" / "map.json").read_text(encoding="utf-8"))
-links = sorted(
-    entry["url"]
-    for strand in payload["strands"]
-    for entry in strand["entries"]
-    if entry.get("url")
-)
+# Everything the page can send a reader to: the repository, its result site,
+# and the DOI resolver the citation block builds a link to.
+links = set()
+for strand in payload["strands"]:
+    for entry in strand["entries"]:
+        for url in (entry.get("url"), entry.get("site")):
+            if url:
+                links.add(url)
+        if entry.get("paper"):
+            links.add(f"https://doi.org/{entry['paper']['doi']}")
+links = sorted(links)
 for link in links:
     print(link)
 
@@ -68,11 +83,12 @@ fetched = {
 }
 found = fetched | {urlparse(link).netloc for link in links}
 
-unexpected = sorted(host for host in found if host not in ALLOWED)
+unexpected = sorted(host for host in found if not permitted(host))
 if unexpected:
     print("unexpected hosts: " + ", ".join(unexpected), file=sys.stderr)
     raise SystemExit(1)
 print(
-    f"{len(links)} repository links, all to {sorted(ALLOWED)[0]}; "
+    f"{len(links)} outbound links across "
+    f"{len(sorted({urlparse(link).netloc for link in links}))} permitted hosts; "
     f"the built page fetches nothing off-origin"
 )

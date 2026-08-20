@@ -16,6 +16,15 @@ export type LinkRef = {
 
 export type Headline = { text: string; source: string }
 
+/** A peer-reviewed paper this repository is the artefact for. Validated in
+ *  Python (rule 10): all four fields present, and a bare DOI. */
+export type Paper = {
+  title: string
+  venue: string
+  year: number
+  doi: string
+}
+
 export type Entry = {
   key: string
   stage: string
@@ -28,6 +37,9 @@ export type Entry = {
   method?: string
   headline?: Headline | null
   output?: string | null
+  /** The repository's own published result site, when it has one. */
+  site?: string | null
+  paper?: Paper | null
   dependsOn?: LinkRef[]
   feeds?: LinkRef[]
 }

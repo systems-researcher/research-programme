@@ -52,7 +52,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if args.check:
-        print(f"{REPOS_YML.name}: {len(data.repos)} entries, all nine rules pass")
+        print(f"{REPOS_YML.name}: {len(data.repos)} entries, all ten rules pass")
         return 0
 
     live = None

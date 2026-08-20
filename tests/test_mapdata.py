@@ -263,3 +263,80 @@ def test_feeds_is_the_inverse_of_depends_on() -> None:
 
     assert feeds["alpha"] == ["beta"]
     assert feeds["beta"] == []
+
+
+# --- Rule 10: paper citations -------------------------------------------------
+
+
+def _with_paper(fields: dict[str, str]) -> str:
+    """MINIMAL's single entry, plus a paper block built from `fields`.
+
+    MINIMAL is dedented, so the entry's keys sit at four spaces
+    ("    owner: ..."). The paper mapping joins them there, its members at six.
+    """
+    lines = ["    paper:"]
+    lines += [f"      {name}: {value}" for name, value in fields.items()]
+    return MINIMAL.rstrip("\n") + "\n" + "\n".join(lines) + "\n"
+
+
+def test_a_complete_paper_citation_passes(tmp_path: Path) -> None:
+    data = mapdata.load(
+        write(
+            tmp_path,
+            _with_paper(
+                {
+                    "title": '"T"',
+                    "venue": '"MODELS 2026 (NIER)"',
+                    "year": "2026",
+                    "doi": '"10.1145/3822455.3838783"',
+                }
+            ),
+        )
+    )
+
+    assert mapdata.check(data) == []
+
+
+@pytest.mark.parametrize("missing", ["title", "venue", "year", "doi"])
+def test_a_half_filled_citation_is_rejected(tmp_path: Path, missing: str) -> None:
+    """A venue on the page with nothing a reader can follow is worse than
+    no citation at all."""
+    fields = {
+        "title": '"T"',
+        "venue": '"MODELS 2026 (NIER)"',
+        "year": "2026",
+        "doi": '"10.1145/3822455.3838783"',
+    }
+    del fields[missing]
+    data = mapdata.load(write(tmp_path, _with_paper(fields)))
+
+    errors = mapdata.check(data)
+
+    assert any(missing in error and "paper is missing" in error for error in errors)
+
+
+def test_a_doi_written_as_a_url_is_rejected(tmp_path: Path) -> None:
+    """The bare DOI is what a citation manager and a resolver both want."""
+    data = mapdata.load(
+        write(
+            tmp_path,
+            _with_paper(
+                {
+                    "title": '"T"',
+                    "venue": '"V"',
+                    "year": "2026",
+                    "doi": '"https://doi.org/10.1145/3822455.3838783"',
+                }
+            ),
+        )
+    )
+
+    errors = mapdata.check(data)
+
+    assert any("does not start with" in error for error in errors)
+
+
+def test_an_entry_without_a_paper_is_unaffected(tmp_path: Path) -> None:
+    data = mapdata.load(write(tmp_path, MINIMAL))
+
+    assert mapdata.check(data) == []

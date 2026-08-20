@@ -113,4 +113,5 @@ free. That is the cost of this decision.
 | 2026-08-19 | Phase banner states "not a GOV.UK service" | Avoid impersonating a government site |
 | 2026-08-20 | **Supersedes all three rows above.** Rebuild on shadcn/ui + Vite + React; drop `design/tokens.css`, the black masthead, and the phase banner | The GOV.UK page was accessible but read as a government form. The banner existed only because the page borrowed GOV.UK tokens; with those gone its justification went too. Accepts a Node toolchain, which the earlier rationale had rejected. |
 | 2026-08-20 | Python emits `data/map.json`; the app derives nothing | Keeps ordering, dependency inversion, and badge rules in tested Python instead of drifting into TypeScript |
+| 2026-08-20 | A repository's result site and its paper are first-class | The DOI was buried mid-sentence in a prose field and three repositories published findings the map did not link. Both are what a reader was sent here for. |
 | 2026-08-20 | Mermaid is lazy-imported | It is ~250 kB gzipped, more than the rest of the page together. The cards are the content and must not wait behind the diagram. |

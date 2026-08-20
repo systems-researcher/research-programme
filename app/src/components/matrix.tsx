@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Jason D. Gower
 // SPDX-License-Identifier: MIT
 import { Fragment } from "react"
+import { BookOpen, ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Entry, Stage, Strand } from "@/lib/map"
 
@@ -75,6 +76,24 @@ function Cell({
               <span className="block pl-2 font-mono text-[11px] leading-tight break-words text-foreground">
                 {entry.key}
               </span>
+              {/* Which cells have more than a repository behind them: a
+                  published paper, or a result site to read. */}
+              {(entry.paper || entry.site) && (
+                <span className="mt-1 flex items-center gap-1 pl-2 text-muted-foreground">
+                  {entry.paper && (
+                    <>
+                      <BookOpen aria-hidden="true" className="size-3" />
+                      <span className="sr-only">Has a published paper.</span>
+                    </>
+                  )}
+                  {entry.site && (
+                    <>
+                      <ExternalLink aria-hidden="true" className="size-3" />
+                      <span className="sr-only">Has a published result site.</span>
+                    </>
+                  )}
+                </span>
+              )}
               {status && (
                 <span className="mt-1 block pl-2 text-[10px] uppercase tracking-wider text-muted-foreground">
                   {status}

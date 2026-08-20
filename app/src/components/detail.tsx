@@ -9,6 +9,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { Citation } from "@/components/citation"
 import type { Entry, LinkRef, Strand } from "@/lib/map"
 
 /** Everything about one repository, in a panel over the matrix.
@@ -124,6 +125,27 @@ export function Detail({
             </SheetHeader>
 
             <dl className="space-y-5 px-4 py-5">
+              {entry.site && (
+                <a
+                  href={entry.site}
+                  rel="noopener"
+                  className="flex items-center justify-between gap-3 rounded-md border border-border bg-card p-3 transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <span>
+                    <span className="block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Read the result
+                    </span>
+                    <span className="mt-0.5 block text-sm font-medium">
+                      Published findings site
+                    </span>
+                  </span>
+                  <ArrowUpRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="sr-only">(opens the published result site)</span>
+                </a>
+              )}
+
+              {entry.paper && <Citation paper={entry.paper} entryKey={entry.key} />}
+
               <Field label="What it is for">{entry.objective}</Field>
               <Field label="Question">{entry.question}</Field>
               <Field label="Method">{entry.method}</Field>

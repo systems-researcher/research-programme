@@ -3,7 +3,7 @@
 """Load, validate, and invert the research-programme map data.
 
 This module knows nothing about rendering. It turns repos.yml into a MapData
-object, checks it against the nine rules in the design spec (§5), and derives
+object, checks it against the ten rules in the design spec (§5), and derives
 the reverse edge direction ("what feeds this") from the authored depends_on.
 """
 from __future__ import annotations
@@ -86,6 +86,7 @@ def check(data: MapData) -> list[str]:
     errors += _rule_7_owner_and_duplicates(data)
     errors += _rule_8_blocks_cover_every_entry(data)
     errors += _rule_9_acyclic(data)
+    errors += _rule_10_paper_citation(data)
     return errors
 
 
@@ -173,6 +174,40 @@ def _rule_6_headline_attribution(data: MapData) -> list[str]:
                     f"{entry.get('key')}: headline is missing '{part}'; "
                     "every published number must name the artefact it came from"
                 )
+    return errors
+
+
+DOI_PREFIX = "10."
+
+
+def _rule_10_paper_citation(data: MapData) -> list[str]:
+    """A paper must carry enough to cite it, and a real DOI.
+
+    The DOI is the strongest claim on the page: it says this work is in the
+    published record. A half-filled citation would put a venue on the page
+    with nothing a reader could follow, which is worse than no citation.
+    """
+    errors = []
+    for entry in data.repos:
+        paper = entry.get("paper")
+        if not paper:
+            continue
+        name = entry.get("key")
+        if not isinstance(paper, dict):
+            errors.append(f"{name}: paper must be a mapping of title, venue, year and doi")
+            continue
+        for part in ("title", "venue", "year", "doi"):
+            if not paper.get(part):
+                errors.append(
+                    f"{name}: paper is missing '{part}'; "
+                    "a citation the reader cannot follow is worse than none"
+                )
+        doi = str(paper.get("doi", ""))
+        if doi and not doi.startswith(DOI_PREFIX):
+            errors.append(
+                f"{name}: doi '{doi}' does not start with '{DOI_PREFIX}'; "
+                "write the bare DOI, not a URL or a 'doi:' prefix"
+            )
     return errors
 
 
