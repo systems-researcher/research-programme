@@ -24,8 +24,9 @@ export type Paper = {
   venue: string
   year: number
   doi: string
-  /** "accepted" means the DOI does not resolve yet, so it must not be a link. */
-  status: "accepted" | "published"
+  /** The publication's own lifecycle, not the study's. Only "published"
+   *  means the DOI resolves, so only then is it rendered as a link. */
+  status: "in-preparation" | "submitted" | "in-review" | "accepted" | "published"
 }
 
 export type Entry = {
@@ -57,7 +58,12 @@ export type Strand = {
 
 export type Stage = { id: string; title: string; note: string }
 
+/** One state in the study lifecycle, in order. Generated from the validator's
+ *  own enum so the legend cannot drift from the vocabulary. */
+export type Status = { id: string; label: string; note: string }
+
 export type MapPayload = {
+  statuses: Status[]
   programme: { title: string; question: string; move: string }
   stages: Stage[]
   strands: Strand[]

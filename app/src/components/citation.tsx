@@ -25,10 +25,11 @@ function bibtex(paper: Paper, key: string): string {
     `  year      = {${paper.year}}`,
     `  doi       = {${paper.doi}}`,
   ]
-  // Say so in the export too: a reference manager should not silently imply
-  // the proceedings are out.
-  if (paper.status === "accepted") {
-    fields.push(`  note      = {Accepted; DOI resolves on publication}`)
+  // Say so in the export too: a reference manager should not silently
+  // imply the proceedings are out.
+  const state = paper.status.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase())
+  if (paper.status !== "published") {
+    fields.push(`  note      = {${state}; DOI resolves on publication}`)
   }
   return `@inproceedings{${id},\n${fields.join(",\n")}\n}`
 }
@@ -51,7 +52,7 @@ export function Citation({ paper, entryKey }: { paper: Paper; entryKey: string }
   return (
     <div className="rounded-md border border-border bg-muted/40 p-3">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-        {live ? "Published" : "Accepted"}
+        {paper.status.replace(/-/g, " ")}
       </p>
       <p className="mt-1.5 text-sm font-medium leading-snug text-foreground">{paper.title}</p>
       <p className="mt-1 text-xs leading-snug text-muted-foreground">

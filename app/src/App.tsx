@@ -4,7 +4,9 @@ import { useCallback, useMemo, useState } from "react"
 import { Monitor, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Detail } from "@/components/detail"
+import { Legend } from "@/components/legend"
 import { Matrix } from "@/components/matrix"
+import { Publications } from "@/components/publications"
 import { useTheme } from "@/components/theme"
 import type { Entry, MapPayload } from "@/lib/map"
 import payload from "@data/map.json"
@@ -33,7 +35,7 @@ function ThemeToggle() {
 }
 
 export default function App() {
-  const { programme, strands, stages, refreshedAt } = map
+  const { programme, strands, stages, statuses, refreshedAt } = map
   const [openKey, setOpenKey] = useState<string | null>(null)
 
   // One flat index, so the sheet's own dependency links can open a sibling
@@ -51,10 +53,25 @@ export default function App() {
   const current = openKey ? index.get(openKey) : undefined
   const openEntry = useCallback((entry: Entry) => setOpenKey(entry.key), [])
 
-  const counts = useMemo(() => {
-    const all = strands.flatMap((s) => s.entries)
-    return { repos: all.length, published: all.filter((e) => e.headline).length }
-  }, [strands])
+  const all = useMemo(() => strands.flatMap((s) => s.entries), [strands])
+
+  const counts = useMemo(
+    () => ({ repos: all.length, published: all.filter((e) => e.paper).length }),
+    [all],
+  )
+
+  // How many studies sit in each lifecycle state, for the legend. Derived
+  // from the badges the payload already resolved rather than re-deriving
+  // status here, so the legend counts exactly what the cells display.
+  const byStatus = useMemo(() => {
+    const tally: Record<string, number> = {}
+    for (const status of statuses) {
+      tally[status.id] = all.filter((entry) =>
+        (entry.badges ?? []).includes(status.label),
+      ).length
+    }
+    return tally
+  }, [all, statuses])
 
   return (
     <div className="min-h-dvh bg-background">
@@ -90,7 +107,7 @@ export default function App() {
           <dl className="mt-7 flex flex-wrap gap-x-10 gap-y-3">
             {[
               { label: "Repositories", value: counts.repos },
-              { label: "With results", value: counts.published },
+              { label: "In the record", value: counts.published },
               { label: "Strands", value: strands.length },
             ].map((stat) => (
               <div key={stat.label}>
@@ -114,6 +131,10 @@ export default function App() {
           </div>
           <Matrix strands={strands} stages={stages} onOpen={openEntry} />
         </section>
+
+        <Legend statuses={statuses} counts={byStatus} />
+
+        <Publications entries={all} />
 
         <footer className="border-t border-border pt-6 text-xs text-muted-foreground">
           {refreshedAt && <p>Live repository data last refreshed {refreshedAt}.</p>}

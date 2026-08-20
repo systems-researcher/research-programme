@@ -25,6 +25,10 @@ STRAND_TOKEN = {
     "assembly": "assembly",
 }
 
+# STATUSES is ordered as the lifecycle runs: a study is designed, built, its
+# code released, its runs produce results, and the result is published. The
+# page relies on that order for the legend, so it is stated here rather than
+# left as an accident of how the tuple was typed.
 STATUS_LABELS = {
     "design": "design stage",
     "built-runs-pending": "built, runs pending",
@@ -32,6 +36,17 @@ STATUS_LABELS = {
     "results": "results in hand",
     "published": "published",
     "not-applicable": "",
+}
+
+
+# What each state means, for the legend. The label answers "what is this
+# badge", the note answers "what has actually happened to the study".
+STATUS_NOTES = {
+    "design": "Written down and specified. No code that runs yet.",
+    "built-runs-pending": "The instrument exists and executes. It has not been run for record.",
+    "released": "Tagged and versioned. Others can depend on it.",
+    "results": "Run for record. The numbers are in hand and being read.",
+    "published": "The result is in the written record, in a venue or a frozen report.",
 }
 
 
@@ -214,6 +229,18 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
         )
 
     return {
+        # The lifecycle, in order, for the legend. Generated from the same
+        # enum the validator uses, so the key on the page cannot document a
+        # vocabulary the data does not have.
+        "statuses": [
+            {
+                "id": status,
+                "label": STATUS_LABELS[status],
+                "note": STATUS_NOTES[status],
+            }
+            for status in mapdata.STATUSES
+            if status != "not-applicable"
+        ],
         "programme": {
             "title": str(data.programme.get("title", "Research programme")),
             "question": _collapse(data.programme.get("question", "")),

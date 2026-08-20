@@ -1,4 +1,31 @@
 {
+  "statuses": [
+    {
+      "id": "design",
+      "label": "design stage",
+      "note": "Written down and specified. No code that runs yet."
+    },
+    {
+      "id": "built-runs-pending",
+      "label": "built, runs pending",
+      "note": "The instrument exists and executes. It has not been run for record."
+    },
+    {
+      "id": "released",
+      "label": "released",
+      "note": "Tagged and versioned. Others can depend on it."
+    },
+    {
+      "id": "results",
+      "label": "results in hand",
+      "note": "Run for record. The numbers are in hand and being read."
+    },
+    {
+      "id": "published",
+      "label": "published",
+      "note": "The result is in the written record, in a venue or a frozen report."
+    }
+  ],
   "programme": {
     "title": "Architecting Trustworthy AI Integration in MBSE",
     "question": "AI assistants already read engineering models and answer questions from them. The answers are fluent, mostly true, and largely unauthorised by the model in front of them. This programme asks three things: what an engineering record must expose for an AI consumer to tell a grounded claim from an ungrounded one, whether exposing it changes what the AI actually says, and how a substrate can refuse an inadmissible write on its own behalf.",

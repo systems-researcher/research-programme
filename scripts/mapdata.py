@@ -179,7 +179,12 @@ def _rule_6_headline_attribution(data: MapData) -> list[str]:
 
 DOI_PREFIX = "10."
 PAPER_FIELDS = ("title", "authors", "venue", "year", "doi", "status")
-PAPER_STATUSES = ("accepted", "published")
+# A publication's own lifecycle, which is not the study's. A study can be
+# `released` with its paper still `submitted`, and the probe is `published` as
+# a study while its paper is only `accepted` — the proceedings are not out.
+# Keeping the two apart is what stops the page claiming a DOI resolves when
+# it does not.
+PAPER_STATUSES = ("in-preparation", "submitted", "in-review", "accepted", "published")
 
 
 def _rule_10_paper_citation(data: MapData) -> list[str]:

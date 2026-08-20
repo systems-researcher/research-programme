@@ -366,3 +366,27 @@ def test_an_entry_without_a_paper_carries_none() -> None:
     payload = render.payload(data_with(entry()), LIVE_EMPTY)
 
     assert find(payload, "alpha")["paper"] is None
+
+
+def test_every_status_has_a_label_the_page_can_show() -> None:
+    """A status with no label renders as an empty badge: the reader sees a
+    study with no state at all, and nothing anywhere reports the omission."""
+    for status in mapdata.STATUSES:
+        assert status in render.STATUS_LABELS, f"{status} has no label"
+
+    labelled = [s for s in mapdata.STATUSES if render.STATUS_LABELS[s]]
+    assert "not-applicable" not in labelled, (
+        "the terminus is deliberately unlabelled; it is not a study with a state"
+    )
+    assert len(labelled) == len(mapdata.STATUSES) - 1
+
+
+def test_the_legend_can_be_built_from_the_status_vocabulary() -> None:
+    """The legend documents the lifecycle, so it must be generated from the
+    enum rather than hand-written beside it, or the two drift apart."""
+    payload = render.payload(data_with(entry()), LIVE_EMPTY)
+
+    assert [item["id"] for item in payload["statuses"]] == [
+        s for s in mapdata.STATUSES if s != "not-applicable"
+    ]
+    assert all(item["label"] for item in payload["statuses"])
