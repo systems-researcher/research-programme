@@ -580,10 +580,9 @@ def test_an_edge_to_an_undrawn_entry_is_dropped_not_dangling() -> None:
         assert edge["from"] in drawn and edge["to"] in drawn
 
 
-def test_every_study_carries_the_question_and_objective_the_page_lists() -> None:
-    """The questions section renders one row per study from these two fields.
-    A study missing either would render a row with a blank half rather than
-    reporting anything."""
+def test_every_study_carries_the_question_and_objective_the_sheet_shows() -> None:
+    """The detail sheet renders both fields for every study. One missing would
+    render a labelled heading over nothing rather than reporting anything."""
     payload = render.payload(
         data_with(
             entry(),

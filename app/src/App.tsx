@@ -8,7 +8,6 @@ import { DependencyGraph } from "@/components/graph"
 import { Legend } from "@/components/legend"
 import { Matrix } from "@/components/matrix"
 import { Publications } from "@/components/publications"
-import { Questions } from "@/components/questions"
 import { useTheme } from "@/components/theme"
 import type { Entry, MapPayload } from "@/lib/map"
 import payload from "@data/map.json"
@@ -145,8 +144,6 @@ export default function App() {
           </div>
           <DependencyGraph graph={graph} entries={all} onOpen={openEntry} />
         </section>
-
-        <Questions strands={strands} statuses={statuses} onOpen={openEntry} />
 
         <Legend statuses={statuses} counts={byStatus} />
 
