@@ -114,7 +114,7 @@ repos:
       and an eighteen-row clause trace in CI. The repository exists because
       parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation
       accepting a derivation whose upstream references nothing.
-    depends_on: [epistemic-adequacy-spec]
+    depends_on: [epistemic-adequacy-spec, admissibility-spec]
 
   - key: admissibility-spec
     owner: local
@@ -138,7 +138,7 @@ repos:
       machine-readable manifest validated against the prose in CI. Scope is
       the admission decision alone; how a substrate stores or enforces it is
       left to the architecture candidates.
-    depends_on: [epistemic-adequacy-spec]
+    depends_on: [epistemic-adequacy-probe]
 
   # --------------------------------------------------------------- measure ---
 

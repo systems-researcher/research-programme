@@ -84,10 +84,6 @@
           ],
           "feeds": [
             {
-              "key": "admissibility-spec",
-              "linkable": true
-            },
-            {
               "key": "epistemic-adequacy-metamodel",
               "linkable": true
             },
@@ -120,6 +116,10 @@
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
+              "linkable": true
+            },
+            {
+              "key": "admissibility-spec",
               "linkable": true
             }
           ],
@@ -160,13 +160,17 @@
           ],
           "dependsOn": [
             {
-              "key": "epistemic-adequacy-spec",
+              "key": "epistemic-adequacy-probe",
               "linkable": true
             }
           ],
           "feeds": [
             {
               "key": "SysML-v2-API-Services-Arch-A",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-metamodel",
               "linkable": true
             }
           ],
@@ -281,6 +285,10 @@
           ],
           "dependsOn": [],
           "feeds": [
+            {
+              "key": "admissibility-spec",
+              "linkable": true
+            },
             {
               "key": "epistemic-adequacy-spec",
               "linkable": true
@@ -683,7 +691,15 @@
         "key": "epistemic-adequacy-spec",
         "x": 1,
         "y": 0,
-        "column": 1,
+        "column": 2,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "admissibility-spec",
+        "x": 1,
+        "y": 1,
+        "column": 2,
         "strand": "adequacy",
         "token": "adequacy"
       },
@@ -691,23 +707,15 @@
         "key": "epistemic-adequacy-metamodel",
         "x": 2,
         "y": 0,
-        "column": 3,
-        "strand": "adequacy",
-        "token": "adequacy"
-      },
-      {
-        "key": "admissibility-spec",
-        "x": 2,
-        "y": 1,
-        "column": 3,
+        "column": 2,
         "strand": "adequacy",
         "token": "adequacy"
       },
       {
         "key": "epistemic-adequacy-testing-toolkit",
         "x": 2,
-        "y": 2,
-        "column": 3,
+        "y": 1,
+        "column": 2,
         "strand": "adequacy",
         "token": "adequacy"
       },
@@ -770,7 +778,11 @@
         "to": "epistemic-adequacy-metamodel"
       },
       {
-        "from": "epistemic-adequacy-spec",
+        "from": "admissibility-spec",
+        "to": "epistemic-adequacy-metamodel"
+      },
+      {
+        "from": "epistemic-adequacy-probe",
         "to": "admissibility-spec"
       },
       {
