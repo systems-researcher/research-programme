@@ -57,8 +57,9 @@ as source we own and can edit.
 - **Strands:** each research strand owns one hue, defined in `app/src/index.css`
   for **both** colour schemes and used in two places at once — the card's left
   edge and its node in the diagram — so a reader can move between them.
-  `test_every_strand_token_resolves_in_both_colour_schemes` fails the build if a
-  strand is missing from either scheme.
+  `test_every_strand_token_resolves_in_both_colour_schemes` fails under
+  `python -m pytest` if a strand is missing from either scheme. There is no CI
+  in this repository, so run the suite before committing a colour change.
 - **Dark mode:** class-based (`.dark` on `<html>`), the shadcn convention.
   Defaults to the system setting; an explicit choice is remembered. An inline
   script in `app/index.html` paints it before first render to avoid a flash.

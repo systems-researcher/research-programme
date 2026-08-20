@@ -1,3 +1,6 @@
+// Vendored from shadcn/ui (https://ui.shadcn.com) — MIT, Copyright (c) shadcn.
+// Local modifications are made in place; see LICENSE.md.
+// SPDX-License-Identifier: MIT
 import * as React from "react"
 
 import { cn } from "@/lib/utils"

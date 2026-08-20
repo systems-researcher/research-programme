@@ -82,6 +82,13 @@ npm run build    # writes ../site, which Vercel serves
 Run `python -m scripts.build` before `npm run build`: the app renders whatever
 `data/map.json` last held.
 
+Two checks worth running after a build:
+
+```bash
+python -m pytest                    # 49 tests: data rules, diagram, payload
+python tests/check_external_links.py  # the built page must fetch nothing off-origin
+```
+
 ## Licence
 
 Prose and data CC-BY-4.0; code MIT. See [LICENSE.md](LICENSE.md).
