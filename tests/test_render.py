@@ -1,7 +1,10 @@
 # Copyright (c) 2026 Jason D. Gower
 # SPDX-License-Identifier: MIT
-"""Tests for rendering the README block and the site page."""
+"""Tests for the README block, the diagram source, and the app payload."""
 from __future__ import annotations
+
+import re
+from pathlib import Path
 
 from scripts import mapdata, render
 
@@ -114,8 +117,23 @@ def test_every_strand_has_a_visually_distinct_style() -> None:
 def test_every_strand_token_resolves_in_both_colour_schemes() -> None:
     """The dark block must redefine every strand colour the light block sets,
     or the diagram silently keeps its light fills on a dark page."""
-    tokens = render.TOKENS_CSS.read_text(encoding="utf-8")
-    light, dark = tokens.split("prefers-color-scheme: dark", 1)
+    css = (
+        Path(__file__).resolve().parent.parent / "app" / "src" / "index.css"
+    ).read_text(encoding="utf-8")
+
+    # The stylesheet holds more than one :root / .dark pair (shadcn writes its
+    # own, the programme adds strand colours after it), so collect the bodies
+    # of every block of each kind rather than splitting on the first match.
+    def bodies(selector: str) -> str:
+        pattern = "^" + re.escape(selector) + r" \{$"
+        found = []
+        for match in re.finditer(pattern, css, re.MULTILINE):
+            end = css.index("\n}", match.end())
+            found.append(css[match.end() : end])
+        assert found, f"no {selector} block in the stylesheet"
+        return "\n".join(found)
+
+    light, dark = bodies(":root"), bodies(".dark")
 
     for token in render.STRAND_TOKEN.values():
         for part in ("fill", "line"):
@@ -136,20 +154,42 @@ def test_node_only_entries_get_no_click_target() -> None:
     assert "click n_Thesis_Work_Area" not in diagram
 
 
-def test_page_renders_a_card_per_card_entry_and_none_for_node_only() -> None:
+# ---------------------------------------------------------------------------
+# payload(): the data the React app renders.
+#
+# These replace the assertions that used to run against the generated HTML.
+# The app derives nothing, so every ordering, inversion and badge rule is
+# still a Python rule and still tested here — only the surface changed.
+# ---------------------------------------------------------------------------
+
+
+def entries_of(payload: dict) -> list[dict]:
+    return [e for strand in payload["strands"] for e in strand["entries"]]
+
+
+def find(payload: dict, key: str) -> dict:
+    return next(e for e in entries_of(payload) if e["key"] == key)
+
+
+LIVE_EMPTY = {"generated_at": "t", "repos": {}}
+
+
+def test_payload_marks_node_only_entries_as_rendering_no_card() -> None:
     data = data_with(
         entry(),
         entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
               render="node-only", status="not-applicable"),
     )
 
-    page = render.page(data, live={"generated_at": "2026-08-19T09:00:00+00:00", "repos": {}})
+    payload = render.payload(data, LIVE_EMPTY)
 
-    assert 'id="card-alpha"' in page
-    assert 'id="card-Thesis-Work-Area"' not in page
+    assert find(payload, "alpha")["card"] is True
+    assert find(payload, "Thesis-Work-Area")["card"] is False
 
 
-def test_a_card_less_strand_names_its_entries_instead_of_emitting_a_bare_heading() -> None:
+def test_a_card_less_strand_still_carries_its_entries_and_their_objective() -> None:
+    """The strand keeps its section; the app names the entries instead of
+    emitting a heading over nothing."""
     data = data_with(
         entry(),
         entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
@@ -157,102 +197,155 @@ def test_a_card_less_strand_names_its_entries_instead_of_emitting_a_bare_heading
               objective="Where the findings are written up."),
     )
 
-    page = render.page(data, live={"generated_at": "t", "repos": {}})
+    payload = render.payload(data, LIVE_EMPTY)
+    assembly = next(s for s in payload["strands"] if s["id"] == "assembly")
 
-    assert "Where the findings are written up." in page
-    assert 'id="card-Thesis-Work-Area"' not in page
+    assert [e["key"] for e in assembly["entries"]] == ["Thesis-Work-Area"]
+    assert assembly["entries"][0]["objective"] == "Where the findings are written up."
 
 
-def test_feeds_row_does_not_link_to_a_node_only_entry() -> None:
+def test_a_reference_to_a_node_only_entry_is_not_linkable() -> None:
+    """node-only entries render no card, so an anchor would go nowhere."""
     data = data_with(
         entry(),
         entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
               render="node-only", status="not-applicable", depends_on=["alpha"]),
     )
 
-    page = render.page(data, live={"generated_at": "t", "repos": {}})
+    payload = render.payload(data, LIVE_EMPTY)
+    feeds = find(payload, "alpha")["feeds"]
 
-    assert 'href="#card-Thesis-Work-Area"' not in page
-    assert "Thesis-Work-Area" in page
+    assert {"key": "Thesis-Work-Area", "linkable": False} in feeds
+
+
+def test_a_reference_to_a_card_entry_is_linkable() -> None:
+    data = data_with(entry(), entry(key="beta", stage="evidence", depends_on=["alpha"]))
+
+    payload = render.payload(data, LIVE_EMPTY)
+
+    assert find(payload, "beta")["dependsOn"] == [{"key": "alpha", "linkable": True}]
+    assert find(payload, "alpha")["feeds"] == [{"key": "beta", "linkable": True}]
 
 
 def test_within_a_stage_entries_keep_their_authored_order() -> None:
     """Authored order, not alphabetical: the architecture candidates read A, B, C."""
     data = data_with(entry(key="zulu"), entry(key="alpha"))
 
-    page = render.page(data, live={"generated_at": "t", "repos": {}})
+    payload = render.payload(data, LIVE_EMPTY)
 
-    assert page.index('id="card-zulu"') < page.index('id="card-alpha"')
-
-
-def test_external_links_are_marked() -> None:
-    page = render.page(data_with(entry()), live={"generated_at": "t", "repos": {}})
-
-    assert "\u2197" in page
-    assert "opens GitHub" in page
+    assert [e["key"] for e in entries_of(payload)] == ["zulu", "alpha"]
 
 
-def test_headline_is_rendered_with_its_source() -> None:
+def test_strands_and_stages_arrive_in_programme_order() -> None:
     data = data_with(
-        entry(
-            status="published",
-            headline={"text": "13.3% fell to 2.2%.", "source": "probe v0.2.0, RESULTS.md"},
-        )
+        entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
+              render="node-only", status="not-applicable"),
+        entry(),
     )
 
-    page = render.page(data, live={"generated_at": "t", "repos": {}})
+    payload = render.payload(data, LIVE_EMPTY)
 
-    assert "13.3% fell to 2.2%." in page
-    assert "probe v0.2.0, RESULTS.md" in page
+    assert [s["id"] for s in payload["strands"]] == ["adequacy", "assembly"]
+    assert [s["id"] for s in payload["stages"]] == list(mapdata.STAGES)
 
 
-def test_live_push_date_is_rendered_when_known() -> None:
+def test_published_entry_carries_its_github_url() -> None:
+    payload = render.payload(data_with(entry()), LIVE_EMPTY)
+
+    assert find(payload, "alpha")["url"] == "https://github.com/systems-researcher/alpha"
+
+
+def test_local_entry_is_badged_not_yet_published_and_has_no_url() -> None:
+    payload = render.payload(data_with(entry(owner="local")), LIVE_EMPTY)
+    alpha = find(payload, "alpha")
+
+    assert alpha["url"] is None
+    assert "not yet published" in alpha["badges"]
+
+
+def test_missing_live_entry_is_badged_awaiting_refresh() -> None:
+    payload = render.payload(data_with(entry()), LIVE_EMPTY)
+
+    assert "awaiting refresh" in find(payload, "alpha")["badges"]
+
+
+def test_live_visibility_and_push_date_are_carried_as_badges() -> None:
     """live.json holds only fields the page shows; pushed_at is one of them."""
-    page = render.page(
+    payload = render.payload(
         data_with(entry()),
-        live={
+        {
             "generated_at": "t",
             "repos": {"alpha": {"visibility": "private", "pushed_at": "2026-08-19T08:00:00Z"}},
         },
     )
+    badges = find(payload, "alpha")["badges"]
 
-    assert "last commit 2026-08-19" in page
-
-
-def test_missing_live_entry_is_badged_awaiting_refresh() -> None:
-    page = render.page(data_with(entry()), live={"generated_at": "t", "repos": {}})
-
-    assert "awaiting refresh" in page
+    assert "private" in badges
+    assert "last commit 2026-08-19" in badges
 
 
-def test_local_entry_is_badged_not_yet_published_and_has_no_github_link() -> None:
-    page = render.page(
-        data_with(entry(owner="local")), live={"generated_at": "t", "repos": {}}
+def test_status_is_badged_in_words_not_in_its_slug() -> None:
+    payload = render.payload(data_with(entry(status="built-runs-pending")), LIVE_EMPTY)
+
+    assert "built, runs pending" in find(payload, "alpha")["badges"]
+
+
+def test_headline_is_carried_with_its_source() -> None:
+    payload = render.payload(
+        data_with(
+            entry(
+                status="published",
+                headline={"text": "13.3% fell to 2.2%.", "source": "probe v0.2.0, RESULTS.md"},
+            )
+        ),
+        LIVE_EMPTY,
     )
 
-    assert "not yet published" in page
-    assert "https://github.com/local/alpha" not in page
+    assert find(payload, "alpha")["headline"] == {
+        "text": "13.3% fell to 2.2%.",
+        "source": "probe v0.2.0, RESULTS.md",
+    }
 
 
-def test_absent_live_file_omits_the_footer_timestamp() -> None:
-    page = render.page(data_with(entry()), live=None)
+def test_absent_live_file_leaves_the_refresh_stamp_unset() -> None:
+    payload = render.payload(data_with(entry()), live=None)
 
-    assert "last refreshed" not in page.lower()
-
-
-def test_page_inlines_govuk_tokens_and_phase_banner() -> None:
-    page = render.page(data_with(entry()), live={"generated_at": "t", "repos": {}})
-
-    assert "--ink: #0b0c0c" in page
-    assert "Not a GOV.UK service" in page
-    assert "border-radius" not in page.split("<style>", 1)[1].split("</style>", 1)[0]
+    assert payload["refreshedAt"] is None
 
 
-def test_prose_is_escaped_not_injected() -> None:
-    page = render.page(
-        data_with(entry(objective="<script>alert(1)</script>")),
-        live={"generated_at": "t", "repos": {}},
+def test_folded_scalars_are_collapsed_but_not_escaped() -> None:
+    """React escapes on insertion, so pre-escaping here would double-encode.
+    The newline collapse still belongs in Python: it repairs YAML folding,
+    which the app knows nothing about."""
+    payload = render.payload(
+        data_with(entry(objective="one\ntwo   three", question="A & B", method="m")),
+        LIVE_EMPTY,
     )
+    alpha = find(payload, "alpha")
 
-    assert "<script>alert(1)</script>" not in page
-    assert "&lt;script&gt;" in page
+    assert alpha["objective"] == "one two three"
+    assert alpha["question"] == "A & B"
+
+
+def test_payload_carries_the_diagram_source_for_the_app_to_draw() -> None:
+    payload = render.payload(data_with(entry()), LIVE_EMPTY)
+
+    assert payload["diagram"] == render.mermaid(data_with(entry()))
+    assert "classDef" not in payload["diagram"]
+
+
+def test_every_click_target_in_the_diagram_resolves_to_a_card() -> None:
+    """A click on a node scrolls to `#card-<key>`; a target with no card is a
+    dead link the reader can only discover by clicking it."""
+    data = data_with(
+        entry(),
+        entry(key="Thesis-Work-Area", strand="assembly", stage="assembly",
+              render="node-only", status="not-applicable"),
+    )
+    payload = render.payload(data, LIVE_EMPTY)
+
+    targets = set(re.findall(r'click \S+ "#card-([^"]+)"', payload["diagram"]))
+    cards = {e["key"] for e in entries_of(payload) if e["card"]}
+
+    assert targets <= cards
+    assert targets == {"alpha"}

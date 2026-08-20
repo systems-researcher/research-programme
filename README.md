@@ -55,12 +55,39 @@ optimal order.
 
 ```bash
 python -m scripts.refresh       # optional: validates repos.yml, then pulls live fields
-python -m scripts.build         # regenerate site/index.html and the table above
+python -m scripts.build         # regenerate data/map.json and the table above
 python -m scripts.build --check # must pass before committing
 ```
 
 Every script runs as a module (`python -m scripts.build`), never as a path
 (`python scripts/build.py`) — the latter breaks the package imports.
+
+`data/map.json` is generated and committed. It holds the page already resolved:
+entries in render order, badges composed, dependencies inverted. The app reads
+it and derives nothing, so those rules stay in Python where the tests are, and
+the deployment build needs Node only.
+
+## The site
+
+The page is a small React app (Vite + Tailwind + [shadcn/ui](https://ui.shadcn.com)),
+built from the committed `data/map.json`. See [DESIGN.md](DESIGN.md).
+
+```bash
+cd app
+npm install
+npm run dev      # local preview on :5173
+npm run build    # writes ../site, which Vercel serves
+```
+
+Run `python -m scripts.build` before `npm run build`: the app renders whatever
+`data/map.json` last held.
+
+Two checks worth running after a build:
+
+```bash
+python -m pytest                    # 49 tests: data rules, diagram, payload
+python tests/check_external_links.py  # the built page must fetch nothing off-origin
+```
 
 ## Licence
 

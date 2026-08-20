@@ -1,0 +1,444 @@
+{
+  "programme": {
+    "title": "Architecting Trustworthy AI Integration in MBSE",
+    "question": "AI assistants already read engineering models and answer questions from them. The answers are fluent, mostly true, and largely unauthorised by the model in front of them. This programme asks three things: what an engineering record must expose for an AI consumer to tell a grounded claim from an ungrounded one, whether exposing it changes what the AI actually says, and how a substrate can refuse an inadmissible write on its own behalf.",
+    "move": "Throughout, an AI agent stands in as a consistent practitioner. That turns method and representation into manipulable experimental factors and makes replicated designs affordable that human-subject systems-engineering research could never run."
+  },
+  "stages": [
+    {
+      "id": "define",
+      "title": "Define",
+      "note": "What a record must expose, and how that binds to SysML v2."
+    },
+    {
+      "id": "measure",
+      "title": "Measure",
+      "note": "The instruments that turn the definition into a number."
+    },
+    {
+      "id": "evidence",
+      "title": "Evidence",
+      "note": "What the instruments have actually measured."
+    },
+    {
+      "id": "architecture",
+      "title": "Architecture",
+      "note": "Candidate substrates that enforce it on the write side."
+    },
+    {
+      "id": "assembly",
+      "title": "Assembly",
+      "note": "Where it is written up."
+    }
+  ],
+  "strands": [
+    {
+      "id": "adequacy",
+      "cssClass": "adequacy",
+      "token": "adequacy",
+      "title": "Epistemic adequacy",
+      "subtitle": "Can a record tell an AI what it is authorised to say — and can a substrate refuse a write that it is not?",
+      "entries": [
+        {
+          "key": "epistemic-adequacy-spec",
+          "stage": "define",
+          "card": true,
+          "objective": "A conformance specification stating, in eighteen testable clauses, what an engineering record must expose so that an AI consumer can decide whether a claim the record holds is grounded.",
+          "url": "https://github.com/systems-researcher/epistemic-adequacy-spec",
+          "badges": [
+            "private",
+            "released",
+            "last commit 2026-08-19"
+          ],
+          "question": "What must a record expose for the groundedness of a claim — whether it is derived, at what standing, from what origin, with its premises reachable, and how it entered the record — to be decidable by query rather than by judgement?",
+          "method": "Five criteria, EA1 to EA5, decomposed into eighteen MUST/SHOULD/MAY clauses, each carrying a Check line written against an abstract substrate and organised into three conformance profiles, with a non-normative SysML v2 binding and a machine-readable clause manifest validated against the prose in CI. EA1 to EA4 are labelled evidenced; all three EA5 clauses are labelled hypothesis.",
+          "headline": null,
+          "output": "v0.1.0, released 2026-08-18. The criteria originate in the MODELS 2026 NIER paper, doi:10.1145/3822455.3838783, which resolves on publication.",
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-probe",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "SysML-v2-API-Services-Arch-A",
+              "linkable": true
+            },
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            },
+            {
+              "key": "epistemic-adequacy-metamodel",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-toolkit",
+              "linkable": true
+            },
+            {
+              "key": "sysml-v2-governed-substrate-Arch-C",
+              "linkable": true
+            },
+            {
+              "key": "sysml-v2-metadata-graph-Arch-B",
+              "linkable": true
+            }
+          ]
+        },
+        {
+          "key": "epistemic-adequacy-metamodel",
+          "stage": "define",
+          "card": true,
+          "objective": "Owns the metadata model itself — a conceptual ontology, a logical data model, and a generated SysML v2 library, kept in sync — so that the specification's non-normative binding becomes something a tool can mechanically check.",
+          "url": null,
+          "badges": [
+            "not yet published",
+            "design stage"
+          ],
+          "question": "Can the eighteen clauses be expressed as SysML v2 metadata that a tool actually checks on a real model, and what does the existing binding lack for that to be true?",
+          "method": "One hand-edited schema generates both an OWL 2 plus SHACL ontology and the SysML v2 library, with reader, resolver, and extractor stages emitting the toolkit's canonical claim graph. Correctness is pinned by a bare-versus- annotated Apollo reference pair under a stated profile regression contract and an eighteen-row clause trace in CI. The repository exists because parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation accepting a derivation whose upstream references nothing.",
+          "headline": null,
+          "output": null,
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-spec",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-toolkit",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            }
+          ]
+        },
+        {
+          "key": "epistemic-adequacy-toolkit",
+          "stage": "measure",
+          "card": true,
+          "objective": "The instrument: it scores a substrate against the eighteen clauses and joins that score to how an AI consumer then behaves, so that adequacy is the independent variable and consumer behaviour the dependent one.",
+          "url": "https://github.com/systems-researcher/epistemic-adequacy-toolkit",
+          "badges": [
+            "private",
+            "built, runs pending",
+            "last commit 2026-08-19"
+          ],
+          "question": "Does this substrate satisfy the clauses, at which conformance profile, and does the measured adequacy change what an AI consumer says?",
+          "method": "The static stage runs deterministically with no model calls, scoring a substrate against the clause manifest it pins by SHA-256. The behavioural runner that joins adequacy to consumer answers is specified and not yet built, so the join the instrument exists for is not yet demonstrable.",
+          "headline": null,
+          "output": "v0.1.0",
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-spec",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            },
+            {
+              "key": "epistemic-adequacy-metamodel",
+              "linkable": true
+            }
+          ]
+        },
+        {
+          "key": "sysml2-bench",
+          "stage": "measure",
+          "card": true,
+          "objective": "A public, versioned, contamination-resistant benchmark of how well language models read, reason over, critique, and write SysML v2 — the capability baseline every adequacy result has to be read against.",
+          "url": "https://github.com/systems-researcher/sysml2-bench",
+          "badges": [
+            "private",
+            "built, runs pending",
+            "last commit 2026-06-11"
+          ],
+          "question": "How competent are current models at SysML v2 itself, independent of any epistemic metadata, and how often do they confabulate on items that have no answer?",
+          "method": "Four task families generated procedurally from a semantic intermediate representation with programmatic ground truth, plus two cross-cutting headline metrics, confabulation rate and format-failure rate. The generator and truth layer exist; the wild set that draws on the public Apollo 11 model is human-gated and still unpopulated, so the bench does not yet consume anything the probe produced.",
+          "headline": null,
+          "output": null,
+          "dependsOn": [],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            }
+          ]
+        },
+        {
+          "key": "epistemic-adequacy-probe",
+          "stage": "evidence",
+          "card": true,
+          "objective": "The first measured test of whether epistemic metadata, beyond structured model access alone, changes how an AI consumer answers derivation-style questions over an MBSE model.",
+          "url": "https://github.com/systems-researcher/epistemic-adequacy-probe",
+          "badges": [
+            "public",
+            "published",
+            "last commit 2026-08-18"
+          ],
+          "question": "Does an AI reading an MBSE model produce fewer unauthorised answers when the model exposes derivation, standing, and provenance?",
+          "method": "Three language models over a verbatim excerpt of the public Airbus Apollo 11 SysML v2 reconstruction, 120 judged answers across a governed and a pressed instruction, with and without a hand-authored EA1 to EA4 sidecar. Deliberately small: one thrust chain, one model family, a single run per cell.",
+          "headline": {
+            "text": "Under a governed instruction the bare model gave ungrounded answers on 6 of 45 question-cells (13.3%); the sidecar cut that to 1 of 45 (2.2%). Under a deadline-style pressed instruction over the five hardest questions the bare model reached 9 of 15 (60%), and the strongest model was the most fluent confabulator — 4 of its 5 pressured answers ungrounded, every one historically plausible. The sidecar halved the pressed rate to 5 of 15 (33%) without eliminating it.",
+            "source": "epistemic-adequacy-probe v0.2.0, RESULTS.md, \"Headline rates\". The repository also records a cross-family judge recheck of the pressed plus-sidecar cell; read RESULTS.md before quoting that cell alone."
+          },
+          "output": "doi:10.1145/3822455.3838783 (MODELS 2026 NIER); release v0.2.0, 2026-08-17.",
+          "dependsOn": [],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            },
+            {
+              "key": "epistemic-adequacy-spec",
+              "linkable": true
+            },
+            {
+              "key": "pressure-susceptibility-probe",
+              "linkable": true
+            }
+          ]
+        },
+        {
+          "key": "pressure-susceptibility-probe",
+          "stage": "evidence",
+          "card": true,
+          "objective": "Measures how susceptible an AI assistant is to producing unauthorised engineering answers when the work itself pushes on it: a deadline, a senior engineer's stated conclusion, a board that has already agreed, or a question with a false premise baked in.",
+          "url": "https://github.com/systems-researcher/pressure-susceptibility-probe",
+          "badges": [
+            "private",
+            "built, runs pending",
+            "last commit 2026-07-30"
+          ],
+          "question": "How much does social and operational pressure raise the rate of ungrounded engineering answers, and which kinds of pressure do most of the damage?",
+          "method": "Six scenarios drawn from design review, verification sign-off, and anomaly investigation, an influence-prompt library of seven levers, ensemble judging, and an analysis layer. Harness and scenario set are built; the runs have not been executed.",
+          "headline": null,
+          "output": null,
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-probe",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            },
+            {
+              "key": "ahp-framing-fragility-probe",
+              "linkable": true
+            },
+            {
+              "key": "model-vs-document-defect-probe",
+              "linkable": true
+            }
+          ]
+        },
+        {
+          "key": "SysML-v2-API-Services-Arch-A",
+          "stage": "architecture",
+          "card": true,
+          "objective": "Candidate A: epistemic metadata carried inline on model elements through project-local SysML v2 metadata definitions, with an admissibility gate as the sole write path.",
+          "url": "https://github.com/systems-researcher/SysML-v2-API-Services-Arch-A",
+          "badges": [
+            "private",
+            "design stage",
+            "last commit 2026-07-06"
+          ],
+          "question": "Can a conforming record be enforced inside the standard SysML v2 API service itself, with no second store to keep in step?",
+          "method": "A research fork pinned to vanilla upstream, adding four metadata-def schemas and a Python admissibility gate in front of the API, evaluated by a three-arm harness. The design contract is complete; the gate checks still raise NotImplementedError.",
+          "headline": null,
+          "output": null,
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-spec",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            },
+            {
+              "key": "sysml-v2-metadata-graph-Arch-B",
+              "linkable": true
+            }
+          ]
+        },
+        {
+          "key": "sysml-v2-metadata-graph-Arch-B",
+          "stage": "architecture",
+          "card": true,
+          "objective": "Candidate B: the SysML v2 model stays completely untouched and the epistemic metadata lives beside it in a Neo4j graph keyed by programme-level stable identifiers.",
+          "url": "https://github.com/systems-researcher/sysml-v2-metadata-graph-Arch-B",
+          "badges": [
+            "private",
+            "design stage",
+            "last commit 2026-07-06"
+          ],
+          "question": "Does holding the metadata out of the model buy full history and provenance without losing the ability to refuse a write?",
+          "method": "A Python governance service is the sole write path to both stores, running a graph-write gate and a promotion gate with staleness blocking before any guarded commit upstream. The design contract is complete; implementation has not started. Comparing A against B requires Candidate A deployed and runnable alongside it.",
+          "headline": null,
+          "output": null,
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-spec",
+              "linkable": true
+            },
+            {
+              "key": "SysML-v2-API-Services-Arch-A",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            }
+          ]
+        },
+        {
+          "key": "sysml-v2-governed-substrate-Arch-C",
+          "stage": "architecture",
+          "card": true,
+          "objective": "Candidate C: one ArcadeDB engine holds model topology, governance metadata and provenance, and retrieval embeddings, with SysML treated as a projection over the store rather than the store itself.",
+          "url": "https://github.com/systems-researcher/sysml-v2-governed-substrate-Arch-C",
+          "badges": [
+            "private",
+            "design stage",
+            "last commit 2026-07-06"
+          ],
+          "question": "If the substrate is governed natively, can the authoritative record and the AI-authored companion be two namespaces of one engine, with promotion between them in a single transaction?",
+          "method": "A governance API is the sole external write path: it evaluates the admissibility conditions before commit, confines signed AI writes to the companion namespace, and promotes accepted content in one transaction carrying the second-party review record, with append-only audit history held in-store. The design contract is complete; implementation has not started.",
+          "headline": null,
+          "output": null,
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-spec",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method-validation",
+      "cssClass": "method_validation",
+      "token": "method",
+      "title": "Do classic SE methods survive an AI practitioner?",
+      "subtitle": "The same methodological move, turned on the methods systems engineering already relies on.",
+      "entries": [
+        {
+          "key": "model-vs-document-defect-probe",
+          "stage": "evidence",
+          "card": true,
+          "objective": "Measures MBSE's flagship claim head-on: does a single connected system model let a reviewer catch more defects than an information-equivalent set of documents?",
+          "url": "https://github.com/systems-researcher/model-vs-document-defect-probe",
+          "badges": [
+            "private",
+            "design stage",
+            "last commit 2026-07-02"
+          ],
+          "question": "Which substrate and tooling combination lets an AI agent best manage a model — query it, edit it, trace through it, and find its defects?",
+          "method": "A consistent-practitioner design in which an AI agent stands in as the reviewer, so representation is the only factor that varies and reviewer skill is held constant, scored on a four-task battery across eight substrate variants in three families: document, model, and database.",
+          "headline": null,
+          "output": null,
+          "dependsOn": [
+            {
+              "key": "pressure-susceptibility-probe",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            }
+          ]
+        },
+        {
+          "key": "ahp-framing-fragility-probe",
+          "stage": "evidence",
+          "card": true,
+          "objective": "Tests whether a structured trade study gives a stable answer, or whether the winner silently depends on things that should not matter: the order the criteria were listed in, how they were worded, or the presence of irrelevant decoy options.",
+          "url": null,
+          "badges": [
+            "not yet published",
+            "design stage"
+          ],
+          "question": "How often does a trade study's chosen winner flip under perturbations that carry no decision-relevant information?",
+          "method": "The same decision run many times over with an AI agent standing in as the analyst, varying only cosmetic factors, reported as a flip-rate. The test design is written; no harness is built.",
+          "headline": null,
+          "output": null,
+          "dependsOn": [
+            {
+              "key": "pressure-susceptibility-probe",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            }
+          ]
+        },
+        {
+          "key": "dsm-sequencing-probe",
+          "stage": "evidence",
+          "card": true,
+          "objective": "Tests whether the Design Structure Matrix actually produces the best task order, measured against a mathematically optimal answer a computer can calculate exactly.",
+          "url": null,
+          "badges": [
+            "not yet published",
+            "design stage"
+          ],
+          "question": "How far from optimal is a DSM-derived task ordering, and when it is wrong, did the method fail or did the analyst build the wrong matrix?",
+          "method": "The agent's ordering is scored against the provably minimal-feedback ordering produced by a known graph algorithm, split by whether the agent also had to elicit the matrix or was handed it clean, across several models. The test design is written; no harness is built.",
+          "headline": null,
+          "output": null,
+          "dependsOn": [],
+          "feeds": [
+            {
+              "key": "Thesis-Work-Area",
+              "linkable": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "assembly",
+      "cssClass": "assembly",
+      "token": "assembly",
+      "title": "Assembly",
+      "subtitle": "Where the findings are written up.",
+      "entries": [
+        {
+          "key": "Thesis-Work-Area",
+          "stage": "assembly",
+          "card": false,
+          "objective": "Where the programme's findings are written up as the doctoral thesis."
+        }
+      ]
+    }
+  ],
+  "diagram": "graph LR\n  subgraph stage_define[\"Define\"]\n    n_epistemic_adequacy_spec[\"epistemic-adequacy-spec\"]\n    n_epistemic_adequacy_metamodel[\"epistemic-adequacy-metamodel\"]\n  end\n  subgraph stage_measure[\"Measure\"]\n    n_epistemic_adequacy_toolkit[\"epistemic-adequacy-toolkit\"]\n    n_sysml2_bench[\"sysml2-bench\"]\n  end\n  subgraph stage_evidence[\"Evidence\"]\n    n_epistemic_adequacy_probe[\"epistemic-adequacy-probe\"]\n    n_pressure_susceptibility_probe[\"pressure-susceptibility-probe\"]\n    n_model_vs_document_defect_probe[\"model-vs-document-defect-probe\"]\n    n_ahp_framing_fragility_probe[\"ahp-framing-fragility-probe\"]\n    n_dsm_sequencing_probe[\"dsm-sequencing-probe\"]\n  end\n  subgraph stage_architecture[\"Architecture\"]\n    n_SysML_v2_API_Services_Arch_A[\"SysML-v2-API-Services-Arch-A\"]\n    n_sysml_v2_metadata_graph_Arch_B[\"sysml-v2-metadata-graph-Arch-B\"]\n    n_sysml_v2_governed_substrate_Arch_C[\"sysml-v2-governed-substrate-Arch-C\"]\n  end\n  subgraph stage_assembly[\"Assembly\"]\n    n_Thesis_Work_Area[\"Thesis-Work-Area\"]\n  end\n  n_epistemic_adequacy_probe --> n_epistemic_adequacy_spec\n  n_epistemic_adequacy_spec --> n_epistemic_adequacy_metamodel\n  n_epistemic_adequacy_toolkit --> n_epistemic_adequacy_metamodel\n  n_epistemic_adequacy_spec --> n_epistemic_adequacy_toolkit\n  n_epistemic_adequacy_probe --> n_pressure_susceptibility_probe\n  n_epistemic_adequacy_spec --> n_SysML_v2_API_Services_Arch_A\n  n_epistemic_adequacy_spec --> n_sysml_v2_metadata_graph_Arch_B\n  n_SysML_v2_API_Services_Arch_A --> n_sysml_v2_metadata_graph_Arch_B\n  n_epistemic_adequacy_spec --> n_sysml_v2_governed_substrate_Arch_C\n  n_pressure_susceptibility_probe --> n_model_vs_document_defect_probe\n  n_pressure_susceptibility_probe --> n_ahp_framing_fragility_probe\n  n_epistemic_adequacy_spec --> n_Thesis_Work_Area\n  n_epistemic_adequacy_metamodel --> n_Thesis_Work_Area\n  n_epistemic_adequacy_toolkit --> n_Thesis_Work_Area\n  n_sysml2_bench --> n_Thesis_Work_Area\n  n_epistemic_adequacy_probe --> n_Thesis_Work_Area\n  n_pressure_susceptibility_probe --> n_Thesis_Work_Area\n  n_SysML_v2_API_Services_Arch_A --> n_Thesis_Work_Area\n  n_sysml_v2_metadata_graph_Arch_B --> n_Thesis_Work_Area\n  n_sysml_v2_governed_substrate_Arch_C --> n_Thesis_Work_Area\n  n_model_vs_document_defect_probe --> n_Thesis_Work_Area\n  n_ahp_framing_fragility_probe --> n_Thesis_Work_Area\n  n_dsm_sequencing_probe --> n_Thesis_Work_Area\n  class n_epistemic_adequacy_spec,n_epistemic_adequacy_metamodel,n_epistemic_adequacy_toolkit,n_sysml2_bench,n_epistemic_adequacy_probe,n_pressure_susceptibility_probe,n_SysML_v2_API_Services_Arch_A,n_sysml_v2_metadata_graph_Arch_B,n_sysml_v2_governed_substrate_Arch_C adequacy;\n  class n_model_vs_document_defect_probe,n_ahp_framing_fragility_probe,n_dsm_sequencing_probe method_validation;\n  class n_Thesis_Work_Area assembly;\n  click n_epistemic_adequacy_spec \"#card-epistemic-adequacy-spec\"\n  click n_epistemic_adequacy_metamodel \"#card-epistemic-adequacy-metamodel\"\n  click n_epistemic_adequacy_toolkit \"#card-epistemic-adequacy-toolkit\"\n  click n_sysml2_bench \"#card-sysml2-bench\"\n  click n_epistemic_adequacy_probe \"#card-epistemic-adequacy-probe\"\n  click n_pressure_susceptibility_probe \"#card-pressure-susceptibility-probe\"\n  click n_SysML_v2_API_Services_Arch_A \"#card-SysML-v2-API-Services-Arch-A\"\n  click n_sysml_v2_metadata_graph_Arch_B \"#card-sysml-v2-metadata-graph-Arch-B\"\n  click n_sysml_v2_governed_substrate_Arch_C \"#card-sysml-v2-governed-substrate-Arch-C\"\n  click n_model_vs_document_defect_probe \"#card-model-vs-document-defect-probe\"\n  click n_ahp_framing_fragility_probe \"#card-ahp-framing-fragility-probe\"\n  click n_dsm_sequencing_probe \"#card-dsm-sequencing-probe\"",
+  "refreshedAt": "2026-08-19T14:53:44+00:00"
+}

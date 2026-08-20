@@ -1,12 +1,11 @@
 # Copyright (c) 2026 Jason D. Gower
 # SPDX-License-Identifier: MIT
-"""Pure rendering: MapData in, strings out. No file writes, no validation."""
+"""Pure rendering: MapData in, the README table and the app payload out.
+
+No file writes, no validation."""
 from __future__ import annotations
 
-import html
 import re
-
-from pathlib import Path
 
 from scripts import mapdata
 
@@ -15,8 +14,6 @@ END = "<!-- END:repos -->"
 STAGE_ORDER = mapdata.STAGES
 STRAND_ORDER = mapdata.STRANDS
 
-MERMAID_CDN = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
-TOKENS_CSS = Path(__file__).resolve().parent.parent / "design" / "tokens.css"
 
 # The CSS class each strand's nodes carry in the diagram, and the token stem
 # that paints it. Colours live in design/tokens.css, never here: a Mermaid
@@ -37,72 +34,6 @@ STRAND_TOKEN = {
     "method-validation": "method",
     "assembly": "assembly",
 }
-
-# Page chrome on top of design/tokens.css. Keep tokens out of here.
-CHROME_CSS = """
-* { box-sizing: border-box; }
-body { margin:0; background:var(--canvas); color:var(--ink); font:var(--text)/var(--leading) var(--font); }
-a { color:var(--link); }
-a:hover { color:var(--link-hover); }
-a:focus-visible { outline:3px solid var(--focus); outline-offset:0; background:var(--focus); color:var(--ink); }
-.masthead { background:var(--header); color:var(--header-text); padding:var(--space-3) var(--space-4); display:flex; flex-wrap:wrap; gap:var(--space-2) var(--space-6); align-items:baseline; justify-content:space-between; }
-.masthead .wordmark { color:var(--header-text); text-decoration:none; font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:.875rem; }
-.masthead .org { color:var(--header-text); font-size:.875rem; }
-.phase { background:var(--phase); color:#fff; padding:var(--space-2) var(--space-4); font-size:.875rem; }
-/* The banner keeps its blue in both schemes, so the tag is pinned to literal
-   black on white. Tracking --ink here turned the label white-on-white in dark. */
-.phase strong { display:inline-block; background:#fff; color:#0b0c0c; padding:0 .4em; margin-right:.6em; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; }
-main { max-width:var(--measure); margin:0 auto; padding:var(--space-7) var(--space-4) var(--space-9); }
-h1 { font-size:2.25rem; line-height:1.15; margin:0 0 var(--space-4); font-weight:700; }
-h2 { font-size:1.5rem; margin:var(--space-8) 0 var(--space-1); padding-top:var(--space-6); border-top:1px solid var(--line); font-weight:700; }
-h3 { font-size:1.1875rem; margin:var(--space-6) 0 var(--space-1); font-weight:700; }
-.subtitle, .stage-note { color:var(--muted); margin:.25rem 0 var(--space-4); }
-.card { background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--strand-line, var(--line)); padding:var(--space-4); margin:var(--space-4) 0; }
-.card:target { outline:3px solid var(--focus); outline-offset:2px; }
-.card h4 { margin:0 0 var(--space-2); font-size:1.1875rem; }
-.ext { font-size:.75em; margin-left:.15em; }
-.sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
-.badges { margin:0 0 var(--space-3); }
-.badge { display:inline-block; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; border:1px solid var(--line); padding:.1rem .5rem; margin:0 var(--space-1) var(--space-1) 0; color:var(--muted); }
-.card p { margin:.4rem 0; }
-.headline { border-left:5px solid var(--link); padding-left:var(--space-3); }
-.source, .output { color:var(--muted); font-size:.875rem; }
-.links { font-size:.95rem; }
-.plain { color:var(--muted); }
-.terminus { color:var(--muted); }
-#diagram { overflow-x:auto; border:1px solid var(--line); padding:var(--space-4); background:var(--surface); }
-/* Mermaid injects its own stylesheet inside the SVG, after this one, so equal
-   specificity loses on source order. These need !important to land. */
-#diagram .cluster rect { fill:var(--diagram-cluster-fill) !important; stroke:var(--diagram-cluster-line) !important; }
-#diagram .cluster-label .nodeLabel, #diagram .cluster-label text, #diagram .cluster-label span { color:var(--muted) !important; fill:var(--muted) !important; font-weight:700; }
-#diagram .node rect { fill:var(--surface) !important; stroke:var(--line) !important; }
-#diagram .nodeLabel, #diagram .nodeLabel p { color:var(--ink) !important; }
-#diagram .flowchart-link { stroke:var(--diagram-edge) !important; }
-#diagram .arrowMarkerPath { fill:var(--diagram-edge) !important; stroke:var(--diagram-edge) !important; }
-#diagram a .node rect { cursor:pointer; }
-#diagram a:focus-visible .node rect { stroke:var(--ink) !important; stroke-width:3px !important; }
-footer { margin-top:var(--space-8); padding-top:var(--space-5); border-top:1px solid var(--line); color:var(--muted); font-size:.875rem; }
-@media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
-"""
-
-
-def strand_css() -> str:
-    """One rule per strand, generated so a new strand cannot be added without
-    its colour. Both halves resolve to the same tokens the page uses, which is
-    what keeps the diagram and the cards from disagreeing in either mode."""
-    rules = []
-    for strand in STRAND_ORDER:
-        css_class, token = STRAND_CLASS[strand], STRAND_TOKEN[strand]
-        rules.append(
-            f"#diagram .node.{css_class} rect {{ "
-            f"fill:var(--strand-{token}-fill) !important; "
-            f"stroke:var(--strand-{token}-line) !important; }}"
-        )
-        rules.append(
-            f".strand-{css_class} {{ --strand-line:var(--strand-{token}-line); }}"
-        )
-    return "\n".join(rules)
-
 
 STATUS_LABELS = {
     "design": "design stage",
@@ -199,166 +130,131 @@ def mermaid(data: mapdata.MapData) -> str:
     return "\n".join(lines)
 
 
-def _tidy(value: object) -> str:
-    """Collapse the newlines a YAML folded scalar leaves behind, then escape."""
-    return html.escape(" ".join(str(value).split()))
+def _collapse(value: object) -> str:
+    """Collapse the newlines a YAML folded scalar leaves behind.
+
+    Escaping is deliberately NOT done here. The README and the JSON payload
+    both want the plain text; only the HTML renderer needs entities.
+    """
+    return " ".join(str(value).split())
 
 
-def _anchor(key: str, data: mapdata.MapData) -> str:
-    """Link to a card, or plain text when the target renders no card."""
-    target = data.by_key.get(key, {})
-    if target.get("render", "card") == "node-only":
-        return f'<span class="plain">{html.escape(key)}</span>'
-    return f'<a href="#card-{html.escape(key)}">{html.escape(key)}</a>'
+# ---------------------------------------------------------------------------
+# Payload for the React app.
+#
+# Every ordering, inversion, badge and card/node-only decision is resolved
+# HERE, in Python, under the tests that already cover those rules. The app
+# maps over what this produces and derives nothing, so a change to programme
+# logic stays a change to tested Python rather than drifting into TypeScript.
+# ---------------------------------------------------------------------------
 
 
-def _card(entry: dict, data: mapdata.MapData, inverted: dict, live: dict | None) -> str:
+def _badges(entry: dict, live_repos: dict) -> list[str]:
+    """Visibility, status, and last-commit, in the order the card shows them."""
     key = entry["key"]
-    live_repos = (live or {}).get("repos", {})
-    known = key in live_repos
-
     if entry["owner"] == "local":
-        badge, title = "not yet published", html.escape(key)
+        first = "not yet published"
     else:
-        badge = live_repos.get(key, {}).get("visibility", "awaiting refresh")
-        if not known:
-            badge = "awaiting refresh"
-        url = f"https://github.com/{entry['owner']}/{key}"
-        title = (
-            f'<a href="{html.escape(url)}" rel="noopener">{html.escape(key)}'
-            '<span class="ext" aria-hidden="true">\u2197</span>'
-            '<span class="sr">(opens GitHub)</span></a>'
-        )
+        first = live_repos.get(key, {}).get("visibility") or "awaiting refresh"
+        if key not in live_repos:
+            first = "awaiting refresh"
 
-    parts = [f'<article class="card" id="card-{html.escape(key)}">']
-    parts.append(f"<h4>{title}</h4>")
-    badges = [badge, STATUS_LABELS.get(entry["status"], "")]
+    badges = [first, STATUS_LABELS.get(entry["status"], "")]
     pushed = live_repos.get(key, {}).get("pushed_at")
     if pushed:
         badges.append(f"last commit {str(pushed)[:10]}")
-    parts.append(
-        '<p class="badges">'
-        + "".join(f'<span class="badge">{html.escape(str(b))}</span>' for b in badges if b)
-        + "</p>"
-    )
-    for label, field_name in (
-        ("What it is for", "objective"),
-        ("Question", "question"),
-        ("Method", "method"),
-    ):
-        parts.append(f"<p><strong>{label}.</strong> {_tidy(entry[field_name])}</p>")
-
-    headline = entry.get("headline")
-    if headline:
-        parts.append(
-            '<p class="headline"><strong>Result.</strong> '
-            f'{_tidy(headline["text"])} '
-            f'<span class="source">Source: {_tidy(headline["source"])}</span></p>'
-        )
-    if entry.get("output"):
-        parts.append(f'<p class="output">{_tidy(entry["output"])}</p>')
-
-    depends = entry.get("depends_on", [])
-    feeds_into = inverted.get(key, [])
-    if depends:
-        parts.append(
-            '<p class="links"><strong>Depends on.</strong> '
-            + ", ".join(_anchor(k, data) for k in depends)
-            + "</p>"
-        )
-    if feeds_into:
-        parts.append(
-            '<p class="links"><strong>Feeds.</strong> '
-            + ", ".join(_anchor(k, data) for k in feeds_into)
-            + "</p>"
-        )
-    parts.append("</article>")
-    return "\n".join(parts)
+    return [b for b in badges if b]
 
 
-def page(data: mapdata.MapData, live: dict | None) -> str:
+def _link_refs(keys: list[str], data: mapdata.MapData) -> list[dict]:
+    """A dependency reference, already told whether it can be linked.
+
+    node-only entries render no card, so there is nothing to anchor to; the
+    app prints them as plain text. Deciding that here keeps the app from
+    needing to know what "render" means.
+    """
+    refs = []
+    for key in keys:
+        target = data.by_key.get(key, {})
+        refs.append({"key": key, "linkable": target.get("render", "card") == "card"})
+    return refs
+
+
+def payload(data: mapdata.MapData, live: dict | None) -> dict:
+    """The whole page as data, in final render order.
+
+    Text is collapsed but NOT html-escaped: React escapes on insertion, and
+    pre-escaping would double-encode. The newline collapse still belongs here
+    because it repairs YAML folded scalars, which React knows nothing about.
+    """
     inverted = mapdata.feeds(data)
-    programme = data.programme
+    live_repos = (live or {}).get("repos", {})
+    ordered = _ordered(data)
 
-    sections = []
+    strands = []
     for strand in STRAND_ORDER:
-        members = [e for e in _ordered(data) if e["strand"] == strand]
-        cards = [e for e in members if e.get("render", "card") == "card"]
+        members = [e for e in ordered if e["strand"] == strand]
         if not members:
             continue
         heading = data.strands.get(strand, {})
-        sections.append(
-            f'<section id="strand-{strand}" class="strand-{STRAND_CLASS[strand]}">'
-        )
-        sections.append(f'<h2>{html.escape(str(heading.get("title", strand)))}</h2>')
-        sections.append(f'<p class="subtitle">{_tidy(heading.get("subtitle", ""))}</p>')
-        if not cards:
-            # Every member renders node-only (the thesis terminus). The section still
-            # belongs on the page, but an empty one reads as a rendering fault, so
-            # name the entries in a line instead of emitting a bare heading.
-            for member in members:
-                sections.append(
-                    f'<p class="terminus"><strong>{html.escape(member["key"])}.</strong> '
-                    f'{_tidy(member["objective"])}</p>'
+        entries = []
+        for entry in members:
+            key = entry["key"]
+            is_card = entry.get("render", "card") == "card"
+            item = {
+                "key": key,
+                "stage": entry["stage"],
+                "card": is_card,
+                "objective": _collapse(entry["objective"]),
+            }
+            if is_card:
+                item.update(
+                    {
+                        "url": (
+                            None
+                            if entry["owner"] == "local"
+                            else f"https://github.com/{entry['owner']}/{key}"
+                        ),
+                        "badges": _badges(entry, live_repos),
+                        "question": _collapse(entry["question"]),
+                        "method": _collapse(entry["method"]),
+                        "headline": (
+                            {
+                                "text": _collapse(entry["headline"]["text"]),
+                                "source": _collapse(entry["headline"]["source"]),
+                            }
+                            if entry.get("headline")
+                            else None
+                        ),
+                        "output": _collapse(entry["output"]) if entry.get("output") else None,
+                        "dependsOn": _link_refs(entry.get("depends_on", []), data),
+                        "feeds": _link_refs(inverted.get(key, []), data),
+                    }
                 )
-        for stage in STAGE_ORDER:
-            in_stage = [e for e in cards if e["stage"] == stage]
-            if not in_stage:
-                continue
-            sections.append(f"<h3>{stage.title()}</h3>")
-            sections.append(f'<p class="stage-note">{_tidy(data.stages.get(stage, ""))}</p>')
-            sections.extend(_card(e, data, inverted, live) for e in in_stage)
-        sections.append("</section>")
+            entries.append(item)
 
-    footer = []
-    if live and live.get("generated_at"):
-        footer.append(
-            f'<p>Live repository data last refreshed {html.escape(str(live["generated_at"]))}.</p>'
+        strands.append(
+            {
+                "id": strand,
+                "cssClass": STRAND_CLASS[strand],
+                "token": STRAND_TOKEN[strand],
+                "title": str(heading.get("title", strand)),
+                "subtitle": _collapse(heading.get("subtitle", "")),
+                "entries": entries,
+            }
         )
-    footer.append(
-        "<p>Repositories marked private are readable on request: contact the author.</p>"
-    )
 
-    tokens = TOKENS_CSS.read_text(encoding="utf-8")
-    title = html.escape(str(programme.get("title", "Research programme")))
-    return f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title}</title>
-<meta name="description" content="Map of the doctoral research programme: what each repository is for and how they link.">
-<style>
-{tokens}
-{CHROME_CSS}
-{strand_css()}
-</style>
-</head>
-<body>
-<header class="masthead">
-  <a class="wordmark" href="#">{title}</a>
-  <span class="org">Loughborough University</span>
-</header>
-<p class="phase"><strong>Research</strong> Doctoral programme map. Not a GOV.UK service.</p>
-<main>
-<h1>{title}</h1>
-<p>{html.escape(" ".join(str(programme.get("question", "")).split()))}</p>
-<p><strong>{html.escape(" ".join(str(programme.get("move", "")).split()))}</strong></p>
-
-<div id="diagram"><pre class="mermaid">
-{mermaid(data)}
-</pre></div>
-
-{chr(10).join(sections)}
-
-<footer>
-{chr(10).join(footer)}
-</footer>
-</main>
-<script type="module">
-import mermaid from "{MERMAID_CDN}";
-mermaid.initialize({{ startOnLoad: true, theme: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "default" }});
-</script>
-</body>
-</html>
-"""
+    return {
+        "programme": {
+            "title": str(data.programme.get("title", "Research programme")),
+            "question": _collapse(data.programme.get("question", "")),
+            "move": _collapse(data.programme.get("move", "")),
+        },
+        "stages": [
+            {"id": stage, "title": stage.title(), "note": _collapse(data.stages.get(stage, ""))}
+            for stage in STAGE_ORDER
+        ],
+        "strands": strands,
+        "diagram": mermaid(data),
+        "refreshedAt": (live or {}).get("generated_at"),
+    }

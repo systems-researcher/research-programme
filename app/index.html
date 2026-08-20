@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Architecting Trustworthy AI Integration in MBSE</title>
+    <meta
+      name="description"
+      content="Map of the doctoral research programme: what each repository is for and how they link."
+    />
+    <script>
+      // Paint the stored scheme before first render. Without this the page
+      // flashes light before React mounts and applies the class.
+      (function () {
+        try {
+          var saved = localStorage.getItem("rp-theme")
+          var dark =
+            saved === "dark" ||
+            (saved !== "light" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches)
+          document.documentElement.classList.toggle("dark", dark)
+          document.documentElement.style.colorScheme = dark ? "dark" : "light"
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -5,12 +5,9 @@ SPDX-License-Identifier: CC-BY-4.0
 
 # Design System — Research programme
 
-Shared look for every repository in this doctoral programme. Source of the
-rules: the [GOV.UK Design System](https://design-system.service.gov.uk/),
-chosen from [alexpate/awesome-design-systems](https://github.com/alexpate/awesome-design-systems).
-
-This is **not** a GOV.UK service. Do not use the crown, the GDS Transport
-typeface, or the GOV.UK wordmark. Use the tokens and patterns below.
+Shared look for every repository in this doctoral programme. Built on
+[shadcn/ui](https://github.com/shadcn-ui/ui) (MIT): Radix primitives, Tailwind
+v4, and a CSS-variable token set the components read from.
 
 ## Product Context
 
@@ -18,87 +15,94 @@ typeface, or the GOV.UK wordmark. Use the tokens and patterns below.
   University doctoral programme on trustworthy AI in MBSE.
 - **Who it's for:** Supervisor first. Then any reader sent "look at my research".
 - **Space/industry:** Academic systems engineering. Peers are university
-  research groups and UK public technical services, not SaaS landing pages.
+  research groups and technical research sites, not SaaS landing pages.
 - **Project type:** One-page generated map here; later repos reuse the same
-  tokens on their own pages.
+  token set and components.
 
-## Why GOV.UK
+## Why shadcn/ui
 
-The awesome list is mostly React/npm libraries (Chakra, Fluent, Ant, Carbon)
-or brand kits we cannot ship. This programme's sites are static HTML, one
-stylesheet, no framework.
+The page is generated, but it is still a page a supervisor reads. The previous
+GOV.UK-derived stylesheet was correct and accessible and looked like a form.
+shadcn/ui gives a modern, quiet, typographically confident default with real
+components (card, badge, separator, button), a documented token contract, and
+no runtime lock-in: the components are vendored into `app/src/components/ui/`
+as source we own and can edit.
 
 | Candidate | Why not / why |
 |---|---|
-| GOV.UK Design System | **Pick.** Public source, WCAG AA by default, CSS tokens, UK public-sector literacy. Fits a UK university reader. |
-| NHS.UK Service Manual | Same family, health-branded. Wrong domain. |
-| BBC GEL | Guidelines, no coded tokens we can copy. |
-| IBM Carbon / Primer / Polaris | Component runtimes. Too much for a map page. |
-| USWDS / France DSFR | Same idea as GOV.UK, wrong country. |
-
-Local folder `AppData\Local\Temp\awesome-design-md` is empty brand stubs, not
-this list. The list itself was fetched from
-https://github.com/alexpate/awesome-design-systems.
+| shadcn/ui | **Pick.** Vendored MIT source, CSS-variable tokens, Radix accessibility, no framework lock-in. |
+| GOV.UK Design System | Previous pick. Accessible and public, but reads as a government service form, and its palette flattens a research page. |
+| IBM Carbon / Primer / Polaris | Component runtimes with strong outside branding. |
+| Hand-rolled CSS | What we had. Every accessibility affordance is ours to get right alone. |
 
 ## Aesthetic Direction
 
-- **Direction:** Industrial / utilitarian, GOV.UK service-page grammar.
-- **Decoration level:** Minimal. Type, hairlines, and the black masthead do
-  the work.
-- **Mood:** Official, readable, a bit severe. A controlled record, not a
-  product launch.
-- **Reference:** https://design-system.service.gov.uk/ and any GOV.UK start
-  page.
+- **Direction:** Quiet technical documentation. Content-forward, generous
+  whitespace, hairline borders.
+- **Decoration level:** Low. Type, spacing, and one accent per strand.
+- **Mood:** Considered and current. A research record, not a product launch.
 
 ## Typography
 
-- **Display / body / UI:** Helvetica Neue, Helvetica, Arial, sans-serif —
-  the GOV.UK fallback. GDS Transport is not licensed for this site.
-- **Data / code:** ui-monospace / SF Mono / Consolas.
-- **Loading:** System fonts only. No CDN fonts.
-- **Scale** (GOV.UK): 80 / 48 / 36 / 27 / 24 / 19 / 16 / 14. Body is 19px /
-  25px (`1.1875rem` / `1.315`). Headings are 700.
+- **Display / body / UI:** Geist Variable, bundled via `@fontsource-variable`.
+  Self-hosted — no CDN request, no third-party tracking.
+- **Data / identifiers:** the mono stack. Repository keys are always mono:
+  they are identifiers, not prose.
 
 ## Colour
 
-- **Approach:** Restrained. Colour means something (link, focus, strand).
-- **Ink:** `#0b0c0c` — text.
-- **Canvas:** `#f3f2f1` — page. **Surface:** `#ffffff` — cards.
-- **Link:** `#1d70b8`, hover `#003078`, visited `#4c2c92`.
-- **Focus:** `#ffdd00` on ink. Never remove the focus ring.
-- **Success / error:** `#00703c` / `#d4351c`.
-- **Strands:** adequacy blue, method-validation purple (GOV.UK visited),
-  assembly green.
-- **Dark mode:** Unofficial extension. Invert canvas/ink, keep focus yellow,
-  lighten links. GOV.UK has no public dark theme; this one exists so the
-  existing `prefers-color-scheme` contract does not vanish.
-
-## Spacing
-
-- **Base unit:** 5px (GOV.UK).
-- **Density:** Comfortable. Body stays 19px.
-- **Scale:** 5 10 15 20 25 30 40 50 60.
+- **Approach:** Neutral shadcn base. Colour carries meaning, never decoration.
+- **Tokens:** `--background`, `--foreground`, `--card`, `--muted-foreground`,
+  `--border`, `--ring`, `--primary`. Never hard-code a hex in a component.
+- **Strands:** each research strand owns one hue, defined in `app/src/index.css`
+  for **both** colour schemes and used in two places at once — the card's left
+  edge and its node in the diagram — so a reader can move between them.
+  `test_every_strand_token_resolves_in_both_colour_schemes` fails under
+  `python -m pytest` if a strand is missing from either scheme. There is no CI
+  in this repository, so run the suite before committing a colour change.
+- **Dark mode:** class-based (`.dark` on `<html>`), the shadcn convention.
+  Defaults to the system setting; an explicit choice is remembered. An inline
+  script in `app/index.html` paints it before first render to avoid a flash.
 
 ## Layout
 
-- **Approach:** Grid-disciplined. Header full bleed, content `max-width: 62rem`.
-- **Signature chrome:** Black masthead, blue phase banner that says this is
-  research and not a GOV.UK service, white cards on grey canvas, square
-  corners, underlined links.
-- **Border radius:** 0.
-- **Diagram:** Mermaid may scroll horizontally; the page itself does not.
+- **Approach:** Single column, `max-w-5xl`. The page never scrolls sideways;
+  the diagram scrolls inside its own container.
+- **Border radius:** `--radius`, 0.625rem. Square corners were the old system.
+- **Signature chrome:** sticky dark masthead, mono repository names, badge row
+  per card, strand-coloured left edge.
 
 ## Motion
 
-- **Approach:** Minimal-functional. No entrance choreography.
-- **Focus and hover only.** Honour `prefers-reduced-motion`.
+- **Minimal-functional.** Focus and hover only. `prefers-reduced-motion` is
+  honoured globally in `app/src/index.css`.
+
+## The diagram
+
+Mermaid renders the dependency graph from source **generated by Python**
+(`render.mermaid`). Two rules keep it part of the page rather than a pasted-in
+image, and both are enforced by tests:
+
+1. The source carries **no `classDef` and no inline `fill:`**. A Mermaid
+   `classDef` writes `!important` inline onto every node, outranking any
+   stylesheet and freezing the diagram in one colour scheme. Strand travels as
+   a bare `class` statement instead, so `app/src/index.css` paints it.
+2. Mermaid fixes its theme at `initialize()`. The diagram component therefore
+   **re-renders on a theme change**, or a reader toggling to dark keeps a light
+   diagram.
 
 ## How later repos use this
 
-1. Copy `design/tokens.css`.
+1. Copy `app/src/index.css` (the token block and the strand colours).
 2. Read this file before any visual decision.
-3. Keep the masthead + phase banner + tokens. Do not invent a second palette.
-4. No third-party fonts, no rounded-pill SaaS chrome, no purple gradients.
+3. Keep the masthead, the mono identifiers, and the token names. Do not invent
+   a second palette or hard-code a hex.
+4. Self-hosted fonts only.
+
+A consequence worth stating plainly: the house style is now expressed in a
+React/Tailwind app. A later repo that is not a React app can still copy the
+token block and the type/spacing rules, but it does not get the components for
+free. That is the cost of this decision.
 
 ## Decisions Log
 
@@ -107,3 +111,6 @@ https://github.com/alexpate/awesome-design-systems.
 | 2026-08-19 | Adopt GOV.UK Design System tokens/patterns, not the npm runtime | Awesome-list pick that fits static HTML and a UK academic reader |
 | 2026-08-19 | Helvetica/Arial fallback, not GDS Transport | Transport is crown-use; GOV.UK documents this fallback |
 | 2026-08-19 | Phase banner states "not a GOV.UK service" | Avoid impersonating a government site |
+| 2026-08-20 | **Supersedes all three rows above.** Rebuild on shadcn/ui + Vite + React; drop `design/tokens.css`, the black masthead, and the phase banner | The GOV.UK page was accessible but read as a government form. The banner existed only because the page borrowed GOV.UK tokens; with those gone its justification went too. Accepts a Node toolchain, which the earlier rationale had rejected. |
+| 2026-08-20 | Python emits `data/map.json`; the app derives nothing | Keeps ordering, dependency inversion, and badge rules in tested Python instead of drifting into TypeScript |
+| 2026-08-20 | Mermaid is lazy-imported | It is ~250 kB gzipped, more than the rest of the page together. The cards are the content and must not wait behind the diagram. |
