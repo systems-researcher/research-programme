@@ -116,6 +116,30 @@ repos:
       accepting a derivation whose upstream references nothing.
     depends_on: [epistemic-adequacy-spec]
 
+  - key: admissibility-spec
+    owner: local
+    strand: adequacy
+    stage: define
+    status: design
+    objective: >
+      The write-side counterpart to the epistemic adequacy specification:
+      what an AI-authored contribution must carry, and what conditions a
+      substrate must check, before that contribution may enter the
+      authoritative engineering record.
+    question: >
+      What must an AI-generated engineering contribution expose — its author,
+      its warrant, the standing of its review, and its effect on claims
+      already in the record — for a substrate to decide admissibility by rule
+      rather than by reviewer judgement?
+    method: >
+      The same clause form the adequacy specification uses: testable
+      MUST/SHOULD/MAY clauses, each with a Check line written against an
+      abstract substrate, organised into conformance profiles, with a
+      machine-readable manifest validated against the prose in CI. Scope is
+      the admission decision alone; how a substrate stores or enforces it is
+      left to the architecture candidates.
+    depends_on: [epistemic-adequacy-spec]
+
   # --------------------------------------------------------------- measure ---
 
   - key: epistemic-adequacy-testing-toolkit
@@ -159,6 +183,29 @@ repos:
       Apollo 11 model is human-gated and still unpopulated, so the bench does
       not yet consume anything the probe produced.
     depends_on: []
+
+  - key: governed-interaction-cost-probe
+    owner: local
+    strand: adequacy
+    stage: measure
+    status: design
+    objective: >
+      The practitioner-viability study: what governed interaction with an
+      engineering record actually costs to use, in latency, tokens, money,
+      and the failure modes that only appear under load.
+    question: >
+      What does an engineer pay — in latency, token consumption, monetary
+      cost, and additional failure modes — for interacting with a governed
+      record rather than an ungoverned one, and at what pattern of usage does
+      that cost stop being worth paying?
+    method: >
+      The same question set run against a governed and an ungoverned
+      substrate through the toolkit's harness, instrumented per request for
+      wall-clock latency, prompt and completion tokens, retrieval depth, and
+      cost at published rates. Reported as a cost-per-answer distribution
+      rather than a mean, because the tail is what makes a tool unusable, with
+      a stated saturation point beyond which the governed path degrades.
+    depends_on: [epistemic-adequacy-testing-toolkit, SysML-v2-API-Services-Arch-A]
 
   # ------------------------------------------------- evidence, read-side ---
 
@@ -236,6 +283,29 @@ repos:
       runs have not been executed.
     depends_on: [epistemic-adequacy-testing-toolkit, epistemic-adequacy-metamodel]
 
+  - key: epistemic-adequacy-under-pressure-probe
+    owner: local
+    strand: adequacy
+    stage: evidence
+    status: design
+    objective: >
+      Crosses the two effects the programme has established separately: that
+      epistemic metadata reduces ungrounded answers, and that pressure
+      increases them. It asks whether the protection survives the pressure.
+    question: >
+      Does the protection epistemic metadata gives against ungrounded
+      engineering answers hold when the work pushes on the AI consumer, and
+      by how much is it eroded under deadline, seniority, and false-premise
+      pressure?
+    method: >
+      A two-by-two design — governed against ungoverned record, calm against
+      pressed instruction — reusing the influence-prompt library from the
+      pressure susceptibility probe and the annotated sidecar from the
+      metamodel, so neither factor is newly invented here. Reported as the
+      ungrounded-answer rate per cell and, as the headline, how much of the
+      metadata's benefit remains once pressure is applied.
+    depends_on: [epistemic-adequacy-metamodel, pressure-susceptibility-probe]
+
   # -------------------------------------------- architecture, write-side ---
 
   - key: SysML-v2-API-Services-Arch-A
@@ -255,7 +325,7 @@ repos:
       schemas and a Python admissibility gate in front of the API, evaluated by
       a three-arm harness. The design contract is complete; the gate checks
       still raise NotImplementedError.
-    depends_on: [epistemic-adequacy-metamodel]
+    depends_on: [epistemic-adequacy-metamodel, admissibility-spec]
 
   - key: sysml-v2-metadata-graph-Arch-B
     owner: systems-researcher

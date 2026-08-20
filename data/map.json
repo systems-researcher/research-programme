@@ -84,6 +84,10 @@
           ],
           "feeds": [
             {
+              "key": "admissibility-spec",
+              "linkable": true
+            },
+            {
               "key": "epistemic-adequacy-metamodel",
               "linkable": true
             },
@@ -125,6 +129,10 @@
               "linkable": true
             },
             {
+              "key": "epistemic-adequacy-under-pressure-probe",
+              "linkable": true
+            },
+            {
               "key": "pressure-susceptibility-probe",
               "linkable": true
             },
@@ -135,6 +143,35 @@
           ],
           "question": "Can the eighteen clauses be expressed as SysML v2 metadata that a tool actually checks on a real model, and what does the existing binding lack for that to be true?",
           "method": "One hand-edited schema generates both an OWL 2 plus SHACL ontology and the SysML v2 library, with reader, resolver, and extractor stages emitting the toolkit's canonical claim graph. Correctness is pinned by a bare-versus- annotated Apollo reference pair under a stated profile regression contract and an eighteen-row clause trace in CI. The repository exists because parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation accepting a derivation whose upstream references nothing.",
+          "headline": null,
+          "output": null,
+          "site": null,
+          "paper": null
+        },
+        {
+          "key": "admissibility-spec",
+          "stage": "define",
+          "card": true,
+          "objective": "The write-side counterpart to the epistemic adequacy specification: what an AI-authored contribution must carry, and what conditions a substrate must check, before that contribution may enter the authoritative engineering record.",
+          "url": null,
+          "badges": [
+            "not yet published",
+            "design"
+          ],
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-spec",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "SysML-v2-API-Services-Arch-A",
+              "linkable": true
+            }
+          ],
+          "question": "What must an AI-generated engineering contribution expose — its author, its warrant, the standing of its review, and its effect on claims already in the record — for a substrate to decide admissibility by rule rather than by reviewer judgement?",
+          "method": "The same clause form the adequacy specification uses: testable MUST/SHOULD/MAY clauses, each with a Check line written against an abstract substrate, organised into conformance profiles, with a machine-readable manifest validated against the prose in CI. Scope is the admission decision alone; how a substrate stores or enforces it is left to the architecture candidates.",
           "headline": null,
           "output": null,
           "site": null,
@@ -158,6 +195,10 @@
             }
           ],
           "feeds": [
+            {
+              "key": "governed-interaction-cost-probe",
+              "linkable": true
+            },
             {
               "key": "pressure-susceptibility-probe",
               "linkable": true
@@ -194,6 +235,34 @@
           ],
           "question": "How competent are current models at SysML v2 itself, independent of any epistemic metadata, and how often do they confabulate on items that have no answer?",
           "method": "Four task families generated procedurally from a semantic intermediate representation with programmatic ground truth, plus two cross-cutting headline metrics, confabulation rate and format-failure rate. The generator and truth layer exist; the wild set that draws on the public Apollo 11 model is human-gated and still unpopulated, so the bench does not yet consume anything the probe produced.",
+          "headline": null,
+          "output": null,
+          "site": null,
+          "paper": null
+        },
+        {
+          "key": "governed-interaction-cost-probe",
+          "stage": "measure",
+          "card": true,
+          "objective": "The practitioner-viability study: what governed interaction with an engineering record actually costs to use, in latency, tokens, money, and the failure modes that only appear under load.",
+          "url": null,
+          "badges": [
+            "not yet published",
+            "design"
+          ],
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-testing-toolkit",
+              "linkable": true
+            },
+            {
+              "key": "SysML-v2-API-Services-Arch-A",
+              "linkable": true
+            }
+          ],
+          "feeds": [],
+          "question": "What does an engineer pay — in latency, token consumption, monetary cost, and additional failure modes — for interacting with a governed record rather than an ungoverned one, and at what pattern of usage does that cost stop being worth paying?",
+          "method": "The same question set run against a governed and an ungoverned substrate through the toolkit's harness, instrumented per request for wall-clock latency, prompt and completion tokens, retrieval depth, and cost at published rates. Reported as a cost-per-answer distribution rather than a mean, because the tail is what makes a tool unusable, with a stated saturation point beyond which the governed path degrades.",
           "headline": null,
           "output": null,
           "site": null,
@@ -265,12 +334,44 @@
           ],
           "feeds": [
             {
+              "key": "epistemic-adequacy-under-pressure-probe",
+              "linkable": true
+            },
+            {
               "key": "publications",
               "linkable": false
             }
           ],
           "question": "How much does social and operational pressure raise the rate of ungrounded engineering answers, and which kinds of pressure do most of the damage?",
           "method": "Six scenarios drawn from design review, verification sign-off, and anomaly investigation, an influence-prompt library of seven levers, ensemble judging, and an analysis layer. Harness and scenario set are built; the runs have not been executed.",
+          "headline": null,
+          "output": null,
+          "site": null,
+          "paper": null
+        },
+        {
+          "key": "epistemic-adequacy-under-pressure-probe",
+          "stage": "evidence",
+          "card": true,
+          "objective": "Crosses the two effects the programme has established separately: that epistemic metadata reduces ungrounded answers, and that pressure increases them. It asks whether the protection survives the pressure.",
+          "url": null,
+          "badges": [
+            "not yet published",
+            "design"
+          ],
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-metamodel",
+              "linkable": true
+            },
+            {
+              "key": "pressure-susceptibility-probe",
+              "linkable": true
+            }
+          ],
+          "feeds": [],
+          "question": "Does the protection epistemic metadata gives against ungrounded engineering answers hold when the work pushes on the AI consumer, and by how much is it eroded under deadline, seniority, and false-premise pressure?",
+          "method": "A two-by-two design — governed against ungoverned record, calm against pressed instruction — reusing the influence-prompt library from the pressure susceptibility probe and the annotated sidecar from the metamodel, so neither factor is newly invented here. Reported as the ungrounded-answer rate per cell and, as the headline, how much of the metadata's benefit remains once pressure is applied.",
           "headline": null,
           "output": null,
           "site": null,
@@ -291,9 +392,17 @@
             {
               "key": "epistemic-adequacy-metamodel",
               "linkable": true
+            },
+            {
+              "key": "admissibility-spec",
+              "linkable": true
             }
           ],
           "feeds": [
+            {
+              "key": "governed-interaction-cost-probe",
+              "linkable": true
+            },
             {
               "key": "publications",
               "linkable": false
@@ -582,15 +691,23 @@
         "key": "epistemic-adequacy-metamodel",
         "x": 2,
         "y": 0,
-        "column": 2,
+        "column": 3,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "admissibility-spec",
+        "x": 2,
+        "y": 1,
+        "column": 3,
         "strand": "adequacy",
         "token": "adequacy"
       },
       {
         "key": "epistemic-adequacy-testing-toolkit",
         "x": 2,
-        "y": 1,
-        "column": 2,
+        "y": 2,
+        "column": 3,
         "strand": "adequacy",
         "token": "adequacy"
       },
@@ -611,10 +728,26 @@
         "token": "adequacy"
       },
       {
-        "key": "sysml-v2-metadata-graph-Arch-B",
+        "key": "governed-interaction-cost-probe",
         "x": 4,
         "y": 0,
-        "column": 1,
+        "column": 3,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "epistemic-adequacy-under-pressure-probe",
+        "x": 4,
+        "y": 1,
+        "column": 3,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "sysml-v2-metadata-graph-Arch-B",
+        "x": 4,
+        "y": 2,
+        "column": 3,
         "strand": "adequacy",
         "token": "adequacy"
       },
@@ -638,7 +771,19 @@
       },
       {
         "from": "epistemic-adequacy-spec",
+        "to": "admissibility-spec"
+      },
+      {
+        "from": "epistemic-adequacy-spec",
         "to": "epistemic-adequacy-testing-toolkit"
+      },
+      {
+        "from": "epistemic-adequacy-testing-toolkit",
+        "to": "governed-interaction-cost-probe"
+      },
+      {
+        "from": "SysML-v2-API-Services-Arch-A",
+        "to": "governed-interaction-cost-probe"
       },
       {
         "from": "epistemic-adequacy-testing-toolkit",
@@ -650,6 +795,18 @@
       },
       {
         "from": "epistemic-adequacy-metamodel",
+        "to": "epistemic-adequacy-under-pressure-probe"
+      },
+      {
+        "from": "pressure-susceptibility-probe",
+        "to": "epistemic-adequacy-under-pressure-probe"
+      },
+      {
+        "from": "epistemic-adequacy-metamodel",
+        "to": "SysML-v2-API-Services-Arch-A"
+      },
+      {
+        "from": "admissibility-spec",
         "to": "SysML-v2-API-Services-Arch-A"
       },
       {
