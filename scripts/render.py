@@ -174,21 +174,28 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
         for entry in members:
             key = entry["key"]
             is_card = entry.get("render", "card") == "card"
+            # Every entry carries its repository and its live badges, card or
+            # not. `render: node-only` means "no card in the strand section",
+            # not "no data": the written column is a real repository with a
+            # visibility and a last commit, and dropping them left it on the
+            # page as a bare name while every neighbour showed its state.
             item = {
                 "key": key,
                 "stage": entry["stage"],
                 "card": is_card,
                 "objective": _collapse(entry["objective"]),
+                "url": (
+                    None
+                    if entry["owner"] == "local"
+                    else f"https://github.com/{entry['owner']}/{key}"
+                ),
+                "badges": _badges(entry, live_repos),
+                "dependsOn": _link_refs(entry.get("depends_on", []), data),
+                "feeds": _link_refs(inverted.get(key, []), data),
             }
             if is_card:
                 item.update(
                     {
-                        "url": (
-                            None
-                            if entry["owner"] == "local"
-                            else f"https://github.com/{entry['owner']}/{key}"
-                        ),
-                        "badges": _badges(entry, live_repos),
                         "question": _collapse(entry["question"]),
                         "method": _collapse(entry["method"]),
                         "headline": (
@@ -217,8 +224,6 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
                             if entry.get("paper")
                             else None
                         ),
-                        "dependsOn": _link_refs(entry.get("depends_on", []), data),
-                        "feeds": _link_refs(inverted.get(key, []), data),
                     }
                 )
             entries.append(item)

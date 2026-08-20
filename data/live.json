@@ -1,14 +1,9 @@
 {
-  "generated_at": "2026-08-20T10:57:12+00:00",
+  "generated_at": "2026-08-20T11:29:58+00:00",
   "repos": {
     "SysML-v2-API-Services-Arch-A": {
       "homepage": "",
       "pushed_at": "2026-07-06T10:17:41Z",
-      "visibility": "private"
-    },
-    "Thesis-Work-Area": {
-      "homepage": null,
-      "pushed_at": "2026-08-18T09:17:08Z",
       "visibility": "private"
     },
     "epistemic-adequacy-probe": {
@@ -34,6 +29,11 @@
     "pressure-susceptibility-probe": {
       "homepage": "https://jgsystemsconsulting.github.io/pressure-susceptibility-probe/",
       "pushed_at": "2026-07-30T15:57:47Z",
+      "visibility": "private"
+    },
+    "publications": {
+      "homepage": null,
+      "pushed_at": "2026-08-19T22:01:20Z",
       "visibility": "private"
     },
     "sysml-v2-governed-substrate-Arch-C": {

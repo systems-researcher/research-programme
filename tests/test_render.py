@@ -420,3 +420,42 @@ def test_the_legend_can_be_built_from_the_status_vocabulary() -> None:
         s for s in mapdata.STATUSES if s != "not-applicable"
     ]
     assert all(item["label"] for item in payload["statuses"])
+
+
+def test_a_node_only_entry_still_carries_its_repository_and_badges() -> None:
+    """`render: node-only` means no card in the strand section, not no data.
+    The written column is a real repository with a visibility and a last
+    commit, and dropping them left it on the page as a bare name while every
+    neighbour showed its state."""
+    data = data_with(
+        entry(),
+        entry(key="publications", strand="assembly", stage="assembly",
+              render="node-only", status="not-applicable", depends_on=["alpha"]),
+    )
+    payload = render.payload(
+        data,
+        {
+            "generated_at": "t",
+            "repos": {"publications": {"visibility": "private", "pushed_at": "2026-08-19T08:00:00Z"}},
+        },
+    )
+    column = find(payload, "publications")
+
+    assert column["card"] is False
+    assert column["url"] == "https://github.com/systems-researcher/publications"
+    assert "private" in column["badges"]
+    assert "last commit 2026-08-19" in column["badges"]
+    assert [ref["key"] for ref in column["dependsOn"]] == ["alpha"]
+
+
+def test_a_node_only_entry_carries_no_study_fields() -> None:
+    """It is not a study: it has no question, method, or result to show."""
+    data = data_with(
+        entry(),
+        entry(key="publications", strand="assembly", stage="assembly",
+              render="node-only", status="not-applicable"),
+    )
+    column = find(render.payload(data, LIVE_EMPTY), "publications")
+
+    for field_name in ("question", "method", "headline", "paper", "site"):
+        assert field_name not in column

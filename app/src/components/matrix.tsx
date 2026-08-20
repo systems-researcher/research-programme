@@ -30,11 +30,13 @@ function Cell({
   entries,
   strand,
   vocabulary,
+  reported,
   onOpen,
 }: {
   entries: Entry[]
   strand: Strand
   vocabulary: Set<string>
+  reported: number
   onOpen: (entry: Entry) => void
 }) {
   if (!entries.length) {
@@ -50,6 +52,51 @@ function Cell({
       <div className="flex flex-col gap-1.5">
         {entries.map((entry) => {
           const status = cellStatus(entry, vocabulary)
+
+          // The written column is not a study, so it has no question or
+          // method and opens no detail sheet. It is still a real repository
+          // with a state and a link, and what it consumes is the one number
+          // that says how much of the programme has been written up.
+          if (!entry.card) {
+            return (
+              <div
+                key={entry.key}
+                style={{ ["--accent" as string]: `var(--strand-${strand.token}-line)` }}
+                className="cell-card relative rounded-md border border-dashed p-2"
+              >
+                <span
+                  aria-hidden="true"
+                  className="cell-spine absolute inset-y-1 left-0 w-[3px] rounded-full opacity-60"
+                />
+                <span className="block pl-2 font-mono text-[11px] leading-tight break-words">
+                  {entry.url ? (
+                    <a
+                      href={entry.url}
+                      rel="noopener"
+                      className="underline decoration-border underline-offset-2 hover:decoration-foreground"
+                    >
+                      {entry.key}
+                      <ExternalLink aria-hidden="true" className="ml-0.5 inline size-3 align-text-top" />
+                      <span className="sr-only">(opens GitHub)</span>
+                    </a>
+                  ) : (
+                    entry.key
+                  )}
+                </span>
+                {!!entry.dependsOn?.length && (
+                  <span className="mt-1 block pl-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {reported} of {entry.dependsOn.length} written up
+                  </span>
+                )}
+                {!!entry.badges?.length && (
+                  <span className="mt-1 block pl-2 text-[10px] text-muted-foreground/80">
+                    {entry.badges.join(" · ")}
+                  </span>
+                )}
+              </div>
+            )
+          }
+
           return (
             <button
               key={entry.key}
@@ -113,6 +160,11 @@ export function Matrix({
   onOpen: (entry: Entry) => void
 }) {
   const vocabulary = new Set(statuses.map((status) => status.label))
+  // How much of the programme has entered the written record. The written
+  // column consumes every study, so this is the one place the ratio is known.
+  const reported = strands
+    .flatMap((strand) => strand.entries)
+    .filter((entry) => entry.paper).length
 
   return (
     // Five columns cannot fit a phone. Rather than inventing a second layout,
@@ -178,6 +230,7 @@ export function Matrix({
                     key={stage.id}
                     strand={strand}
                     vocabulary={vocabulary}
+                    reported={reported}
                     entries={strand.entries.filter((e) => e.stage === stage.id)}
                     onOpen={onOpen}
                   />
