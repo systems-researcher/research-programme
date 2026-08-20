@@ -5,3 +5,6 @@ __pycache__/
 .planning/
 *.tmp
 
+node_modules/
+app/dist/
+site/
