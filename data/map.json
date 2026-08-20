@@ -289,7 +289,7 @@
           "method": "Six scenarios drawn from design review, verification sign-off, and anomaly investigation, an influence-prompt library of seven levers, ensemble judging, and an analysis layer. Harness and scenario set are built; the runs have not been executed.",
           "headline": null,
           "output": null,
-          "site": "https://jgsystemsconsulting.github.io/pressure-susceptibility-probe/",
+          "site": null,
           "paper": null
         },
         {
@@ -425,7 +425,7 @@
           "method": "A consistent-practitioner design in which an AI agent stands in as the reviewer, so representation is the only factor that varies and reviewer skill is held constant, scored on a four-task battery across eight substrate variants in three families: document, model, and database.",
           "headline": null,
           "output": null,
-          "site": "https://systems-researcher.github.io/model-vs-document-defect-probe/",
+          "site": null,
           "paper": null
         },
         {

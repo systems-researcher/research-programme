@@ -459,3 +459,34 @@ def test_a_node_only_entry_carries_no_study_fields() -> None:
 
     for field_name in ("question", "method", "headline", "paper", "site"):
         assert field_name not in column
+
+
+def test_a_private_repository_does_not_advertise_a_result_site() -> None:
+    """GitHub Pages does not serve a private repository on the free plan, so
+    a homepage set on one is an intention rather than a live URL. Two of the
+    three homepages in this programme were 404 when this was written."""
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {
+                "alpha": {"visibility": "private", "homepage": "https://x.github.io/alpha/"}
+            },
+        },
+    )
+
+    assert find(payload, "alpha")["site"] is None
+
+
+def test_a_public_repository_still_advertises_its_result_site() -> None:
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {
+                "alpha": {"visibility": "public", "homepage": "https://x.github.io/alpha/"}
+            },
+        },
+    )
+
+    assert find(payload, "alpha")["site"] == "https://x.github.io/alpha/"

@@ -1,0 +1,64 @@
+# Copyright (c) 2026 Jason D. Gower
+# SPDX-License-Identifier: MIT
+name: pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege: read the repo, write the Pages artifact, and mint the
+# token the deploy step exchanges. Nothing else.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time. A queued run supersedes a waiting one, but never
+# cancels a deployment already in flight.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - run: npm ci
+        working-directory: app
+
+      # A project Pages site is served from /<repo>/, not the domain root.
+      # Vite writes absolute asset URLs, so without this every asset 404s.
+      - name: Build
+        run: npm run build
+        working-directory: app
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+
+      # The page is a single client-rendered document. Without this, a deep
+      # link that Pages cannot resolve returns its own 404 rather than the app.
+      - name: Serve unknown paths through the app
+        run: cp site/index.html site/404.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

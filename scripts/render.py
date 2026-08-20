@@ -207,9 +207,17 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
                             else None
                         ),
                         "output": _collapse(entry["output"]) if entry.get("output") else None,
-                        # The repository's own result site, when it publishes
-                        # one. A reader wants the finding, not a file tree.
-                        "site": (live_repos.get(key, {}).get("homepage") or None),
+                        # The repository's own result site, but only when a
+                        # reader could actually open it. GitHub Pages does not
+                        # serve a private repository on the free plan, so a
+                        # `homepage` set on one is an intention, not a live
+                        # URL — linking it sends the reader to a 404. Two of
+                        # the three set here were dead when this was written.
+                        "site": (
+                            live_repos.get(key, {}).get("homepage") or None
+                            if live_repos.get(key, {}).get("visibility") == "public"
+                            else None
+                        ),
                         "paper": (
                             {
                                 "title": _collapse(entry["paper"]["title"]),
