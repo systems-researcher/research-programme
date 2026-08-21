@@ -521,7 +521,7 @@ curl -s -L --max-time 30 "https://systems-researcher.github.io/research-programm
   | grep -oE '<meta (property|name)="(og|twitter):[^"]*" content="[^"]*"'
 ```
 
-Expected: all thirteen tags, with both image URLs absolute and beginning `https://systems-researcher.github.io/research-programme/`.
+Expected: all twelve tags, with both image URLs absolute and beginning `https://systems-researcher.github.io/research-programme/`.
 
 - [ ] **Step 5: Verify the live site does not scroll sideways**
 
