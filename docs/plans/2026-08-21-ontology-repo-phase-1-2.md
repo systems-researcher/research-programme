@@ -95,6 +95,12 @@ git rm --quiet trace/clause-trace.sha256 tests/fixtures/exported-model.json test
 # would fail on the first push and tell you nothing true. Task 13 Step 3
 # writes the replacement.
 git rm --quiet .github/workflows/validate.yml
+
+# .vscode/settings.json is tracked, and it is the only shipped file still
+# naming the old package: an `eamm fetch-pilot` task, plus references to
+# library/, .pilot, package.json, test_library_parses.py and
+# metamodel/metamodel.yaml. Every one of those is deleted above.
+git rm -r --quiet .vscode
 ```
 
 `NOTICE` attributes `models/apollo-source.sysml` to the upstream Airbus model,
@@ -267,11 +273,18 @@ subject:
 
 ```bash
 grep -rln "pilot\|apollo\|Apollo\|sysml\|SysML\|clause-trace\|check_release" \
-  src tests trace *.md *.toml *.cff 2>/dev/null
+  src tests trace *.md *.toml *.cff 2>/dev/null \
+  | grep -v '__pycache__\|\.egg-info'
 ```
 
+The exclusion matters: Step 6's `pip install -e .` creates `src/eaont.egg-info/`
+and `__pycache__/`, both of which carry copies of whatever the sources say and
+neither of which is tracked. Without it the sweep reports build output as
+findings.
+
 **Every hit must be one you can justify — and most are not ones you delete.**
-Run at this point the sweep returns eight files. What to do with each:
+Do not treat the list below as exhaustive; treat it as the ones with a decided
+answer. Anything else, decide by the rule under the table.
 
 | Hit | Action |
 |---|---|
@@ -279,7 +292,9 @@ Run at this point the sweep returns eight files. What to do with each:
 | `README.md` | **Reword** — Task 13 Step 2 rewrites it wholesale. Not a deletion. |
 | `CITATION.cff` | **Reword** — Task 13 Step 5b. It is titled "Metamodel" and cites a deleted model. Not a deletion. |
 | `src/eaont/cli.py` | **Reword.** The comment Step 4 wrote, recording that the SysML library target moved. |
-| `tests/test_load.py` | **Leave.** Function names containing the word metamodel. |
+| `tests/test_load.py` | **Leave.** It exercises the loader's refusal paths, so it names types and messages on purpose. |
+| `src/eaont/load.py` | **Leave.** `REFUSED_PREFIXES` must name the prefixes to refuse them (Task 2). |
+| `tests/test_load_abstract_refs.py` | **Leave.** It asserts those prefixes are refused (Task 2). |
 | `src/eaont/generate/owl.py` near line 132 | **Leave it alone here.** See below. |
 
 **`owl.py`'s PROV string is not a source comment.** It is a `Literal` inside
@@ -477,6 +492,20 @@ sed -i 's/type: "KerML::Element"/type: ElementRef/;
         s/type: "SysML::EnumerationDefinition"/type: VocabularyRef/' model/ontology.yaml
 ```
 
+Correct the file's own header while you are in it. It still reads:
+
+```yaml
+# The sole hand-edited schema artefact. ontology/*.ttl and
+# library/EpistemicAdequacy.sysml are generated from this file and are
+# byte-compared in CI; edit them and the build fails.
+```
+
+`library/` was deleted in Task 1 and this repository generates no SysML. Drop
+that clause, and point the `Design:` line at the split design rather than the
+metamodel design. Nothing sweeps `model/`, so this comment is not caught
+anywhere else — and it is the header of the one file the whole repository calls
+its single source of truth.
+
 - [ ] **Step 5b: Update the generator comment that names the old prefixes**
 
 `src/eaont/generate/owl.py` carries this comment at the end of
@@ -567,6 +596,7 @@ the proof."
 
 **Files:**
 - Modify: `model/ontology.yaml`
+- Modify: `tests/test_load.py` (Step 3b — the enumeration count)
 - Test: `tests/test_no_binding_concerns.py`
 
 **Interfaces:**
@@ -681,8 +711,15 @@ understate the removal for the same wrapping reason.
 
 - [ ] **Step 6: Commit**
 
+`tests/test_load.py` is in this commit because Step 3b edited it. Leave it out
+and the **tree** is green while the **commit** is red — measured: `1 failed, 39
+passed`, `assert 11 == 12`. CI triggers `on: [push]`, so a red commit is a red
+build even though the working directory passed. "A red suite blocks the commit"
+has to mean the commit, not the tree.
+
 ```bash
-git add model/ontology.yaml ontology/ tests/test_no_binding_concerns.py
+git add model/ontology.yaml ontology/ tests/test_load.py \
+        tests/test_no_binding_concerns.py
 git commit -m "refactor: move RevisionSchemeKind to the binding
 
 apiCommit is a SysML v2 API service commit identity. It was never ontology."
@@ -697,6 +734,8 @@ Design §12.1 leaves this open on purpose: both look like duplicates of what the
 **Files:**
 - Read: `../epistemic-adequacy-spec/conformance/profiles.md`, `../epistemic-adequacy-spec/conformance/clauses.yaml`
 - Modify: `model/ontology.yaml` (conditionally)
+- Modify: `tests/test_load.py` (Step 4b — the enumeration count, conditionally)
+- Modify: `docs/adr/README.md` (the ADR index row, conditionally)
 - Create: `docs/adr/012-profiles-are-not-ontology.md` (conditionally)
 - Test: `tests/test_no_binding_concerns.py` (extend)
 
@@ -796,6 +835,10 @@ created to end.
 **Relocate to the specification.** Rejected: `clauses.yaml` already carries the
 information, so relocation would create the duplicate it was meant to avoid.
 ```
+
+Add its row to `docs/adr/README.md`'s index. Task 1 Step 1b already edits that
+file to record where ADR-010 went, so the table is known to exist; an ADR absent
+from it is one nobody browsing the directory will find.
 
 - [ ] **Step 4 (not-duplicate branch): Keep, and record why**
 
@@ -2375,7 +2418,13 @@ Design §11.1 names this the live falsifier of the whole arrangement. Run it del
 
 - [ ] **Step 1: Write the probe fixture**
 
-Create `bindings/reference/instances/per-instance.json` — five engine instances, each with its own standing, which the SysML v2 binding cannot represent because it anchors to a usage with multiplicity 5:
+Create `bindings/reference/instances/per-instance.json`. **Two** engine
+instances of the same part, carrying **different** standings — that is the whole
+of the test, and Step 2 asserts exactly two. The SysML v2 binding cannot
+represent it at all, because ADR-010 anchors the claim to a usage with
+multiplicity 5 and all five instances therefore share one standing. Two
+instances that disagree is the minimum counterexample; five would be the same
+finding, restated three more times.
 
 ```json
 {
@@ -2523,8 +2572,9 @@ Follow the specification's `docs/references.md` convention: every source verifie
 The metamodel repository's copy was deleted in Task 1 — it catalogued the
 SysML v2 realisation's limits, which are the binding's. This one carries the
 ontology's. Give it the CC-BY-4.0 header, as every file under `docs/` needs one
-for Step 4's release test. Start it with at least these three, all discovered
-while building the reference binding rather than anticipated by the design:
+for Step 4's release test. Start it with at least these four, three of them
+discovered while building the reference binding rather than anticipated by the
+design:
 
 1. **The ontology defines no attachment relation.** `GovernedClaim` carries
    `claimId` and `revision`; nothing joins it to the `EpistemicStatus` or
@@ -2568,7 +2618,18 @@ generator that emitted prose would emit the same sentence thirteen times. But ad
 a test asserting every entity in `model/ontology.yaml` has a section, so it
 cannot fall behind:
 
+This test goes in **`tests/test_release.py`**, which Step 4 creates — it needs no
+file of its own, and a new file would not be in Step 6's `git add`:
+
 ```python
+import pathlib
+
+from eaont.cli import SOURCE
+from eaont.load import load_metamodel
+
+ROOT = pathlib.Path(__file__).parents[1]
+
+
 def test_entities_doc_covers_every_definition():
     text = (ROOT / "docs" / "entities.md").read_text(encoding="utf-8")
     for name in load_metamodel(SOURCE).metadata_definitions:
@@ -2666,8 +2727,10 @@ true: a `title` naming the Metamodel, a `repository-code` pointing at the old
 repository, and an abstract describing a SysML v2 library. It also carries the
 Airbus MPL-2.0 attribution for `models/apollo-source.sysml`, deleted in Task 1.
 
-Rewrite `title`, `abstract` and `repository-code` for this repository, and
-**remove the Airbus reference** — it belongs in the binding, which still ships
+Rewrite `title` (it reads "Epistemic Adequacy Metamodel"), `abstract`,
+`repository-code` and `license-url` — the last two both point at
+`epistemic-adequacy-metamodel` — and prune `keywords`, which still lists
+"SysML v2". Then **remove the Airbus reference** — it belongs in the binding, which still ships
 the derived models. `tests/test_release.py` already checks the `version` field
 against `model/ontology.yaml`; nothing checks the prose, so this step is the
 only thing standing between the repository and a citation file that misnames it.

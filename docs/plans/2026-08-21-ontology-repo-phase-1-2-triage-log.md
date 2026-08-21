@@ -147,3 +147,34 @@ binding-contract, competency-questions, adr-010-test, ADR-012 and README as
 test-satisfying stubs, so defects reachable only from full prose remain unchecked.
 
 **Not converged** — verdict ISSUES_FOUND; Track 2 needs 70% inflation against 0%.
+
+| M1 Task 3's commit is red in history though the tree is green | R5 | R5 | Genuine | Step 3b edits `tests/test_load.py`; Step 6's `git add` did not name it. Reviewer ran pytest at all 13 task commits: 12 green, that one red (`1 failed, 39 passed`, `assert 11 == 12`). CI is `on: [push]`. Fixed: added to the git add and both Files lists. |
+| M2 Task 12's fixture prose contradicts its own test | R5 | R5 | Genuine | Prose said "five engine instances"; the JSON holds two and Step 2 asserts `len == 2`. Writing five fails the falsifier, and Step 3 then orders a full halt on a false alarm. Fixed: two, with why two is the minimum counterexample. |
+| M3 Task 13 Step 1c's test has no home file | R5 | R5 | Genuine | Given with undefined `ROOT`, `SOURCE`, `load_metamodel` and no file named; Step 6's `git add` covers only `tests/test_release.py`, so a new file would stay untracked. Fixed: homed there, with imports. |
+| A1 sweep table asserts a count that is wrong | R5 | R5 | Genuine | Said eight files with six rows; measured after Task 2 it returns 13, including `__pycache__` and `.egg-info` that Step 6's editable install creates. Fixed: exclude build output, add the two real rows, drop the count claim, correct `test_load.py`'s stated reason. |
+| A2 .vscode/settings.json is tracked and names the old package | R5 | R5 | Genuine | Verified: it carries an `eamm fetch-pilot` task plus references to `library/`, `.pilot`, `package.json` and `metamodel/metamodel.yaml` — all deleted. The only shipped file still naming `eamm`. Fixed: deleted in Step 1b. |
+| A3 the schema's own header describes a deleted artefact | R5 | R5 | Genuine | `model/ontology.yaml` still says `library/EpistemicAdequacy.sysml` is generated from it and byte-compared. Nothing sweeps `model/`, so no other check catches it — and it heads the one file the repository calls its single source of truth. Fixed in Task 2 Step 5. |
+| A4 ADR-012 created but never indexed | R5 | R5 | Genuine (cheap) | Task 1 Step 1b already edits `docs/adr/README.md`, so the table is known to exist. Fixed. |
+| A5 "these three" above a list of four | R5 | R5 | Genuine (cheap) | The substrate-level limitation added in R2 was never counted. Fixed. |
+| A6 CITATION rewrite names three fields, misses two | R5 | R5 | Genuine (cheap) | `license-url` also points at the old repository and `keywords` still lists "SysML v2". Fixed. |
+
+## Round 5 Summary
+
+Reviewer: Opus, three lenses. lens_coverage: saboteur=1, new_hire=3, auditor=4.
+Reviewer executed all 13 tasks verbatim on a fresh clone and then ran pytest at
+**every one of the 13 task commits**.
+
+**A verbatim run now needs zero unauthorised edits.** All 13 tasks complete: 88
+tests, no drift, shapes hold over 3 instances, CLEAN, all seven exit criteria.
+Round 4's C1 patch is no longer necessary. Every stated Expected matched,
+including the CQ1 percent-encoding failure and the ADR-010 PASS.
+
+**First round with no CRITICAL findings.**
+
+Findings: 0 CRITICAL, 3 MAJOR, 6 ADVISORY = 9. Genuine 9, FP 0, Design 0.
+Fixes applied: 9.
+Inflation rate: 0% (0 of 3 CRITICAL+MAJOR triaged FP/Recurring/Design).
+Validation: fences balanced (148), 9 targeted assertions pass.
+
+**Not converged** — verdict ISSUES_FOUND on three MAJORs. Track 2 needs 70%
+inflation against 0%.
