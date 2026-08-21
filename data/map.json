@@ -142,6 +142,44 @@
           "paper": null
         },
         {
+          "key": "admissibility-spec",
+          "stage": "define",
+          "card": true,
+          "objective": "The write-side counterpart to the epistemic adequacy specification: what an AI-authored contribution must carry, and what conditions a substrate must check, before that contribution may enter the authoritative engineering record.",
+          "url": "https://github.com/systems-researcher/admissibility-spec",
+          "badges": [
+            "private",
+            "design",
+            "last commit 2026-08-20"
+          ],
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-probe",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-ontology",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "SysML-v2-API-Services-Arch-A",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-metamodel",
+              "linkable": true
+            }
+          ],
+          "question": "What must an AI-generated engineering contribution expose — its author, its warrant, the standing of its review, and its effect on claims already in the record — for a substrate to decide admissibility by rule rather than by reviewer judgement?",
+          "method": "The same clause form the adequacy specification uses: testable MUST/SHOULD/MAY clauses, each with a Check line written against an abstract substrate, organised into conformance profiles, with a machine-readable manifest validated against the prose in CI. Scope is the admission decision alone; how a substrate stores or enforces it is left to the architecture candidates.",
+          "headline": null,
+          "output": null,
+          "site": null,
+          "paper": null
+        },
+        {
           "key": "epistemic-adequacy-metamodel",
           "stage": "define",
           "card": true,
@@ -181,44 +219,6 @@
           ],
           "question": "Can the eighteen clauses be expressed as SysML v2 metadata that a tool actually checks on a real model, and what does the existing binding lack for that to be true?",
           "method": "One hand-edited schema generates both an OWL 2 plus SHACL ontology and the SysML v2 library, with reader, resolver, and extractor stages emitting the toolkit's canonical claim graph. Correctness is pinned by a bare-versus- annotated Apollo reference pair under a stated profile regression contract and an eighteen-row clause trace in CI. The repository exists because parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation accepting a derivation whose upstream references nothing.",
-          "headline": null,
-          "output": null,
-          "site": null,
-          "paper": null
-        },
-        {
-          "key": "admissibility-spec",
-          "stage": "define",
-          "card": true,
-          "objective": "The write-side counterpart to the epistemic adequacy specification: what an AI-authored contribution must carry, and what conditions a substrate must check, before that contribution may enter the authoritative engineering record.",
-          "url": "https://github.com/systems-researcher/admissibility-spec",
-          "badges": [
-            "private",
-            "design",
-            "last commit 2026-08-20"
-          ],
-          "dependsOn": [
-            {
-              "key": "epistemic-adequacy-probe",
-              "linkable": true
-            },
-            {
-              "key": "epistemic-adequacy-ontology",
-              "linkable": true
-            }
-          ],
-          "feeds": [
-            {
-              "key": "SysML-v2-API-Services-Arch-A",
-              "linkable": true
-            },
-            {
-              "key": "epistemic-adequacy-metamodel",
-              "linkable": true
-            }
-          ],
-          "question": "What must an AI-generated engineering contribution expose — its author, its warrant, the standing of its review, and its effect on claims already in the record — for a substrate to decide admissibility by rule rather than by reviewer judgement?",
-          "method": "The same clause form the adequacy specification uses: testable MUST/SHOULD/MAY clauses, each with a Check line written against an abstract substrate, organised into conformance profiles, with a machine-readable manifest validated against the prose in CI. Scope is the admission decision alone; how a substrate stores or enforces it is left to the architecture candidates.",
           "headline": null,
           "output": null,
           "site": null,
@@ -839,20 +839,20 @@
         "to": "epistemic-adequacy-spec"
       },
       {
-        "from": "epistemic-adequacy-spec",
-        "to": "epistemic-adequacy-metamodel"
-      },
-      {
-        "from": "admissibility-spec",
-        "to": "epistemic-adequacy-metamodel"
-      },
-      {
         "from": "epistemic-adequacy-probe",
         "to": "admissibility-spec"
       },
       {
         "from": "epistemic-adequacy-ontology",
         "to": "admissibility-spec"
+      },
+      {
+        "from": "epistemic-adequacy-spec",
+        "to": "epistemic-adequacy-metamodel"
+      },
+      {
+        "from": "admissibility-spec",
+        "to": "epistemic-adequacy-metamodel"
       },
       {
         "from": "epistemic-adequacy-spec",

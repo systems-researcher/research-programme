@@ -124,30 +124,6 @@ repos:
       NIER paper, doi:10.1145/3822455.3838783, which resolves on publication.
     depends_on: [epistemic-adequacy-probe, epistemic-adequacy-ontology]
 
-  - key: epistemic-adequacy-metamodel
-    owner: local
-    strand: adequacy
-    stage: define
-    status: design
-    objective: >
-      Owns the metadata model itself — a conceptual ontology, a logical data
-      model, and a generated SysML v2 library, kept in sync — so that the
-      specification's non-normative binding becomes something a tool can
-      mechanically check.
-    question: >
-      Can the eighteen clauses be expressed as SysML v2 metadata that a tool
-      actually checks on a real model, and what does the existing binding lack
-      for that to be true?
-    method: >
-      One hand-edited schema generates both an OWL 2 plus SHACL ontology and the
-      SysML v2 library, with reader, resolver, and extractor stages emitting the
-      toolkit's canonical claim graph. Correctness is pinned by a bare-versus-
-      annotated Apollo reference pair under a stated profile regression contract
-      and an eighteen-row clause trace in CI. The repository exists because
-      parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation
-      accepting a derivation whose upstream references nothing.
-    depends_on: [epistemic-adequacy-spec, admissibility-spec]
-
   - key: admissibility-spec
     owner: systems-researcher
     strand: adequacy
@@ -173,6 +149,30 @@ repos:
     depends_on: [epistemic-adequacy-probe, epistemic-adequacy-ontology]
 
   # --------------------------------------------------------------- measure ---
+
+  - key: epistemic-adequacy-metamodel
+    owner: local
+    strand: adequacy
+    stage: define
+    status: design
+    objective: >
+      Owns the metadata model itself — a conceptual ontology, a logical data
+      model, and a generated SysML v2 library, kept in sync — so that the
+      specification's non-normative binding becomes something a tool can
+      mechanically check.
+    question: >
+      Can the eighteen clauses be expressed as SysML v2 metadata that a tool
+      actually checks on a real model, and what does the existing binding lack
+      for that to be true?
+    method: >
+      One hand-edited schema generates both an OWL 2 plus SHACL ontology and the
+      SysML v2 library, with reader, resolver, and extractor stages emitting the
+      toolkit's canonical claim graph. Correctness is pinned by a bare-versus-
+      annotated Apollo reference pair under a stated profile regression contract
+      and an eighteen-row clause trace in CI. The repository exists because
+      parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation
+      accepting a derivation whose upstream references nothing.
+    depends_on: [epistemic-adequacy-spec, admissibility-spec]
 
   - key: epistemic-adequacy-testing-toolkit
     owner: systems-researcher
