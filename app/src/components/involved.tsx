@@ -19,6 +19,37 @@ import { Mail, Lock } from "lucide-react"
 
 const EMAIL = "J.Gower@lboro.ac.uk"
 
+/** The two GitHub accounts the work is published from. The research account
+ *  carries the programme; the company account carries the consulting work the
+ *  methods come out of. Both are listed because a reader following one may
+ *  well want the other. */
+const ACCOUNTS = [
+  {
+    handle: "systems-researcher",
+    label: "The research",
+    detail: "This programme, and the studies as they become public.",
+  },
+  {
+    handle: "jgsystemsconsulting",
+    label: "JG Systems Consulting",
+    detail: "MBSE and AI-in-engineering work outside the doctorate.",
+  },
+]
+
+/** The GitHub mark, inline.
+ *
+ * Lucide dropped brand icons, and a generic substitute would not be
+ * recognisable at 16px — the logo is what makes these links readable at a
+ * glance. Drawn from the official mark, which GitHub permits for linking to
+ * GitHub. */
+function GithubMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor" className={className}>
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+    </svg>
+  )
+}
+
 function mailto(subject: string, body: string): string {
   return `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 }
@@ -79,6 +110,33 @@ export function GetInvolved() {
           </li>
         ))}
       </ul>
+
+      {/* Following is a smaller commitment than asking for access, so it sits
+          apart from the routes rather than competing with them. */}
+      <div className="mt-4 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2">
+        {ACCOUNTS.map((account) => (
+          <a
+            key={account.handle}
+            href={`https://github.com/${account.handle}`}
+            rel="noopener"
+            className="group flex items-start gap-3 bg-card p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            <GithubMark className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+            <span>
+              <span className="block text-sm font-medium text-foreground">
+                {account.label}
+              </span>
+              <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground underline decoration-border underline-offset-4 group-hover:decoration-foreground">
+                github.com/{account.handle}
+              </span>
+              <span className="mt-1.5 block text-[13px] leading-relaxed text-muted-foreground">
+                {account.detail}
+              </span>
+            </span>
+            <span className="sr-only">(opens GitHub)</span>
+          </a>
+        ))}
+      </div>
 
       <p className="mt-4 text-xs text-muted-foreground">
         Direct email:{" "}
