@@ -5,6 +5,8 @@ SPDX-License-Identifier: CC-BY-4.0
 
 # Research programme
 
+![Architecting Trustworthy AI Integration in MBSE — three strands: epistemic adequacy, do classic SE methods survive an AI practitioner, and formalisation](app/public/banner.png)
+
 **Architecting Trustworthy AI Integration in MBSE** — Loughborough University
 doctoral research. This repository is the front door: what each repository in the
 programme is for, what question it answers, and how they link.
