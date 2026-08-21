@@ -143,7 +143,9 @@ export function DependencyGraph({
   const height = PAD * 2 + tallest * NODE_H + (tallest - 1) * GAP_Y
 
   return (
-    <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+    // Same containment as the matrix: the scroller is bounded by its column,
+    // so the graph scrolls inside it rather than widening the page.
+    <div className="overflow-x-auto">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         width={width}
