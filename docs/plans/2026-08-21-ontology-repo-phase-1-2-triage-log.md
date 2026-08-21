@@ -75,3 +75,43 @@ Fixes applied: 14 (13 findings + 1 self-caught lost edit).
 Inflation rate: 0% (0 of 6 CRITICAL+MAJOR triaged FP/Recurring/Design).
 Validation: fences balanced (138), no duplicate step labels, limitations
 numbered 1-4, every created file named in a git add, tests/negative present.
+
+| C1 the R1 path sed matches nothing in tests and everything in the generators | R3 | R3 | Genuine — **R1 fix was inverted** | The four surviving tests build the path as `parents[1] / "metamodel" / "metamodel.yaml"`; the literal `metamodel/metamodel.yaml` appears in NO surviving test (only in two files R2 deletes) and in the three generator provenance strings. Reviewer ran Task 1 verbatim: 10 failed, 8 errors, all FileNotFoundError. Fixed: sed the segment form, scoped to `tests/`. |
+| C2 Task 1 leaves ontology/ drifted and never regenerates | R3 | R3 | Genuine | Consequence of C1: the sed hit the generators, so Step 7's `check-drift` printed DRIFT on all three and exited 1. Fixed by C1's scoping, plus an explicit warning at Step 7 not to clear drift by regenerating — that would overwrite the evidence with the mistake's output. |
+| C3 the R2 inverted grep can never print nothing | R3 | R3 | Genuine — **R2 fix was self-contradictory** | R2's own prose said continuation lines match neither word, then asserted the inverted match prints nothing. Measured: 9 lines. Fixed: anchor on removed subject lines (`^-ea:`), which still catches every dropped class and property. |
+| M1 Step 6b's expected-survivor list is wrong and premature | R3 | R3 | Genuine | It named `REFUSED_PREFIXES` and Step 5b's comment, neither of which exists until Task 2. Real Task-1 hits are pyproject.toml, cli.py, owl.py:132, test_load.py. Fixed: real list, "justify or reword" not "delete", and deferred until after Task 2. |
+| A1 the verification grep is unreachable | R3 | R3 | Genuine | `grep -rn 'metamodel' src tests \|\| echo "no stale schema path"` can never echo — `load_metamodel` and `MetamodelError` always match. That unreachable branch is precisely why C1 shipped undetected through two rounds. Fixed with C1. |
+
+## Round 3 Summary
+
+Reviewer: Opus, three lenses. lens_coverage: saboteur=2, new_hire=4, auditor=3.
+Reviewer cloned the source repository and **executed Task 1 verbatim**. It did not
+complete.
+
+Findings: 3 CRITICAL, 1 MAJOR, 1 ADVISORY = 5. Genuine 5, FP 0, Design 0.
+Fixes applied: 5.
+Inflation rate: 0% (0 of 4 CRITICAL+MAJOR triaged FP/Recurring/Design).
+Validation: fences balanced (140); 8 targeted assertions pass, including that
+Round 2's `tests/negative` fix survived this round's edits.
+
+**Not converged.** Verdict was ISSUES_FOUND, so Track 1 does not apply. Track 2
+requires an inflation rate of 70% or more; this round's was 0%, so it does not
+apply either. Two of the three CRITICALs were defects introduced by earlier
+rounds' own fixes.
+
+## Loop status after 3 requested rounds
+
+| Round | CRIT | MAJ | ADV | Genuine | FP | Inflation | Verdict |
+|---|---|---|---|---|---|---|---|
+| 1 | 4 | 5 | 8 | 17/17 | 0 | 0% | ISSUES_FOUND |
+| 2 | 1 | 5 | 7 | 13/13 | 0 | 0% | ISSUES_FOUND |
+| 3 | 3 | 1 | 1 | 5/5 | 0 | 0% | ISSUES_FOUND |
+| **Total** | **8** | **11** | **16** | **35/35** | **0** | **0%** | **not converged** |
+
+Plus 2 author-self-caught regressions (a tautological assertion in R1, a lost
+edit in R2), fixed at the time.
+
+35 findings, zero false positives, three rounds. The reviewer has not yet
+returned a clean round, and the rate at which fixes introduce new defects — two
+of Round 3's three CRITICALs were R1 and R2 fixes — argues for at least one more
+round before this plan is executed.

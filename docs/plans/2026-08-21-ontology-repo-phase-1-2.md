@@ -180,16 +180,32 @@ grep -rl '\beamm\b' docs --exclude-dir=design 2>/dev/null \
   | xargs -r sed -i 's/\beamm\b/eaont/g'
 ```
 
-The package rename is not the only path that moved. Nine test files hardcode the
-schema's location, including `test_generate_owl.py`, `test_generate_shacl.py`,
-`test_prov_alignment.py` and `test_load.py` — the four Step 2 forbids deleting.
-Rewrite the path too, or Step 6 fails with `FileNotFoundError`:
+The package rename is not the only path that moved, and **the schema path is
+not written as a path** in the files that matter. The four surviving tests
+build it from pathlib segments:
+
+```python
+REAL = pathlib.Path(__file__).parents[1] / "metamodel" / "metamodel.yaml"
+```
+
+The literal string `metamodel/metamodel.yaml` appears in **no** surviving test
+— only in `test_generate_sysml.py` and `test_plan1_complete.py`, both deleted in
+Step 2 — and in the three generator provenance strings, which must **not** change
+yet. Rewrite the segment form, scoped to `tests/`:
 
 ```bash
-grep -rl 'metamodel/metamodel.yaml' src tests scripts 2>/dev/null \
-  | xargs sed -i 's|metamodel/metamodel\.yaml|model/ontology.yaml|g'
-grep -rn 'metamodel' src tests || echo "no stale schema path"
+grep -rl '"metamodel" / "metamodel.yaml"' tests 2>/dev/null \
+  | xargs -r sed -i 's|"metamodel" / "metamodel\.yaml"|"model" / "ontology.yaml"|g'
+grep -rn '"metamodel"' tests && echo "STALE SEGMENTS REMAIN" || echo "clean"
 ```
+
+**Two things this deliberately does not do.** It does not touch `src/`: the
+generators' `"Generated from metamodel/metamodel.yaml"` literal is corrected in
+Task 2 Step 6b, *after* Step 7's byte-compare has run — changing it here would
+drift `ontology/` inside Task 1 and destroy the check. And it does not grep for
+the bare word `metamodel`, which can never report clean: `load_metamodel` and
+`MetamodelError` match it in every file that uses the loader, so that branch
+would be unreachable and would hide exactly this defect.
 
 - [ ] **Step 4: Point the CLI at the new source path and drop the SysML target**
 
@@ -254,11 +270,20 @@ grep -rln "pilot\|apollo\|Apollo\|sysml\|SysML\|clause-trace\|check_release" \
   src tests trace *.md *.toml *.cff 2>/dev/null
 ```
 
-Every hit must be one you can justify. Expected survivors: `CITATION.cff` and
-`README.md` may name the specification and the binding; nothing under `src/` or
-`tests/` should hit at all except `load.py`'s `REFUSED_PREFIXES` and Step 5b's
-comment. Anything else is a file Step 1b missed — delete it and add it to the
-list, so the next person repeating this does not miss it too.
+**Every hit must be one you can justify — not necessarily one you delete.** At
+this point in Task 1 the expected hits are `pyproject.toml` (description and
+keywords still describing the metamodel), `src/eaont/cli.py` (the comment Step 4
+wrote, recording that the SysML library target moved to the binding),
+`src/eaont/generate/owl.py` near line 132 (the PROV-alignment comment citing
+`bindings/sysml-v2.md`), and `tests/test_load.py` (function names containing the
+word metamodel). Reword the first three; leave the fourth.
+
+A hit that is a **file** rather than a phrase is one Step 1b missed — delete it
+and add it to Step 1b's list, so the next person repeating this does not miss it
+too.
+
+Do not run this sweep before Task 2. `REFUSED_PREFIXES` and Step 5b's comment do
+not exist yet, and both will hit legitimately once they do.
 
 - [ ] **Step 7: Verify the CLI works and produces no drift**
 
@@ -266,6 +291,18 @@ Run: `eaont check-drift`
 Expected: `no drift across 3 generated artefacts`
 
 The count is 3, not 4: the SysML library target is gone.
+
+**Nothing in Task 1 regenerates, and that is deliberate.** The three artefacts
+under `ontology/` were committed by the source repository and must still match a
+fresh render after the strip — that is what shows the move changed the
+repository's shape and not its content.
+
+If `check-drift` reports DRIFT here, a Task 1 step has edited something a
+generator reads, and the likeliest culprit is a `sed` that reached
+`src/eaont/generate/`. Check Step 3's scoping before doing anything else.
+**Do not run `eaont generate` to clear it** — that overwrites the evidence of
+the mistake with the mistake's own output, and Task 2 Step 7's test of the
+§9.1 claim then has no clean baseline to compare against.
 
 - [ ] **Step 8: Commit**
 
@@ -586,16 +623,21 @@ Expected: PASS, 4 tests.
 ```bash
 eaont generate
 git diff --stat ontology/
-git diff ontology/epistemic-adequacy.ttl | grep '^-[^-]' \
+git diff ontology/epistemic-adequacy.ttl | grep '^-ea:' \
   | grep -v 'RevisionSchemeKind\|revisionScheme'
 ```
 
 Expected: only `ontology/` files changed, and the **second command prints
-nothing**. Do not count matching lines instead: Turtle wraps a subject across
-several lines, so continuation lines like `rdfs:label "apiCommit" ;` never
-contain either word and a count would understate the removal. Inverting the
-match is the check — every removed line must mention one of the two, and any
-line that does not is something else disappearing.
+nothing**.
+
+The `^-ea:` anchor is doing the work, and both halves of it matter. Turtle wraps
+each subject across indented continuation lines — `rdfs:label "apiCommit" ;`,
+`ea:enforcement ...` — which name neither word. A filter over *all* removed lines
+therefore prints those continuations and can never be clean; measured, it prints
+nine. Anchoring to removed **subject** lines fixes that without weakening the
+check, because every class and every property is a top-level `ea:` subject, so
+anything genuinely dropped still shows up. Counting matches instead would
+understate the removal for the same wrapping reason.
 
 - [ ] **Step 6: Commit**
 
