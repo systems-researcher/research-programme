@@ -1607,7 +1607,7 @@ Create it with the CC-BY-4.0 header, then:
 # The binding contract
 
 What a substrate must supply to carry this ontology. Four type mappings and
-three obligations — nothing else, and in particular nothing that presumes a
+four obligations — nothing else, and in particular nothing that presumes a
 modelling language.
 
 ## The four abstract reference types
@@ -1692,7 +1692,7 @@ Expected: PASS, 6 tests.
 git add bindings/ docs/binding-contract.md tests/test_binding_contract.py
 git commit -m "feat(bindings): a reference binding with no modelling language
 
-Four type mappings, three obligations. Nothing is evaluated, which is why a
+Four type mappings, four obligations. Nothing is evaluated, which is why a
 JSON store can conform."
 ```
 
