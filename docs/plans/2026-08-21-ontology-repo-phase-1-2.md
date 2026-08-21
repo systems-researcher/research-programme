@@ -1670,6 +1670,33 @@ query written against one binding's attachment vocabulary does not run against
 another's. Whether that should change is a question for the ontology's next
 version, and it is a better question than the design anticipated.
 
+## Lossy carriers
+
+Six ontology properties are multiplicity 1 and have **no field** in the
+canonical claim graph. A binding lifting from that form must supply
+something, so it declares what it supplies rather than hiding it:
+
+| Property | Canonical carrier | The reference binding supplies |
+|---|---|---|
+| `Unresolved.since` | none — a marker is `{"unresolved": "<text>"}` and nothing else | the constant `unknown` |
+| `Agent.kind` | none — only an id string | `person`. Arbitrary: `AgentKind` has no least-committal member |
+| `Agent.name` | none | the id, repeated |
+| `Method.kind` | none — only an id string | parsed from the id's suffix, falling back to `judgement`, the weakest member |
+| `Method.description` | none | the id, repeated |
+| `Entry.reviewState` | `reviewed` / `unreviewed`, a two-way flattening of four | `promoted` for `reviewed` — see below |
+
+**`Entry.reviewState` is the one that carries a real risk.** ADR-002 records
+that flattening `{promoted, rejected}` into `reviewed` *widens* EA-REQ-18's
+subject population to include rejected claims. So a rejected claim reaches a
+lifting binding indistinguishable from a promoted one, and emitting
+`promoted` can label as admitted something that was refused. It is the least
+bad of the available options, not a correct one, and a binding whose source
+retains the four-member vocabulary should never round-trip through this form.
+
+A consequence worth stating plainly: **a SHACL pass over lifted instances
+proves the shapes hold over reconstructed data**, not over everything the
+substrate knew. What the carrier dropped, the gate cannot judge.
+
 ## Worked examples
 
 `bindings/reference/` is the minimal case — JSON, no modelling language,
@@ -1971,12 +1998,16 @@ def _add_entry(g, ns, subject, value) -> None:
     node = ns[f"{subject.split('#')[-1]}::entry"]
     g.add((node, RDF.type, EA.Entry))
     g.add((node, EA.Entry_origin, EA[f"OriginKind_{value['origin_class']}"]))
-    # The canonical graph flattens four review states into two - see ADR-002's
-    # declared consequence. Unflattening `reviewed` is sound rather than a
-    # guess: the claim was emitted as a GovernedClaim, so it is held out as
-    # part of the authoritative record, and a rejected claim is not. The
-    # ambiguity ADR-002 records bites a consumer reading the flattened form,
-    # not a binding that also knows the claim is governed.
+    # The canonical graph flattens four review states into two - ADR-002's
+    # declared consequence. `reviewed` covers BOTH promoted and rejected, and
+    # ADR-002 is explicit that the flattening WIDENS EA-REQ-18's population to
+    # include rejected claims - so a rejected claim does reach us as
+    # `reviewed`, and this cannot tell which it was.
+    #
+    # Emitting `promoted` is therefore a DECLARED DEFAULT under genuine
+    # ambiguity, not an inference. ReviewStateKind has no member meaning
+    # "reviewed, disposition unknown", and `rejected` would be the worse
+    # guess. Listed with the other lossy carriers in docs/binding-contract.md.
     g.add((node, EA.Entry_reviewState,
            EA[f"ReviewStateKind_{REVIEW_STATE[value['review_state']]}"]))
     g.add((subject, ns.hasEntry, node))
