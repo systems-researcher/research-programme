@@ -42,3 +42,36 @@ Findings: 4 CRITICAL, 5 MAJOR, 8 ADVISORY = 17. Genuine 17, FP 0, Design 0.
 Fixes applied: 18 (17 findings + 1 self-caught regression).
 Inflation rate: 0% (0 of 9 CRITICAL+MAJOR triaged FP/Recurring/Design).
 Validation: fences balanced (136), no stale `model/ src/` greps, no `Literal(field)`.
+
+| C1 tests/negative survives and imports deleted packages | R2 | R2 | Genuine | Verified: `tests/negative/test_failure_modes.py` imports `eamm.read.model` and `eamm.resolve.run`, reads `conformance/failure-modes.yaml`; `testpaths=["tests"]` collects it. R1's C4/M1 fix stopped one directory short. Fixed. |
+| M1 pre-split-properties.txt created but never tracked | R2 | R2 | Genuine | R1's M3 fix added the baseline; no `git add` covered it and no step runs `git add -A`. Fixed in the commit, Files and Interfaces. |
+| M2 final commit omits limitations.md and entities.md | R2 | R2 | Genuine | Steps 1b/1c create them; Step 6's `git add` did not name them, so Step 1c's coverage test would raise FileNotFoundError in CI. Fixed. |
+| M3 sed rewrites docs/design, which Step 1b forbids editing | R2 | R2 | Genuine | Verified: one `eamm` in the design doc. Fixed by excluding `docs/design` — the occurrence is historically correct, describing the pre-split package. |
+| M4 Task 2 commit omits the generators and regenerated ontology | R2 | R2 | Genuine | Steps 5b/6b edit `generate/*.py`; omitting them pushes the provenance diff into Task 3 Step 5, which asserts "nothing else may disappear". Fixed. |
+| M5 cloned CI workflow runs six stripped things | R2 | R2 | Genuine | Verified: `.github/workflows/validate.yml` references npm ci, library/, check_release, java/, integration and a secrets-gated private clone. Fixed: deleted in Step 1b; Task 13 writes the replacement. |
+| A1 "Four survive" precedes five filenames | R2 | R2 | Genuine (cheap) | 34 − 27 − 2 = 5. Fixed. |
+| A2 grep -c understates the removal | R2 | R2 | Genuine | Turtle wraps subjects; continuation lines match neither word. Fixed: inverted match that must print nothing. |
+| A3 Interfaces signature omits ontology_path | R2 | R2 | Genuine | The R1 sh:class fix added a fourth argument to all four call sites but not to the Interfaces block. Fixed. |
+| A4 nothing validates the substrate level | R2 | R2 | Genuine | `lift()` reads `claims` only, so `SubstrateDeclarationShape` has no target node and a green `eaont validate` implies coverage of EA-REQ-05/06/09/11/13 that it does not have. Recorded as limitation 2. |
+| A5 ten scripts, two fixtures, a sha256 and NOTICE survive unlisted | R2 | R2 | Genuine | Fixed: deleted in Step 1b, NOTICE rewritten, plus a new Step 6b sweep for anything still naming a stripped subject. |
+| A6 three different refusal sets | R2 | R2 | Genuine | Step 6 and exit criterion 4 grepped two prefixes, CI three, REFUSED_PREFIXES four — the loosest becomes the real gate. Fixed: all four everywhere. |
+| A7 validate branch could fall through to generate | R2 | R2 | Genuine | `main()` ends `return generate()`; a branch placed after it makes `eaont validate` regenerate and still exit 0. Fixed: ordering stated, test asserts on stdout. |
+| (author) C1 edit lost by an aborting fix script | R2 | R2 | Genuine — self-caught | The R2 script wrote once at the end, so a `sys.exit` on a later pattern discarded the in-memory C1 edit. Post-fix self-check caught it; C1 re-applied and verified present. |
+
+## Round 2 Summary
+
+Reviewer: Opus, three lenses. lens_coverage: saboteur=5, new_hire=2, auditor=6.
+Reviewer built a replica repository, applied Tasks 2-4, generated the artefacts,
+and ran the lift, pyshacl and every SPARQL query.
+
+**Round 1's fixes independently validated:** the §9.1 zero-triple claim holds
+byte-for-byte; the 25-class and 50-property baselines are exact; all three
+fixtures conform; the `probably_fine` negative case is correctly refused; the
+ADR-010 falsifier passes; Task 4's decision rule is decidable and lands on the
+duplicate branch.
+
+Findings: 1 CRITICAL, 5 MAJOR, 7 ADVISORY = 13. Genuine 13, FP 0, Design 0.
+Fixes applied: 14 (13 findings + 1 self-caught lost edit).
+Inflation rate: 0% (0 of 6 CRITICAL+MAJOR triaged FP/Recurring/Design).
+Validation: fences balanced (138), no duplicate step labels, limitations
+numbered 1-4, every created file named in a git add, tests/negative present.

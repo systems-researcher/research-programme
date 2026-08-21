@@ -35,7 +35,8 @@ SPDX-License-Identifier: CC-BY-4.0
 
 **Files:**
 - Create: the repository `epistemic-adequacy-ontology`
-- Delete: `library/`, `models/`, `java/`, `spikes/`, `vendor/`, `node_modules/`, `package.json`, `package-lock.json`, `conformance/`, `trace/clause-trace.yaml`, `src/eamm/read/`, `src/eamm/resolve/`, `src/eamm/extract/`, `src/eamm/pilot_home.py`, `src/eamm/generate/sysml.py`
+- Delete: `library/`, `models/`, `java/`, `spikes/`, `vendor/`, `node_modules/`, `package.json`, `package-lock.json`, `conformance/`, `scripts/`, `.github/workflows/validate.yml`, `trace/clause-trace.yaml`, `trace/clause-trace.sha256`, `tests/fixtures/exported-*.json`, `src/eamm/read/`, `src/eamm/resolve/`, `src/eamm/extract/`, `src/eamm/pilot_home.py`, `src/eamm/generate/sysml.py`
+- Rewrite: `NOTICE` (it attributes a deleted model)
 - Rename: `src/eamm/` → `src/eaont/`, `metamodel/metamodel.yaml` → `model/ontology.yaml`
 - Modify: `pyproject.toml`, `src/eaont/cli.py`
 
@@ -79,8 +80,27 @@ git rm -r --quiet docs/plans docs/spikes docs/vocabularies
 # just deleted. tests/test_check_release.py and tests/test_diagrams.py invoke
 # it, so leaving it makes Step 6 fail for a reason that looks like a bad strip.
 # Task 13's tests/test_release.py replaces its role against the new tree.
-git rm --quiet scripts/check_release.py tests/test_check_release.py   tests/test_diagrams.py
+git rm --quiet tests/test_check_release.py tests/test_diagrams.py
+
+# scripts/ is entirely binding machinery: annotation_burden, apollo_delta,
+# check_profile_claim, check_release, check_task_order, check_trace,
+# fetch_pilot, gap_register, install_library. Every one serves a document or
+# an artefact deleted above.
+git rm -r --quiet scripts
+git rm --quiet trace/clause-trace.sha256 tests/fixtures/exported-model.json tests/fixtures/exported-typed.json
+
+# The cloned workflow runs `npm ci`, parses library/, invokes
+# scripts/check_release.py, compiles java/, runs tests/integration, and clones
+# a private repository needing secrets - six jobs over five deleted trees. It
+# would fail on the first push and tell you nothing true. Task 13 Step 3
+# writes the replacement.
+git rm --quiet .github/workflows/validate.yml
 ```
+
+`NOTICE` attributes `models/apollo-source.sysml` to the upstream Airbus model,
+and that file is gone. Rewrite it to attribute only what this repository still
+ships, or delete it — but do not leave it asserting a derivation that no longer
+exists here.
 
 Then remove ADR-010's row from `docs/adr/README.md` and add a line recording
 where it went, so a reader following the numbering does not think it was lost:
@@ -127,12 +147,17 @@ git rm --quiet \
   tests/test_one_claim_five_representations.py tests/test_compatibility.py \
   tests/test_task_order.py tests/test_vocabularies_agree.py \
   tests/test_plan1_complete.py
-git rm -r --quiet tests/integration 2>/dev/null || true
+git rm -r --quiet tests/integration tests/negative 2>/dev/null || true
 ```
+
+`tests/negative/` is the one that bites. `test_failure_modes.py` imports
+`eamm.read.model` and `eamm.resolve.run`, both deleted in Step 1, and reads
+`conformance/failure-modes.yaml`, also deleted. `pyproject.toml` sets
+`testpaths = ["tests"]`, so pytest collects it whatever the filename suggests.
 
 If a listed path does not exist, drop it from the command and continue.
 
-**Four survive, and they are the core suite:** `test_load.py`, `test_model.py`,
+**Five survive, and they are the core suite:** `test_load.py`, `test_model.py`,
 `test_generate_owl.py`, `test_generate_shacl.py` and `test_prov_alignment.py`. Do
 not delete these. `tests/__init__.py` stays.
 
@@ -143,9 +168,16 @@ ontology's.
 
 - [ ] **Step 3: Rewrite the package name across the tree**
 
+`docs/design/` is excluded on purpose. Step 1b keeps it as the source the ADRs
+cite, and it contains one `eamm` — correctly, because it describes the
+repository as it was before the split. Renaming it there would make a historical
+document assert a package name that did not exist when it was written.
+
 ```bash
-grep -rl '\beamm\b' src tests pyproject.toml docs scripts 2>/dev/null \
+grep -rl '\beamm\b' src tests pyproject.toml 2>/dev/null \
   | xargs sed -i 's/\beamm\b/eaont/g'
+grep -rl '\beamm\b' docs --exclude-dir=design 2>/dev/null \
+  | xargs -r sed -i 's/\beamm\b/eaont/g'
 ```
 
 The package rename is not the only path that moved. Nine test files hardcode the
@@ -210,6 +242,23 @@ If a test fails with `ImportError` **or** `FileNotFoundError` **or** an assertio
 naming a deleted path, it belonged to the stripped half and Step 2's list missed
 it — delete it and record which one in the commit message, so the list can be
 corrected for anyone repeating this. Do not repair such a test.
+
+- [ ] **Step 6b: Confirm nothing binding-specific survived**
+
+The deletions above are by name, and a name is easy to miss — `tests/negative/`
+was missed once already. Sweep for anything still referring to a stripped
+subject:
+
+```bash
+grep -rln "pilot\|apollo\|Apollo\|sysml\|SysML\|clause-trace\|check_release" \
+  src tests trace *.md *.toml *.cff 2>/dev/null
+```
+
+Every hit must be one you can justify. Expected survivors: `CITATION.cff` and
+`README.md` may name the specification and the binding; nothing under `src/` or
+`tests/` should hit at all except `load.py`'s `REFUSED_PREFIXES` and Step 5b's
+comment. Anything else is a file Step 1b missed — delete it and add it to the
+list, so the next person repeating this does not miss it too.
 
 - [ ] **Step 7: Verify the CLI works and produces no drift**
 
@@ -399,8 +448,12 @@ naming SysML would make the one load-bearing claim look like a special case.
 
 - [ ] **Step 6: Verify no language type survives in the schema**
 
-Run: `grep -rn "KerML::\|SysML::" model/ && echo FOUND || echo CLEAN`
+Run: `grep -rnE "KerML::|SysML::|UML::|OWL::" model/ && echo FOUND || echo CLEAN`
 Expected: `CLEAN`
+
+The four prefixes are exactly `REFUSED_PREFIXES` from Step 3. Keep the three
+places that check them — this step, the CI job in Task 13, and exit criterion 4
+— naming the same four, or the loosest one becomes the real gate.
 
 **The scope is `model/`, not `src/`, and that is not a loophole.** `load.py` must
 name `KerML::` and `SysML::` verbatim in `REFUSED_PREFIXES` in order to refuse
@@ -438,8 +491,14 @@ green.
 
 - [ ] **Step 8: Commit**
 
+`src/eaont/generate/` and `ontology/` are in this commit because Steps 5b and 6b
+edited the generators and regenerated. Leaving them out makes Task 3 Step 5's
+diff show the provenance change too, and that step says "Nothing else may
+disappear" — it would be reporting this commit's work as Task 3's.
+
 ```bash
-git add src/eaont/load.py model/ontology.yaml tests/test_load_abstract_refs.py
+git add src/eaont/load.py src/eaont/generate/ model/ontology.yaml \
+        ontology/ tests/test_load_abstract_refs.py
 git commit -m "feat(load): refuse language types, accept four abstract refs
 
 Abstracting the seven typed parameters changes zero triples, because the
@@ -527,10 +586,16 @@ Expected: PASS, 4 tests.
 ```bash
 eaont generate
 git diff --stat ontology/
-git diff ontology/epistemic-adequacy.ttl | grep '^-' | grep -c 'RevisionSchemeKind\|revisionScheme'
+git diff ontology/epistemic-adequacy.ttl | grep '^-[^-]' \
+  | grep -v 'RevisionSchemeKind\|revisionScheme'
 ```
 
-Expected: only `ontology/` files changed, and the removed triples all mention `RevisionSchemeKind` or `revisionScheme`. Nothing else may disappear.
+Expected: only `ontology/` files changed, and the **second command prints
+nothing**. Do not count matching lines instead: Turtle wraps a subject across
+several lines, so continuation lines like `rdfs:label "apiCommit" ;` never
+contain either word and a count would understate the removal. Inverting the
+match is the check — every removed line must mention one of the two, and any
+line that does not is something else disappearing.
 
 - [ ] **Step 6: Commit**
 
@@ -695,11 +760,11 @@ Design §9.1 states exactly what may change in the generated ontology during Pha
 
 **Files:**
 - Create: `tests/test_phase1_diff.py`
-- Create: `tests/fixtures/pre-split-classes.txt`
+- Create: `tests/fixtures/pre-split-classes.txt`, `tests/fixtures/pre-split-properties.txt`
 
 **Interfaces:**
 - Consumes: `ontology/epistemic-adequacy.ttl` as generated by Tasks 2–4.
-- Produces: `tests/fixtures/pre-split-classes.txt`, the baseline class list later plans compare against.
+- Produces: `tests/fixtures/pre-split-classes.txt` and `tests/fixtures/pre-split-properties.txt` — the baselines later plans compare against. Both are tracked; a baseline that is not committed is not a baseline.
 
 - [ ] **Step 1: Capture the pre-split baseline from the source repository**
 
@@ -809,7 +874,8 @@ Expected: PASS, 4 tests. If Task 4 took the not-duplicate branch, `AUTHORISED_RE
 - [ ] **Step 4: Commit**
 
 ```bash
-git add tests/test_phase1_diff.py tests/fixtures/pre-split-classes.txt
+git add tests/test_phase1_diff.py tests/fixtures/pre-split-classes.txt \
+        tests/fixtures/pre-split-properties.txt
 git commit -m "test: lock the Phase 1 diff to the authorised removals"
 ```
 
@@ -1793,7 +1859,7 @@ substrate's output, which is what this task adds.
 
 **Interfaces:**
 - Consumes: `eaont.lift.lift(document, namespace)` from Task 9.
-- Produces: `eaont.validate.validate_instance(path, shapes_path, namespace) -> tuple[bool, str]`, and the CLI subcommand `eaont validate`.
+- Produces: `eaont.validate.validate_instance(instance_path, shapes_path, namespace: str, ontology_path) -> tuple[bool, str]`, and the CLI subcommand `eaont validate`. The fourth argument is not optional — see Step 3 for why omitting the ontology graph makes every `sh:class` constraint fail.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1828,8 +1894,11 @@ def test_validation_report_is_returned_either_way():
     assert isinstance(report, str) and report
 
 
-def test_cli_validate_returns_zero():
+def test_cli_validate_returns_zero(capsys):
+    """Exit 0 alone would also pass if `validate` fell through to `generate`.
+    Assert on what it printed, so the test names the command it ran."""
     assert main(["validate"]) == 0
+    assert "shapes hold over" in capsys.readouterr().out
 
 
 def test_a_status_outside_the_vocabulary_is_refused(tmp_path):
@@ -1949,11 +2018,18 @@ def validate() -> int:
     return 0
 ```
 
-In `main()`, add `sub.add_parser("validate")` beside the others, and the dispatch branch:
+In `main()`, add `sub.add_parser("validate")` beside the others, and the dispatch
+branch. **It must go above the final `return generate()`**, which is a
+fallthrough, not a branch — placed after it, `eaont validate` silently
+regenerates instead, exits 0, and `test_cli_validate_returns_zero` passes on a
+command that never validated anything:
 
 ```python
     if args.command == "validate":
         return validate()
+    if args.command == "check-drift":
+        return check_drift()
+    return generate()
 ```
 
 - [ ] **Step 5: Run the tests to verify they pass**
@@ -2334,12 +2410,18 @@ while building the reference binding rather than anticipated by the design:
    an unannotated substrate is still assessable. Whether the next version
    should add a neutral `ea:describes` is a real open question and belongs
    here as one.
-2. **The canonical claim graph is a lossy carrier.** `Unresolved.since`,
+2. **Nothing validates the substrate level.** `lift()` reads `document["claims"]`
+   only; `status_vocabulary`, `lifecycle_stages` and `evidence_ids` are never
+   lifted. `SubstrateDeclarationShape` is the only substrate-level shape and it
+   therefore has no target node, so `eaont validate` passing says nothing about
+   EA-REQ-05, 06, 09, 11 or 13. Those are the toolkit's to check today; say so
+   rather than letting a green run imply coverage it does not have.
+3. **The canonical claim graph is a lossy carrier.** `Unresolved.since`,
    `Agent.kind`, `Agent.name`, `Method.kind` and `Method.description` are
    multiplicity 1 in the ontology and have no field in the canonical form, so
    a binding lifting from it supplies declared defaults. A SHACL pass over
    such instances therefore proves the shapes hold over *reconstructed* data.
-3. **Whatever `docs/adr-010-test.md` records**, in the words it records it.
+4. **Whatever `docs/adr-010-test.md` records**, in the words it records it.
 
 - [ ] **Step 1c: Write `docs/entities.md`**
 
@@ -2385,9 +2467,10 @@ jobs:
       - run: eaont check-drift
       - run: eaont validate
       - name: no language type may enter the schema
-        # model/ only: load.py names the prefixes in order to refuse them.
+        # The four prefixes are REFUSED_PREFIXES from src/eaont/load.py.
+        # model/ only: load.py names them in order to refuse them.
         run: |
-          ! grep -rn "KerML::\|SysML::\|UML::" model/
+          ! grep -rnE "KerML::|SysML::|UML::|OWL::" model/
 ```
 
 The final step is the agnosticism gate at the CI level, backing up the load-time refusal from Task 2. Two independent checks, because this is the property the repository exists to hold.
@@ -2439,7 +2522,7 @@ def test_binding_pin_matches_the_ontology_version():
 pytest -q
 eaont check-drift
 eaont validate
-grep -rn "KerML::\|SysML::" model/ && echo FOUND || echo CLEAN
+grep -rnE "KerML::|SysML::|UML::|OWL::" model/ && echo FOUND || echo CLEAN
 ```
 
 Expected: all tests pass; no drift across 3 artefacts; shapes hold over 3 instances; `CLEAN`.
@@ -2447,7 +2530,8 @@ Expected: all tests pass; no drift across 3 artefacts; shapes hold over 3 instan
 - [ ] **Step 6: Commit**
 
 ```bash
-git add README.md docs/related-work.md .github/ CITATION.cff tests/test_release.py
+git add README.md docs/related-work.md docs/limitations.md docs/entities.md \
+        .github/ CITATION.cff tests/test_release.py
 git commit -m "docs: position against SACM, and put the three gates in CI
 
 The programme mentioned no assurance-case prior art anywhere. An ontology
@@ -2464,7 +2548,7 @@ All of the following, verified by running them:
 1. `pytest -q` green.
 2. `eaont check-drift` reports `no drift across 3 generated artefacts`.
 3. `eaont validate` reports `shapes hold over 3 instances`.
-4. `grep -rn "KerML::\|SysML::" model/` finds nothing. (`src/` is excluded by design — `load.py` names the prefixes in order to refuse them.)
+4. `grep -rnE "KerML::|SysML::|UML::|OWL::" model/` finds nothing — the same four prefixes as `REFUSED_PREFIXES` and the CI job. (`src/` is excluded by design: `load.py` names them in order to refuse them.)
 5. `tests/test_warrant.py` passes — every entity marked, nine and four.
 6. `docs/adr-010-test.md` records a verdict, and it is PASS. **A FAIL here blocks Phase 3.**
 7. `docs/related-work.md` positions against SACM with a verified citation.
