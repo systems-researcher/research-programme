@@ -2320,33 +2320,43 @@ def test_cq1_what_is_this_claim_derived_from():
     """EA-REQ-02."""
     rows = ask("""
         SELECT ?up WHERE {
-          bind:SIC%3A%3Astage%3A%3AthrustTotal bind:hasDerivation ?d .
+          <https://systems-researcher.org/ns/reference-binding#SIC::stage::thrustTotal>
+              bind:hasDerivation ?d .
           ?d ea:Derivation_upstream ?up .
+          ?up a ea:GovernedClaim .
         }
     """)
-    assert rows, "a derived claim reports no upstream"
+    # `?up a ea:GovernedClaim` is the clause, not decoration: EA-REQ-02 asks for
+    # inputs that are "themselves resolvable claims". Without it a dangling
+    # upstream reference satisfies the query, which is the failure the clause
+    # exists to catch.
+    assert rows, "a derived claim reports no resolvable upstream"
 
 
 def test_cq2_what_standing_does_this_claim_have():
     """EA-REQ-05."""
     rows = ask("""
-        SELECT ?standing WHERE {
+        SELECT DISTINCT ?c ?standing WHERE {
           ?c a ea:GovernedClaim ; bind:hasStatus ?s .
           ?s ea:EpistemicStatus_standing ?standing .
         }
     """)
+    # Bound per claim, not per row: a count alone passes on two standings for
+    # one claim and none for the other.
     assert len(rows) == 2
+    assert len({r[0] for r in rows}) == 2
 
 
 def test_cq3_who_produced_this_value_and_how():
     """EA-REQ-08."""
     rows = ask("""
-        SELECT ?agent ?method WHERE {
+        SELECT DISTINCT ?c ?agent ?method WHERE {
           ?c bind:hasProvenance ?p .
           ?p ea:Provenance_agent ?agent ; ea:Provenance_method ?method .
         }
     """)
     assert len(rows) == 2
+    assert len({r[0] for r in rows}) == 2
 
 
 def test_cq4_what_evidence_supports_this_claim():
@@ -2361,13 +2371,32 @@ def test_cq4_what_evidence_supports_this_claim():
 
 
 def test_cq5_is_every_claim_answerable_on_all_four_fields():
-    """EA-REQ-14: the groundedness query returns a determinate verdict."""
+    """EA-REQ-14: the groundedness query returns a determinate verdict.
+
+    The clause's rule is that a marker counts as a verdict and SILENCE DOES NOT.
+    So each field must be answered *or* explicitly marked; a field that is
+    simply absent must fail.
+
+    The derivation branch tests `Derivation_expression`, not the existence of a
+    `hasDerivation` edge. `_add_basis` and `_add_evidence` build that same node,
+    so the edge is present even when the `derivation` field was never supplied -
+    and a query resting on it reports silence as an answer.
+    """
     rows = ask("""
-        SELECT ?c WHERE {
-          ?c a ea:GovernedClaim ;
-             bind:hasStatus ?s ;
-             bind:hasDerivation ?d ;
-             bind:hasProvenance ?p .
+        SELECT DISTINCT ?c WHERE {
+          ?c a ea:GovernedClaim .
+          { ?c bind:hasStatus ?s }
+            UNION
+          { ?c bind:hasUnresolved ?us .
+            ?us ea:Unresolved_field ea:UnresolvedFieldKind_status }
+          { ?c bind:hasDerivation ?d . ?d ea:Derivation_expression ?e }
+            UNION
+          { ?c bind:hasUnresolved ?ud .
+            ?ud ea:Unresolved_field ea:UnresolvedFieldKind_derivation }
+          { ?c bind:hasProvenance ?p }
+            UNION
+          { ?c bind:hasUnresolved ?up .
+            ?up ea:Unresolved_field ea:UnresolvedFieldKind_provenance }
         }
     """)
     assert len(rows) == 2, "a claim in the grounded fixture is not answerable"
@@ -2384,7 +2413,8 @@ def test_cq6_the_expression_is_named_never_inlined():
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run: `pytest tests/test_competency_questions.py -v`
-Expected: FAIL on CQ1. The cause is specific and the fix is not a fork:
+Expected: PASS. CQ1's query already carries the full IRI in angle brackets, for a
+reason worth knowing:
 SPARQL does **not** percent-decode inside a prefixed name, so
 `bind:SIC%3A%3Astage%3A%3AthrustTotal` builds an IRI that keeps the literal
 `%3A` and never matches `ns["SIC::stage::thrustTotal"]`. Replace the prefixed
