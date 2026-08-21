@@ -152,13 +152,12 @@ export function Matrix({
     // Five columns cannot fit a phone. Rather than inventing a second layout,
     // the table scrolls sideways with the strand column pinned, so the matrix
     // reading survives at any width.
-    // The scroller must be no wider than the column that holds it, or
-    // overflow-x-auto has nothing to clip against and the table escapes to
-    // the document. Bleeding to the screen edge is done with padding inside
-    // the scroller rather than a negative margin outside it. `relative` makes
-    // this div the containing block for the empty cells' absolutely
-    // positioned (sr-only) markers — without it those spans position against
-    // the document's initial containing block and escape the clip entirely,
+    // The scroller is bounded by the column that holds it: no negative
+    // margin widens it past the viewport, so overflow-x-auto has something
+    // to clip against and the table stays contained. `relative` makes this
+    // div the containing block for the empty cells' absolutely positioned
+    // (sr-only) markers — without it those spans position against the
+    // document's initial containing block and escape the clip entirely,
     // widening <html> even though the scroller itself is correctly bounded.
     <div className="relative overflow-x-auto">
       <table className="w-full min-w-[56rem] border-separate border-spacing-0 text-sm">
