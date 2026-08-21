@@ -1536,7 +1536,7 @@ Create `bindings/reference/instances/grounded.json`:
       "criticality": "safety_critical",
       "basis": [{"target": "EV::rocketdyne-f1-acceptance", "kind": "evidence"}],
       "evidence": [{"target": "EV::rocketdyne-f1-acceptance", "kind": "evidence"}],
-      "derivation": {"expression": "Measured", "inputs": []},
+      "derivation": {"unresolved": "measured value; no upstream computation"},
       "provenance": {"agent": "AG::propulsion-team", "method": "MT::test",
                      "stage": "TechnicalReview"},
       "entry": {"origin_class": "human", "review_state": "reviewed"}
@@ -2432,12 +2432,12 @@ finding, restated three more times.
     {"id": "SIC::engine1::thrustSeaLevel", "element": "SIC::engine1",
      "property": "thrustSeaLevel", "value": 6770, "value_type": "number",
      "status": "verified",
-     "derivation": {"expression": "Measured", "inputs": []},
+     "derivation": {"unresolved": "measured value; no upstream computation"},
      "provenance": {"agent": "AG::propulsion-team", "method": "MT::test"}},
     {"id": "SIC::engine2::thrustSeaLevel", "element": "SIC::engine2",
      "property": "thrustSeaLevel", "value": 6770, "value_type": "number",
      "status": "assumption",
-     "derivation": {"expression": "Measured", "inputs": []},
+     "derivation": {"unresolved": "measured value; no upstream computation"},
      "provenance": {"agent": "AG::propulsion-team", "method": "MT::judgement"}}
   ],
   "status_vocabulary": [
