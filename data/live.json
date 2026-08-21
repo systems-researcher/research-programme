@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-20T17:59:16+00:00",
+  "generated_at": "2026-08-21T22:39:38+00:00",
   "repos": {
     "SysML-v2-API-Services-Arch-A": {
       "homepage": "",
@@ -8,7 +8,12 @@
     },
     "admissibility-spec": {
       "homepage": null,
-      "pushed_at": "2026-08-20T17:31:56Z",
+      "pushed_at": "2026-08-20T18:00:30Z",
+      "visibility": "private"
+    },
+    "epistemic-adequacy-ontology": {
+      "homepage": null,
+      "pushed_at": "2026-08-21T20:57:36Z",
       "visibility": "private"
     },
     "epistemic-adequacy-probe": {
@@ -28,7 +33,7 @@
     },
     "epistemic-adequacy-under-pressure-probe": {
       "homepage": null,
-      "pushed_at": "2026-08-20T17:45:25Z",
+      "pushed_at": "2026-08-20T18:24:11Z",
       "visibility": "private"
     },
     "governed-interaction-cost-probe": {

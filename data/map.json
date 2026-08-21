@@ -66,6 +66,40 @@
       "subtitle": "Can a record tell an AI what it is authorised to say — and can a substrate refuse a write that it is not?",
       "entries": [
         {
+          "key": "epistemic-adequacy-ontology",
+          "stage": "define",
+          "card": true,
+          "objective": "The vocabulary both specifications quantify over: thirteen entities and nine enumerations describing what an engineering record must carry for a machine consumer to decide whether a value is grounded. Split out of the SysML v2 realisation so the entity model can be stated and bound to other languages without carrying SysML v2 assumptions.",
+          "url": "https://github.com/systems-researcher/epistemic-adequacy-ontology",
+          "badges": [
+            "private",
+            "built",
+            "last commit 2026-08-21"
+          ],
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-probe",
+              "linkable": true
+            }
+          ],
+          "feeds": [
+            {
+              "key": "admissibility-spec",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-spec",
+              "linkable": true
+            }
+          ],
+          "question": "Can the entities epistemic adequacy needs be characterised without committing to a modelling language, and can that independence be demonstrated rather than asserted?",
+          "method": "One hand-edited schema generates OWL 2, SHACL and a PROV-O alignment, byte-compared against what is committed. Language independence is a gate, not a claim: the loader refuses a KerML, SysML, UML or OWL type, and the shapes are validated over instances a binding emitted rather than over fixtures built inside the tests that assert them. A reference binding in plain JSON is the second realisation that makes the claim falsifiable.",
+          "headline": null,
+          "output": "v0.1.0. 101 tests, three gates in CI: the suite, a drift check across three generated artefacts, and SHACL validation over three instances.",
+          "site": null,
+          "paper": null
+        },
+        {
           "key": "epistemic-adequacy-spec",
           "stage": "define",
           "card": true,
@@ -79,6 +113,10 @@
           "dependsOn": [
             {
               "key": "epistemic-adequacy-probe",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-ontology",
               "linkable": true
             }
           ],
@@ -162,6 +200,10 @@
           "dependsOn": [
             {
               "key": "epistemic-adequacy-probe",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-ontology",
               "linkable": true
             }
           ],
@@ -289,6 +331,10 @@
           "feeds": [
             {
               "key": "admissibility-spec",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-ontology",
               "linkable": true
             },
             {
@@ -691,8 +737,16 @@
         "token": "method"
       },
       {
-        "key": "epistemic-adequacy-spec",
+        "key": "epistemic-adequacy-ontology",
         "x": 1,
+        "y": 0,
+        "column": 1,
+        "strand": "adequacy",
+        "token": "adequacy"
+      },
+      {
+        "key": "epistemic-adequacy-spec",
+        "x": 2,
         "y": 0,
         "column": 2,
         "strand": "adequacy",
@@ -700,7 +754,7 @@
       },
       {
         "key": "admissibility-spec",
-        "x": 1,
+        "x": 2,
         "y": 1,
         "column": 2,
         "strand": "adequacy",
@@ -708,7 +762,7 @@
       },
       {
         "key": "epistemic-adequacy-metamodel",
-        "x": 2,
+        "x": 3,
         "y": 0,
         "column": 2,
         "strand": "adequacy",
@@ -716,7 +770,7 @@
       },
       {
         "key": "epistemic-adequacy-testing-toolkit",
-        "x": 2,
+        "x": 3,
         "y": 1,
         "column": 2,
         "strand": "adequacy",
@@ -724,7 +778,7 @@
       },
       {
         "key": "pressure-susceptibility-probe",
-        "x": 3,
+        "x": 4,
         "y": 0,
         "column": 2,
         "strand": "adequacy",
@@ -732,7 +786,7 @@
       },
       {
         "key": "SysML-v2-API-Services-Arch-A",
-        "x": 3,
+        "x": 4,
         "y": 1,
         "column": 2,
         "strand": "adequacy",
@@ -740,7 +794,7 @@
       },
       {
         "key": "governed-interaction-cost-probe",
-        "x": 4,
+        "x": 5,
         "y": 0,
         "column": 3,
         "strand": "adequacy",
@@ -748,7 +802,7 @@
       },
       {
         "key": "epistemic-adequacy-under-pressure-probe",
-        "x": 4,
+        "x": 5,
         "y": 1,
         "column": 3,
         "strand": "adequacy",
@@ -756,7 +810,7 @@
       },
       {
         "key": "sysml-v2-metadata-graph-Arch-B",
-        "x": 4,
+        "x": 5,
         "y": 2,
         "column": 3,
         "strand": "adequacy",
@@ -764,7 +818,7 @@
       },
       {
         "key": "sysml-v2-governed-substrate-Arch-C",
-        "x": 5,
+        "x": 6,
         "y": 0,
         "column": 1,
         "strand": "adequacy",
@@ -774,6 +828,14 @@
     "edges": [
       {
         "from": "epistemic-adequacy-probe",
+        "to": "epistemic-adequacy-ontology"
+      },
+      {
+        "from": "epistemic-adequacy-probe",
+        "to": "epistemic-adequacy-spec"
+      },
+      {
+        "from": "epistemic-adequacy-ontology",
         "to": "epistemic-adequacy-spec"
       },
       {
@@ -786,6 +848,10 @@
       },
       {
         "from": "epistemic-adequacy-probe",
+        "to": "admissibility-spec"
+      },
+      {
+        "from": "epistemic-adequacy-ontology",
         "to": "admissibility-spec"
       },
       {
@@ -833,7 +899,7 @@
         "to": "sysml-v2-governed-substrate-Arch-C"
       }
     ],
-    "columns": 6
+    "columns": 7
   },
-  "refreshedAt": "2026-08-20T17:59:16+00:00"
+  "refreshedAt": "2026-08-21T22:39:38+00:00"
 }

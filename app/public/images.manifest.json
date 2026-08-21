@@ -5,7 +5,7 @@
     {
       "title": "Epistemic adequacy",
       "colour": "oklch(0.55 0.16 250)",
-      "studies": 12
+      "studies": 13
     },
     {
       "title": "Do classic SE methods survive an AI practitioner?",
@@ -18,6 +18,6 @@
       "studies": 0
     }
   ],
-  "studies": 15,
+  "studies": 16,
   "published": 1
 }

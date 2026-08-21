@@ -35,6 +35,7 @@ optimal order.
 
 | Repository | Stage | Status | What it is for |
 |---|---|---|---|
+| `epistemic-adequacy-ontology` | define | built-runs-pending | The vocabulary both specifications quantify over: thirteen entities and nine enumerations describing what an engineering record must carry for a machine consumer to decide whether a value is grounded. Split out of the SysML v2 realisation so the entity model can be stated and bound to other languages without carrying SysML v2 assumptions. |
 | `epistemic-adequacy-spec` | define | released | A conformance specification stating, in eighteen testable clauses, what an engineering record must expose so that an AI consumer can decide whether a claim the record holds is grounded. |
 | `epistemic-adequacy-metamodel` | define | design | Owns the metadata model itself — a conceptual ontology, a logical data model, and a generated SysML v2 library, kept in sync — so that the specification's non-normative binding becomes something a tool can mechanically check. |
 | `admissibility-spec` | define | design | The write-side counterpart to the epistemic adequacy specification: what an AI-authored contribution must carry, and what conditions a substrate must check, before that contribution may enter the authoritative engineering record. |

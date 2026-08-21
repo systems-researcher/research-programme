@@ -66,6 +66,38 @@ repos:
 
   # ---------------------------------------------------------------- define ---
 
+  - key: epistemic-adequacy-ontology
+    owner: systems-researcher
+    strand: adequacy
+    stage: define
+    status: built-runs-pending
+    objective: >
+      The vocabulary both specifications quantify over: thirteen entities and
+      nine enumerations describing what an engineering record must carry for a
+      machine consumer to decide whether a value is grounded. Split out of the
+      SysML v2 realisation so the entity model can be stated and bound to other
+      languages without carrying SysML v2 assumptions.
+    question: >
+      Can the entities epistemic adequacy needs be characterised without
+      committing to a modelling language, and can that independence be
+      demonstrated rather than asserted?
+    method: >
+      One hand-edited schema generates OWL 2, SHACL and a PROV-O alignment,
+      byte-compared against what is committed. Language independence is a gate,
+      not a claim: the loader refuses a KerML, SysML, UML or OWL type, and the
+      shapes are validated over instances a binding emitted rather than over
+      fixtures built inside the tests that assert them. A reference binding in
+      plain JSON is the second realisation that makes the claim falsifiable.
+    output: >
+      v0.1.0. 101 tests, three gates in CI: the suite, a drift check across
+      three generated artefacts, and SHACL validation over three instances.
+    # Conceptually prior, normatively subordinate. The clauses quantify over
+    # these entities, so the domain is characterised before it is constrained —
+    # but where the two disagree, the specification governs. The arrow records
+    # the order of explanation, which is what every other edge in this file
+    # records; it does not record authority.
+    depends_on: [epistemic-adequacy-probe]
+
   - key: epistemic-adequacy-spec
     owner: systems-researcher
     strand: adequacy
@@ -90,7 +122,7 @@ repos:
     output: >
       v0.1.0, released 2026-08-18. The criteria originate in the MODELS 2026
       NIER paper, doi:10.1145/3822455.3838783, which resolves on publication.
-    depends_on: [epistemic-adequacy-probe]
+    depends_on: [epistemic-adequacy-probe, epistemic-adequacy-ontology]
 
   - key: epistemic-adequacy-metamodel
     owner: local
@@ -138,7 +170,7 @@ repos:
       machine-readable manifest validated against the prose in CI. Scope is
       the admission decision alone; how a substrate stores or enforces it is
       left to the architecture candidates.
-    depends_on: [epistemic-adequacy-probe]
+    depends_on: [epistemic-adequacy-probe, epistemic-adequacy-ontology]
 
   # --------------------------------------------------------------- measure ---
 
