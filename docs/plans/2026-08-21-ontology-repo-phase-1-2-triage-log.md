@@ -115,3 +115,35 @@ edit in R2), fixed at the time.
 returned a clean round, and the rate at which fixes introduce new defects — two
 of Round 3's three CRITICALs were R1 and R2 fixes — argues for at least one more
 round before this plan is executed.
+
+| C1 test_load.py's enumeration count goes red at Task 3 and stays red | R4 | R4 | Genuine | Verified: `tests/test_load.py:18` asserts `len(m.enumerations) == 12`; Task 3 makes it 11 and Task 4's duplicate branch 9. Reviewer measured `assert 9 == 12`. Fixed: Step 3b and Step 4b update it, plus a full `pytest -q` before every commit from Task 3 on. |
+| C2 rewording owl.py's PROV string drifts a byte-compared artefact | R4 | R4 | Genuine — **R3 M1 fix was wrong** | R3's sweep told the implementer to "reword" `owl.py:132`. It is a `Literal` inside `render_prov_alignment`, emitted as an `rdfs:comment` into `prov-alignment.ttl`. Measured: `DRIFT ontology/prov-alignment.ttl`, exit 1. Fixed: marked leave-alone, with the general rule that a string a generator emits is content, not commentary. |
+| M1 sweep returns 8 files, the list names 4 | R4 | R4 | Genuine | README.md and CITATION.cff were unlisted, and the stated rule ("a hit is a file Step 1b missed — delete it") would have deleted both. Fixed: six-row table with an explicit action per hit. |
+| M2 CITATION.cff listed as Modify with no step saying what | R4 | R4 | Genuine | It ships titled "Metamodel", points `repository-code` at the old repo, and carries the Airbus MPL-2.0 attribution for a model Task 1 deletes. No test reads the prose. Fixed: new Task 13 Step 5b. |
+| A1 trace/ does not exist when Task 6 writes into it | R4 | R4 | Genuine | Step 1b deletes both its files and git does not track empty directories. Fixed: `mkdir -p trace`. |
+| A2 ReviewStateKind::promoted's clause link would be deleted, not moved | R4 | R4 | Genuine | Task 6's sweep hits it, but spec-trace.yaml had slots only for `unresolved_fields` and `entities`. Fixed: added `enumeration_members`, since that link is why ADR-002 settled on four members. |
+| A3 the VERDICT line is required by Task 13 but never specified in Task 12 | R4 | R4 | Genuine | Task 13's release test parses it; Task 12 never said to write it, and the final `git add` omitted the file. Both fixed. |
+| A4 Task 2's Files list omits the generators it edits | R4 | R4 | Genuine (cheap) | Steps 5b and 6b modify `generate/owl.py` and `generate/shacl.py`. Fixed. |
+| A5 Task 5 states 4 tests, block defines 5 | R4 | R4 | Genuine (cheap) | The property-diff test added in R1's M3 fix was never counted. Fixed. |
+| (structural) nothing runs the full suite until Task 6 | R4 | R4 | Genuine — from the reviewer's prose | Tasks 3-5 ran single-file pytest only; Task 4 Step 6 commits `-A` having run no test. That is how C1 hid for four rounds. Fixed: `pytest -q` before every commit from Task 3 onward, red suite blocks the commit. |
+
+## Round 4 Summary
+
+Reviewer: Opus, three lenses. lens_coverage: saboteur=2, new_hire=3, auditor=4.
+Reviewer cloned the source repository and **executed all 13 tasks to completion**.
+All seven exit criteria passed — 88 tests, no drift, shapes hold over 3 instances,
+CLEAN — but only after one unauthorised patch commit fixing C1.
+
+**Every Round 3 fix held**: the segment-form sed, Step 7's drift check and Step 5's
+`^-ea:` filter all behaved exactly as written.
+
+Findings: 2 CRITICAL, 2 MAJOR, 5 ADVISORY = 9, plus 1 structural from the prose.
+Genuine 10, FP 0, Design 0. Fixes applied: 10.
+Inflation rate: 0% (0 of 4 CRITICAL+MAJOR triaged FP/Recurring/Design).
+Validation: fences balanced (146), no duplicate step labels, 11 targeted assertions pass.
+
+Scope caveat carried forward: the reviewer wrote related-work, limitations,
+binding-contract, competency-questions, adr-010-test, ADR-012 and README as
+test-satisfying stubs, so defects reachable only from full prose remain unchecked.
+
+**Not converged** — verdict ISSUES_FOUND; Track 2 needs 70% inflation against 0%.

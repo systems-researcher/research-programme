@@ -270,13 +270,28 @@ grep -rln "pilot\|apollo\|Apollo\|sysml\|SysML\|clause-trace\|check_release" \
   src tests trace *.md *.toml *.cff 2>/dev/null
 ```
 
-**Every hit must be one you can justify — not necessarily one you delete.** At
-this point in Task 1 the expected hits are `pyproject.toml` (description and
-keywords still describing the metamodel), `src/eaont/cli.py` (the comment Step 4
-wrote, recording that the SysML library target moved to the binding),
-`src/eaont/generate/owl.py` near line 132 (the PROV-alignment comment citing
-`bindings/sysml-v2.md`), and `tests/test_load.py` (function names containing the
-word metamodel). Reword the first three; leave the fourth.
+**Every hit must be one you can justify — and most are not ones you delete.**
+Run at this point the sweep returns eight files. What to do with each:
+
+| Hit | Action |
+|---|---|
+| `pyproject.toml` | **Reword.** Description and keywords still describe the metamodel. |
+| `README.md` | **Reword** — Task 13 Step 2 rewrites it wholesale. Not a deletion. |
+| `CITATION.cff` | **Reword** — Task 13 Step 5b. It is titled "Metamodel" and cites a deleted model. Not a deletion. |
+| `src/eaont/cli.py` | **Reword.** The comment Step 4 wrote, recording that the SysML library target moved. |
+| `tests/test_load.py` | **Leave.** Function names containing the word metamodel. |
+| `src/eaont/generate/owl.py` near line 132 | **Leave it alone here.** See below. |
+
+**`owl.py`'s PROV string is not a source comment.** It is a `Literal` inside
+`render_prov_alignment`, emitted as an `rdfs:comment` triple into
+`ontology/prov-alignment.ttl` — which `check-drift` byte-compares. Editing it
+here drifts that artefact and Step 7 fails; measured, `DRIFT
+ontology/prov-alignment.ttl`, exit 1. Its stale path is corrected in **Task 2
+Step 6b**, which regenerates and commits `ontology/` in the same breath. Its
+citation of `bindings/sysml-v2.md` is not stale at all and stays.
+
+The rule generalises: **a string a generator emits is content, not commentary.**
+Change it only in a step that also regenerates and commits the artefacts.
 
 A hit that is a **file** rather than a phrase is one Step 1b missed — delete it
 and add it to Step 1b's list, so the next person repeating this does not miss it
@@ -323,6 +338,9 @@ This is the purification gate. Making it a load error rather than a review conve
 **Files:**
 - Modify: `src/eaont/load.py`
 - Modify: `model/ontology.yaml`
+- Modify: `src/eaont/generate/owl.py`, `src/eaont/generate/shacl.py` (Steps 5b and 6b — comment and provenance string)
+- Modify: `tests/test_load.py` (Step 3b in Task 3; listed here because Task 2 leaves it alone)
+- Regenerate: `ontology/` (Step 6b)
 - Test: `tests/test_load_abstract_refs.py`
 
 **Interfaces:**
@@ -613,10 +631,32 @@ Delete these two lines from `vocabularies:`:
   default_revision_scheme: gitCommit
 ```
 
+- [ ] **Step 3b: Update the surviving test that counts enumerations**
+
+`tests/test_load.py:18` asserts `len(m.enumerations) == 12`. Removing
+`RevisionSchemeKind` makes it 11, and the test goes red here and stays red
+through every later task:
+
+```python
+    assert len(m.enumerations) == 11   # was 12; RevisionSchemeKind left in Task 3
+```
+
+Leave line 17 (`len(m.metadata_definitions) == 13`) alone — this task removes
+no metadata definition.
+
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run: `pytest tests/test_no_binding_concerns.py -v`
 Expected: PASS, 4 tests.
+
+Then run the **whole** suite, not just this file:
+
+Run: `pytest -q`
+Expected: all pass.
+
+Single-file runs are how a count assertion in a file you are not editing goes
+unnoticed for three tasks. Every task from here on runs `pytest -q` before its
+commit, and a red suite blocks the commit rather than being carried forward.
 
 - [ ] **Step 5: Regenerate and inspect the diff**
 
@@ -779,10 +819,27 @@ def test_kept_conformance_enum_justifies_itself():
         )
 ```
 
+- [ ] **Step 4b: Update the enumeration count again if you deleted**
+
+If Step 3 ran, two more enumerations are gone. `tests/test_load.py:18` becomes:
+
+```python
+    assert len(m.enumerations) == 9    # 12 - RevisionSchemeKind - ProfileKind
+                                       #    - CriticalityPolicyKind
+```
+
+If Step 4 ran instead, leave it at the 11 Task 3 set.
+
 - [ ] **Step 5: Run the tests**
 
 Run: `pytest tests/test_no_binding_concerns.py -v`
 Expected: PASS.
+
+Then the whole suite:
+
+Run: `pytest -q`
+Expected: all pass. Step 6 commits `-A`, so a red suite here is committed
+wholesale if you skip this.
 
 - [ ] **Step 6: Regenerate and commit**
 
@@ -911,7 +968,10 @@ def test_the_four_service_entities_survive():
 - [ ] **Step 3: Run the tests**
 
 Run: `pytest tests/test_phase1_diff.py -v`
-Expected: PASS, 4 tests. If Task 4 took the not-duplicate branch, `AUTHORISED_REMOVALS` is a superset of what was actually removed, which `<=` permits.
+Expected: PASS, 5 tests — the property-diff test added above plus the four
+class-level ones.
+
+Then `pytest -q` for the whole suite, as every task from Task 3 does. If Task 4 took the not-duplicate branch, `AUTHORISED_REMOVALS` is a superset of what was actually removed, which `<=` permits.
 
 - [ ] **Step 4: Commit**
 
@@ -995,6 +1055,13 @@ Expected: FAIL with `FileNotFoundError` on `trace/spec-trace.yaml`.
 
 - [ ] **Step 3: Create the trace**
 
+`trace/` no longer exists — Step 1b deleted both `clause-trace.yaml` and
+`clause-trace.sha256`, and git does not track empty directories:
+
+```bash
+mkdir -p trace
+```
+
 Create `trace/spec-trace.yaml`, carrying the consequences currently in the member docs verbatim in meaning:
 
 ```yaml
@@ -1043,6 +1110,18 @@ unresolved_fields:
       Fails EA-REQ-16 alone. EA-REQ-17 and 18 exclude the claim from their
       populations, so they return not_applicable.
 
+# Clause links carried by an individual enumeration member, rather than by an
+# entity or an Unresolved field. Same rule: the member's doc says what it IS,
+# and what the specification makes of it lives here.
+enumeration_members:
+  ReviewStateKind::promoted:
+    clauses: [EA-REQ-18]
+    effect: defines_population
+    note: >-
+      EA-REQ-18's subject population is promoted AI-origin claims. ADR-002
+      records that four members are the minimum that makes the clause
+      checkable, so this link is the reason the vocabulary is not smaller.
+
 entities: {}   # populated by Task 7
 ```
 
@@ -1064,6 +1143,12 @@ Each `UnresolvedFieldKind` member's `doc` becomes a description of the marker, w
 ```
 
 Apply the same treatment to `basis`, `derivation`, `alternatives`, `status` and `provenance`. Then sweep every other enumeration for a member doc containing `EA-REQ-` and rewrite it the same way — the test checks all of them, not just this one.
+
+One hit is outside `UnresolvedFieldKind`: `ReviewStateKind::promoted` reads
+"This is EA-REQ-18's subject population." Move that link into
+`enumeration_members` in the trace — already drafted in Step 3 — rather than
+deleting it. It is the reason ADR-002 settled on four members, so losing it
+would strand that decision without its cause.
 
 - [ ] **Step 5: Run the tests to verify they pass**
 
@@ -2385,6 +2470,11 @@ Run: `pytest tests/test_adr010_anchoring.py -v`
 
 Create `docs/adr-010-test.md` with the CC-BY-4.0 header, stating: the question, the fixture, the command, the observed result, and the conclusion. Write it to be readable by someone who was not present — this is the record that the falsifier was actually run rather than assumed away.
 
+The document **must carry a line beginning `VERDICT: PASS` or `VERDICT: FAIL`**,
+on its own, in that exact form. `tests/test_release.py` (Task 13 Step 4) parses
+it to enforce exit criterion 6, and a verdict stated only in prose is a verdict
+nothing can check.
+
 Include the consequence explicitly: if it passed, `epistemic-adequacy-sysml-v2-binding` inherits ADR-010's limitation and the ontology does not, which is a finding for the binding paper — *what the language cannot carry* — and belongs in `docs/round-trip-loss.md` over there.
 
 - [ ] **Step 5: Commit**
@@ -2569,11 +2659,24 @@ grep -rnE "KerML::|SysML::|UML::|OWL::" model/ && echo FOUND || echo CLEAN
 
 Expected: all tests pass; no drift across 3 artefacts; shapes hold over 3 instances; `CLEAN`.
 
+- [ ] **Step 5b: Rewrite `CITATION.cff`**
+
+It is cloned from the metamodel and asserts three things that are no longer
+true: a `title` naming the Metamodel, a `repository-code` pointing at the old
+repository, and an abstract describing a SysML v2 library. It also carries the
+Airbus MPL-2.0 attribution for `models/apollo-source.sysml`, deleted in Task 1.
+
+Rewrite `title`, `abstract` and `repository-code` for this repository, and
+**remove the Airbus reference** — it belongs in the binding, which still ships
+the derived models. `tests/test_release.py` already checks the `version` field
+against `model/ontology.yaml`; nothing checks the prose, so this step is the
+only thing standing between the repository and a citation file that misnames it.
+
 - [ ] **Step 6: Commit**
 
 ```bash
 git add README.md docs/related-work.md docs/limitations.md docs/entities.md \
-        .github/ CITATION.cff tests/test_release.py
+        docs/adr-010-test.md .github/ CITATION.cff tests/test_release.py
 git commit -m "docs: position against SACM, and put the three gates in CI
 
 The programme mentioned no assurance-case prior art anywhere. An ontology
