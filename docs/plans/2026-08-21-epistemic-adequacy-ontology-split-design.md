@@ -380,12 +380,33 @@ the boundaries are still free to set.
 | **SysML v2 binding** | Annotation burden per governed claim; round-trip loss; what the language cannot carry | Strongest with a second *real* binding for contrast; adequate with one plus the reference fixture |
 
 **The ontology paper's positioning is unwritten and is a risk, not a task already
-done.** `grep -ril "SACM\|assurance case\|Toulmin\|nanopublication\|GSN"` across
-the spec, metamodel and publications repositories returns nothing outside `.venv`
-and `.git` noise. OMG SACM is a standardised metamodel for claims, evidence and
+done.** OMG SACM is a standardised metamodel for claims, evidence and
 argumentation with a MOF/UML realisation; an ontology paper in this space that
 does not position against it will not survive review. `docs/related-work.md` in
 the new repository exists to discharge this.
+
+> **Correction, 2026-08-21.** This paragraph originally claimed that
+> `grep -ril "SACM\|assurance case\|Toulmin\|nanopublication\|GSN"` across the
+> spec, metamodel and publications repositories "returns nothing outside `.venv`
+> and `.git` noise". **That was false when written.**
+> `publications/epistemic-adequacy-probe/source/refs.bib` has carried
+> `@techreport{OMGSACM}` and `@article{Kuhn2016Nanopublications}` since commit
+> `d6c6b77` on 2026-08-19, and the NIER paper's `.tex` and PDF cite SACM too.
+> The original grep was piped through `head -20` and all twenty lines were
+> `.venv` noise, so the truncation hid every real hit.
+>
+> What survives: the *ontology repository* still has to do its own positioning,
+> and `docs/related-work.md` still discharges it. What does not: the claim that
+> the programme had never engaged with this literature. The accepted NIER paper
+> had already cited SACM before this design was written, which makes the
+> positioning task smaller and better-founded than stated here — the ontology
+> document should build on the paper's citations rather than start cold.
+>
+> This is the second false negative in this programme traceable to a truncated
+> grep; the first was the claim that `pyshacl` is "imported nowhere", which
+> `tests/test_generate_shacl.py` falsified. Both became load-bearing claims in
+> a design document. A `grep` whose output is piped through `head` is not
+> evidence of absence.
 
 ## 9. Sequencing
 
