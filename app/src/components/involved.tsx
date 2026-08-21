@@ -17,7 +17,12 @@ import { Mail, Lock } from "lucide-react"
  * One address, deliberately: this is the programme's first point of contact,
  * not a directory of everyone connected to the work. */
 
+// The university address is the one the routes above write to: this is
+// doctoral research, and an academic enquiry belongs there. The company
+// address is offered alongside it for anyone whose interest is commercial
+// rather than academic, so they do not have to guess which is right.
 const EMAIL = "J.Gower@lboro.ac.uk"
+const COMPANY_EMAIL = "support@jgsystemsconsulting.com"
 
 /** The two GitHub accounts the work is published from. The research account
  *  carries the programme; the company account carries the consulting work the
@@ -158,14 +163,25 @@ export function GetInvolved() {
         ))}
       </div>
 
-      <p className="mt-4 text-xs text-muted-foreground">
-        Direct email:{" "}
-        <a
-          href={`mailto:${EMAIL}`}
-          className="font-mono underline decoration-border underline-offset-4 hover:decoration-foreground"
-        >
-          {EMAIL}
-        </a>
+      <p className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
+        <span>
+          Research:{" "}
+          <a
+            href={`mailto:${EMAIL}`}
+            className="font-mono underline decoration-border underline-offset-4 hover:decoration-foreground"
+          >
+            {EMAIL}
+          </a>
+        </span>
+        <span>
+          Commercial:{" "}
+          <a
+            href={`mailto:${COMPANY_EMAIL}`}
+            className="font-mono underline decoration-border underline-offset-4 hover:decoration-foreground"
+          >
+            {COMPANY_EMAIL}
+          </a>
+        </span>
       </p>
     </section>
   )
