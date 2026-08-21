@@ -131,15 +131,20 @@ supply**". Schema is agnostic; behaviour is per-binding.
 
 ### 3.4 The ontology layer has no validation gate
 
-`pyproject.toml:6` declares `pyshacl>=0.26` as a **runtime dependency**. It is
-imported nowhere. `rdflib` appears only in `src/eamm/generate/owl.py` and
-`src/eamm/generate/shacl.py` — emitters, never parsers. There is no
-`pyshacl.validate()` call and no instance data to run one against.
+`pyproject.toml:6` declares `pyshacl>=0.26` as a **runtime dependency**, and no
+module under `src/eamm/` imports it. `rdflib` appears there only in
+`generate/owl.py` and `generate/shacl.py` — emitters, never parsers.
 
-The SHACL shapes are generated, byte-compared against a fresh render, and never
-executed. That is adequate while the ontology is a subdirectory of a repository
-whose real gate is the Apollo regression. It is **not** adequate for a standalone
-artefact whose entire claim is language-independence.
+The shapes *are* executed once, in `tests/test_generate_shacl.py:62` and `:76`,
+against **hand-built fixture graphs written inside the test**. So the precise gap
+is narrower than "never run" and is not thereby smaller: the shapes have never
+been run over instance data produced by a substrate. What they have been shown to
+do is hold over graphs authored to satisfy them.
+
+That is adequate while the ontology is a subdirectory of a repository whose real
+gate is the Apollo regression. It is **not** adequate for a standalone artefact
+whose entire claim is language-independence, because a shape validated only
+against its own author's fixtures tests the fixture, not the shape.
 
 ### 3.5 The second binding does not yet exist in any form
 
@@ -352,16 +357,16 @@ falsifier of this whole design (§11.1).
 | Gate | Repo | Status | Mechanism |
 |---|---|---|---|
 | Generated TTL equals render(`ontology.yaml`) | ontology | exists | byte-compare, `eaont check-drift` |
-| **SHACL validates reference-binding instances** | ontology | **NEW** | JSON to RDF lift, then `pyshacl` |
+| **SHACL validates reference-binding instances** | ontology | **NEW** | JSON to RDF lift, then `pyshacl`. Today's `pyshacl` run covers hand-built fixtures only (§3.4) |
 | Competency questions answered over the fixture | ontology | NEW | one assertion per question |
 | Generated `.sysml` equals render(pinned ontology + type map) | sysml binding | NEW | byte-compare, same mechanism |
 | `ontology_version` pin matches the resolved ontology | sysml binding | NEW | CI assertion |
 | Apollo regression green | sysml binding | exists | unchanged; see §10 |
 | Spec's pinned ontology version matches the ontology version | cross-repo | NEW | CI assertion |
 
-The SHACL gate is the one that matters. It is what converts the ontology from
-generated Turtle nobody executes into an artefact with a falsifier, and it uses
-shapes that already exist and a dependency that is already declared.
+The SHACL gate is the one that matters. It is what moves the shapes from holding
+over fixtures their own author wrote to holding over data a substrate emitted, and
+it uses shapes that already exist and a dependency that is already declared.
 
 ## 8. Papers and boundaries
 

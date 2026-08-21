@@ -9,7 +9,7 @@ SPDX-License-Identifier: CC-BY-4.0
 
 **Goal:** Stand up `epistemic-adequacy-ontology` as a language-agnostic repository whose entity model refuses SysML v2 types by construction, and give it a validation gate that runs SHACL over real claim-graph instances.
 
-**Architecture:** Clone-and-strip `epistemic-adequacy-metamodel` to preserve the history of the ADRs that move, rename the package `eamm` → `eaont`, then remove every SysML v2 concern. Purification is enforced at load time: `load.py` stops accepting `KerML::`/`SysML::` prefixes and accepts four declared abstract reference types instead, so a language-specific type in `ontology.yaml` becomes a load error rather than a review finding. A minimal JSON reference binding supplies instance data, which a JSON-to-RDF lift feeds to `pyshacl` — closing the gap where `pyshacl` is a declared dependency imported nowhere.
+**Architecture:** Clone-and-strip `epistemic-adequacy-metamodel` to preserve the history of the ADRs that move, rename the package `eamm` → `eaont`, then remove every SysML v2 concern. Purification is enforced at load time: `load.py` stops accepting `KerML::`/`SysML::` prefixes and accepts four declared abstract reference types instead, so a language-specific type in `ontology.yaml` becomes a load error rather than a review finding. A minimal JSON reference binding supplies instance data, which a JSON-to-RDF lift feeds to `pyshacl` — so the shapes are judged against data a substrate emitted rather than, as today, against fixture graphs hand-built inside `tests/test_generate_shacl.py`.
 
 **Tech Stack:** Python ≥ 3.14, PyYAML, rdflib ≥ 7.0, pyshacl ≥ 0.26, pytest ≥ 8.0. No Node, no JDK, no SysML v2 pilot — the ontology repository deliberately has none of the metamodel repository's tier-2 or tier-3 prerequisites.
 
@@ -25,7 +25,7 @@ SPDX-License-Identifier: CC-BY-4.0
 - **Versions:** `version: "0.1.0"`, `implements_spec: "0.1.0"` in `model/ontology.yaml`. Do not bump either in this plan.
 - **All file writes use `newline="\n"`.** The repository normalises to LF; a generator writing platform newlines makes `check-drift` fail on Windows only.
 - **`model/ontology.yaml` is the sole hand-edited schema artefact.** Everything under `ontology/` is generated and byte-compared. Never hand-edit a generated file.
-- **No `KerML::` or `SysML::` string may appear in `model/ontology.yaml` or anywhere under `src/eaont/`** once Task 2 lands. Task 2 makes this a test.
+- **No `KerML::` or `SysML::` string may appear in `model/ontology.yaml`** once Task 2 lands, and Task 2 makes this a test. The constraint is on the **schema**, not on `src/`: `load.py` must name those prefixes verbatim to refuse them.
 
 ---
 
@@ -73,7 +73,7 @@ git rm --quiet docs/conformance-claim.md docs/gap-register.md \
   docs/annotation-burden.md docs/round-trip-loss.md \
   docs/one-claim-five-representations.md docs/compatibility.md \
   docs/limitations.md docs/diagrams.md
-git rm -r --quiet docs/plans docs/spikes docs/design docs/vocabularies
+git rm -r --quiet docs/plans docs/spikes docs/vocabularies
 
 # The release gate's manifest is "49 required files, 96 headers", most of them
 # just deleted. tests/test_check_release.py and tests/test_diagrams.py invoke
@@ -97,19 +97,49 @@ with a gap rather than renumbered: a cited ADR does not get a new number.
 the *specification* owns. `status_rank_order` survives as data in
 `model/ontology.yaml`, which is where the loader checks it.
 
+**`docs/design/` is kept**, though it is largely about the SysML v2 realisation.
+`docs/adr/README.md` cites it as the source every ADR was extracted from, and an
+extracted decision record whose source has been deleted is weaker than one whose
+source can be read. Add a one-line status note at its head saying it is retained
+as the ADRs' cited source, describes the pre-split arrangement, and is superseded
+by the split design. Do not edit its body — a cited source that has been
+rewritten is no longer the source that was cited.
+
 - [ ] **Step 2: Delete the tests that belong to the stripped modules**
 
+The rule is mechanical: **a test goes if its subject went.** Reader, resolver,
+extractor, the SysML library, the Apollo pair, the pilot, the trace and the
+findings documents were all deleted above, so their tests go with them.
+
 ```bash
-git rm --quiet tests/test_apollo_bare.py tests/test_apollo_annotated.py \
+git rm --quiet \
+  tests/test_apollo_bare.py tests/test_apollo_annotated.py \
   tests/test_apollo_source.py tests/test_apollo_delta.py \
   tests/test_plan3_prerequisites.py tests/test_trace.py \
   tests/test_gap_register.py tests/test_conformance_claim.py \
   tests/test_annotation_burden.py tests/test_round_trip_loss.py \
-  tests/test_library_parses.py
-git rm -r --quiet tests/integration
+  tests/test_library_parses.py tests/test_generate_sysml.py \
+  tests/test_cli_extract.py tests/test_extract_canonical.py \
+  tests/test_extract_schema.py tests/test_extract_values.py \
+  tests/test_pilot_reader.py tests/test_fetch_pilot.py \
+  tests/test_read_base.py tests/test_read_model.py \
+  tests/test_resolve_admissibility.py tests/test_resolve_rules.py \
+  tests/test_one_claim_five_representations.py tests/test_compatibility.py \
+  tests/test_task_order.py tests/test_vocabularies_agree.py \
+  tests/test_plan1_complete.py
+git rm -r --quiet tests/integration 2>/dev/null || true
 ```
 
-If any listed path does not exist, that is fine — remove it from the command and continue. Do **not** delete `tests/test_generate_owl.py`, `tests/test_generate_shacl.py` or `tests/test_prov_alignment.py`; they are this repository's core suite.
+If a listed path does not exist, drop it from the command and continue.
+
+**Four survive, and they are the core suite:** `test_load.py`, `test_model.py`,
+`test_generate_owl.py`, `test_generate_shacl.py` and `test_prov_alignment.py`. Do
+not delete these. `tests/__init__.py` stays.
+
+`test_vocabularies_agree.py`, `test_task_order.py`, `test_plan1_complete.py` and
+`test_compatibility.py` are deleted because each asserts against a document or a
+plan that Step 1b removes — they are gates on the binding's contents, not the
+ontology's.
 
 - [ ] **Step 3: Rewrite the package name across the tree**
 
@@ -118,9 +148,22 @@ grep -rl '\beamm\b' src tests pyproject.toml docs scripts 2>/dev/null \
   | xargs sed -i 's/\beamm\b/eaont/g'
 ```
 
+The package rename is not the only path that moved. Nine test files hardcode the
+schema's location, including `test_generate_owl.py`, `test_generate_shacl.py`,
+`test_prov_alignment.py` and `test_load.py` — the four Step 2 forbids deleting.
+Rewrite the path too, or Step 6 fails with `FileNotFoundError`:
+
+```bash
+grep -rl 'metamodel/metamodel.yaml' src tests scripts 2>/dev/null \
+  | xargs sed -i 's|metamodel/metamodel\.yaml|model/ontology.yaml|g'
+grep -rn 'metamodel' src tests || echo "no stale schema path"
+```
+
 - [ ] **Step 4: Point the CLI at the new source path and drop the SysML target**
 
-In `src/eaont/cli.py`, replace the import block and `TARGETS` with:
+In `src/eaont/cli.py`, replace the **`eaont`-package imports** and `TARGETS`
+with the following. The stdlib imports at the top of the file — `argparse`,
+`pathlib`, `sys` — all stay; `check_drift` and `main` need them.
 
 ```python
 from eaont.generate.owl import render_ontology, render_prov_alignment
@@ -142,6 +185,10 @@ Delete the `extract`, `_resolved_revision`, `_select_reader` functions and the `
 
 - [ ] **Step 5: Update `pyproject.toml`**
 
+Change **only** these keys. Step 3's `sed` has already rewritten `eamm` to
+`eaont` throughout, so `name` and the script target may already be correct;
+`version`, `requires-python`, `[build-system]` and the rest stay as they are.
+
 ```toml
 [project]
 name = "eaont"
@@ -156,7 +203,13 @@ eaont = "eaont.cli:main"
 - [ ] **Step 6: Install and run the surviving suite**
 
 Run: `pip install -e ".[test]" && pytest -q`
-Expected: PASS. Every remaining test concerns the loader, the model, or a generator. If a test fails on an import of a deleted module, delete that test — it belonged to the stripped half.
+Expected: PASS, five test files. Every remaining test concerns the loader, the
+model, or a generator.
+
+If a test fails with `ImportError` **or** `FileNotFoundError` **or** an assertion
+naming a deleted path, it belonged to the stripped half and Step 2's list missed
+it — delete it and record which one in the commit message, so the list can be
+corrected for anyone repeating this. Do not repair such a test.
 
 - [ ] **Step 7: Verify the CLI works and produces no drift**
 
@@ -296,7 +349,8 @@ The refusal check runs **before** the membership check, so a language type gets 
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run: `pytest tests/test_load_abstract_refs.py -v`
-Expected: PASS, 7 tests.
+Expected: PASS, 8 tests — three unparametrised, one parametrised over the four
+members of `ABSTRACT_REFS`, and the exactly-four assertion.
 
 - [ ] **Step 5: Rewrite the seven typed parameters in `model/ontology.yaml`**
 
@@ -343,17 +397,44 @@ Do the same for any equivalent comment in `generate/shacl.py`. This is
 documentation of the fall-through the whole of §9.1 rests on; leaving it
 naming SysML would make the one load-bearing claim look like a special case.
 
-- [ ] **Step 6: Verify no language type survives anywhere**
+- [ ] **Step 6: Verify no language type survives in the schema**
 
-Run: `grep -rn "KerML::\|SysML::" model/ src/ && echo FOUND || echo CLEAN`
+Run: `grep -rn "KerML::\|SysML::" model/ && echo FOUND || echo CLEAN`
 Expected: `CLEAN`
+
+**The scope is `model/`, not `src/`, and that is not a loophole.** `load.py` must
+name `KerML::` and `SysML::` verbatim in `REFUSED_PREFIXES` in order to refuse
+them, and Step 5b's comment explains the fall-through by naming them. A grep over
+`src/` would fail on the gate's own implementation. What must contain no language
+type is the **schema**, and `model/ontology.yaml` is the whole of it.
+
+- [ ] **Step 6b: Update the provenance string the generators emit**
+
+Both generators write `"Generated from metamodel/metamodel.yaml. Do not edit."`
+into every artefact, and that path no longer exists. Left alone, all three
+generated files cite a file the repository does not have.
+
+```bash
+grep -rn "metamodel/metamodel.yaml" src/eaont/generate/
+sed -i 's|metamodel/metamodel\.yaml|model/ontology.yaml|g' src/eaont/generate/*.py
+```
+
+This changes the generated output, so it must happen **before** Step 7's
+byte-compare — otherwise Step 7 reports drift that is this edit rather than the
+type abstraction, and the §9.1 claim it exists to test is obscured. Regenerate
+once after this edit, then run Step 7 against the result.
 
 - [ ] **Step 7: Verify the generated ontology is byte-identical**
 
 Run: `eaont check-drift`
 Expected: `no drift across 3 generated artefacts`
 
-**This is the design's §9.1 claim under test.** The generator emits no `rdfs:range` for any of the seven, so renaming their types must change zero triples. If drift is reported here, §9.1 is wrong and the discrepancy must be understood before continuing — do not regenerate to make it green.
+**This is the design's §9.1 claim under test**, and Step 6b's provenance edit is
+the one authorised difference — regenerate after 6b, then compare. Beyond that,
+the generator emits no `rdfs:range` for any of the seven, so renaming their types
+must change zero triples. If drift is reported here, §9.1 is wrong and the
+discrepancy must be understood before continuing — do not regenerate to make it
+green.
 
 - [ ] **Step 8: Commit**
 
@@ -576,13 +657,19 @@ If Step 2 shows either enumeration says something the specification does not, ke
 ```python
 def test_kept_conformance_enum_justifies_itself():
     """If it stays, it must say what it adds that clauses.yaml does not."""
+    import re
     for name in ("ProfileKind", "CriticalityPolicyKind"):
         enum = M.enumerations.get(name)
         if enum is None:
             continue
         text = SOURCE.read_text(encoding="utf-8")
-        block = text.split(f"{name}:", 1)[1].split("\n\n", 1)[0]
-        assert "doc:" in block, f"{name} was kept but records no justification"
+        block = text.split(f"\n  {name}:", 1)[1].split("\n\n", 1)[0]
+        # Enumeration-level doc only. Every MEMBER carries a `doc:`, so a bare
+        # `"doc:" in block` passes whether or not a justification was written -
+        # a test that cannot fail is not a test.
+        assert re.search(r"^    doc:", block, re.M), (
+            f"{name} was kept but records no enumeration-level justification"
+        )
 ```
 
 - [ ] **Step 5: Run the tests**
@@ -617,13 +704,18 @@ Design §9.1 states exactly what may change in the generated ontology during Pha
 - [ ] **Step 1: Capture the pre-split baseline from the source repository**
 
 ```bash
-grep -E "^ea:[A-Za-z]+ a owl:Class" \
-  ../epistemic-adequacy-metamodel/ontology/epistemic-adequacy.ttl \
+mkdir -p tests/fixtures
+BASE=../epistemic-adequacy-metamodel/ontology/epistemic-adequacy.ttl
+grep -E "^ea:[A-Za-z]+ a owl:Class" "$BASE" \
   | sed 's/ a owl:Class.*//' | sort > tests/fixtures/pre-split-classes.txt
-wc -l tests/fixtures/pre-split-classes.txt
+grep -E "^ea:[A-Za-z]+_[A-Za-z]+ a owl:" "$BASE" \
+  | sed 's/ a owl:.*//' | sort -u > tests/fixtures/pre-split-properties.txt
+wc -l tests/fixtures/pre-split-classes.txt tests/fixtures/pre-split-properties.txt
 ```
 
-Expected: 25 lines — 13 metadata-definition classes and 12 enumeration classes.
+Expected: 25 classes — 13 metadata-definition classes and 12 enumeration classes
+— and one line per generated property. Both baselines are needed: a class-only
+comparison cannot see a property dropped from a class that survives.
 
 - [ ] **Step 2: Write the failing test**
 
@@ -650,9 +742,31 @@ GENERATED = ROOT / "ontology" / "epistemic-adequacy.ttl"
 AUTHORISED_REMOVALS = {"ea:RevisionSchemeKind", "ea:ProfileKind",
                        "ea:CriticalityPolicyKind"}
 
+# The SubstrateDeclaration parameters whose types left with them (§9.1).
+AUTHORISED_PROPERTIES = {"ea:SubstrateDeclaration_revisionScheme",
+                         "ea:SubstrateDeclaration_profileClaimed",
+                         "ea:SubstrateDeclaration_criticalityPolicy"}
+
 
 def _classes(text: str) -> set[str]:
     return set(re.findall(r"^(ea:[A-Za-z]+) a owl:Class", text, re.MULTILINE))
+
+
+def _properties(text: str) -> set[str]:
+    return set(re.findall(r"^(ea:\w+_\w+) a owl:", text, re.MULTILINE))
+
+
+def test_no_property_was_added_or_silently_dropped():
+    """Classes alone are too coarse. §9.1 authorises property removals too,
+    and a property quietly lost would not move the class count at all."""
+    before = set((ROOT / "tests" / "fixtures" / "pre-split-properties.txt")
+                 .read_text(encoding="utf-8").split())
+    after = _properties(GENERATED.read_text(encoding="utf-8"))
+    assert after - before == set(), f"unexpected new properties: {after - before}"
+    removed = before - after
+    assert removed <= AUTHORISED_PROPERTIES, (
+        f"unauthorised property removals: {removed - AUTHORISED_PROPERTIES}"
+    )
 
 
 def test_no_class_was_added():
@@ -735,9 +849,18 @@ TRACE = yaml.safe_load((ROOT / "trace" / "spec-trace.yaml").read_text(encoding="
 M = load_metamodel(SOURCE)
 
 
+# If Task 4 took the keep branch, these two remain and their members ARE clause
+# lists - that is what a conformance profile is. Exempting them is not a loophole:
+# the rule is that a DOMAIN entity's doc must not state a clause consequence, and
+# a profile is not a domain entity.
+CONFORMANCE_ENUMS = {"ProfileKind", "CriticalityPolicyKind"}
+
+
 def test_no_member_doc_names_a_clause():
     """A doc says what the member IS. What it costs is the spec's business."""
     for enum in M.enumerations.values():
+        if enum.name in CONFORMANCE_ENUMS:
+            continue
         for member in enum.members:
             assert "EA-REQ-" not in member.doc, (
                 f"{enum.name}::{member.name} states a clause consequence"
@@ -964,7 +1087,9 @@ entities:
 
 - [ ] **Step 4: Write `docs/warrant.md`**
 
-Create `docs/warrant.md` with the CC-BY-4.0 header, then:
+Create `docs/warrant.md` with the CC-BY-4.0 header — `tests/test_release.py`
+(Task 13) requires one on every file under `docs/`, and every document this plan
+creates must carry it. Then:
 
 ```markdown
 # Warrant: what the domain requires, and what decidability adds
@@ -1092,6 +1217,8 @@ def test_binding_pins_the_ontology_version():
 
 
 def test_binding_names_no_modelling_language():
+    """A binding that has to mention another language to explain itself is
+    not independent of it. The explanation lives in the contract document."""
     text = (ROOT / "bindings" / "reference" / "binding.yaml").read_text(encoding="utf-8")
     for token in ("KerML", "SysML", "UML"):
         assert token not in text, f"the reference binding names {token}"
@@ -1142,10 +1269,11 @@ types:
   VocabularyRef: {carrier: string, resolves_to: vocabulary_name}
 
 # The attachment relation. The ontology says what an EpistemicStatus IS; it
-# says nothing about how one is attached to a claim, because in SysML v2 that
-# is the annotation mechanism itself and needs no property. A binding without
-# an annotation mechanism must supply the relation, in its own namespace.
-# Discovered while writing this binding - see docs/binding-contract.md.
+# says nothing about how one is attached to a claim, because a language with an
+# annotation mechanism gets that edge from the mechanism and needs no property.
+# A binding without one must supply the relation, in its own namespace.
+# Discovered while writing this binding - see docs/binding-contract.md, which
+# names the language and explains why this file does not.
 attachment:
   status:      hasStatus
   criticality: hasCriticality
@@ -1407,8 +1535,11 @@ def test_markers_become_unresolved_nodes():
 
 
 def test_marker_records_which_field_it_occupies():
+    """The field is an enumeration member, not a string: the shape says
+    `sh:class ea:UnresolvedFieldKind`, so a literal would be refused."""
     g = lift(UNGROUNDED, NS)
-    fields = {str(o) for o in g.objects(None, EA.Unresolved_field)}
+    fields = {str(o).rsplit("UnresolvedFieldKind_", 1)[-1]
+              for o in g.objects(None, EA.Unresolved_field)}
     assert fields == {"status", "basis", "derivation", "provenance"}
 
 
@@ -1509,7 +1640,11 @@ def _add_claim(g: rdflib.Graph, ns, claim: dict) -> None:
 def _add_marker(g, ns, subject, field: str, missing: str) -> None:
     node = ns[f"{subject.split('#')[-1]}::unresolved::{field}"]
     g.add((node, RDF.type, EA.Unresolved))
-    g.add((node, EA.Unresolved_field, Literal(field)))
+    # `field` is typed UnresolvedFieldKind, so the generated shape carries
+    # `sh:class ea:UnresolvedFieldKind` and refuses a literal. Verified against
+    # ontology/shapes.ttl: a Literal here yields one ClassConstraintComponent
+    # violation per marker, and `eaont validate` returns 1.
+    g.add((node, EA.Unresolved_field, EA[f"UnresolvedFieldKind_{field}"]))
     g.add((node, EA.Unresolved_missing, Literal(missing)))
     # `since` is multiplicity 1 in the ontology and has NO carrier in the
     # canonical claim graph, whose marker is {"unresolved": "<text>"} and
@@ -1651,6 +1786,11 @@ The gate the ontology repository does not have today.
 - Modify: `src/eaont/cli.py`
 - Test: `tests/test_validate.py`
 
+`tests/test_generate_shacl.py` already calls `pyshacl.validate` on graphs it
+builds itself. Leave it alone: it tests the *generator*, and it stays valuable
+for exactly that. What it cannot do is tell you the shapes hold over a
+substrate's output, which is what this task adds.
+
 **Interfaces:**
 - Consumes: `eaont.lift.lift(document, namespace)` from Task 9.
 - Produces: `eaont.validate.validate_instance(path, shapes_path, namespace) -> tuple[bool, str]`, and the CLI subcommand `eaont validate`.
@@ -1724,8 +1864,10 @@ Create `src/eaont/validate.py`:
 # SPDX-License-Identifier: MIT
 """SHACL over lifted claim-graph instances.
 
-`pyshacl` was a declared dependency this package never imported, so the shapes
-were generated, byte-compared, and never executed. This module runs them.
+`pyshacl` is a declared dependency that no module under `src/` imports. The
+shapes are run once already, in tests/test_generate_shacl.py, against fixture
+graphs hand-built inside the test - which shows they hold over data written to
+satisfy them. This module runs them over data a substrate emitted instead.
 """
 
 from __future__ import annotations
@@ -2145,7 +2287,7 @@ It was run, not assumed."
 The positioning the design flags as an unwritten risk, plus the repository's front door and its gates in CI.
 
 **Files:**
-- Create: `docs/related-work.md`, `docs/limitations.md`, `README.md`
+- Create: `docs/related-work.md`, `docs/limitations.md`, `docs/entities.md`, `README.md`
 - Create: `.github/workflows/validate.yml`
 - Modify: `CITATION.cff`
 - Test: `tests/test_release.py`
@@ -2155,6 +2297,9 @@ The positioning the design flags as an unwritten risk, plus the repository's fro
 - Produces: nothing consumed downstream.
 
 - [ ] **Step 1: Write `docs/related-work.md`**
+
+With the CC-BY-4.0 header, as with every document under `docs/` — Step 4's
+release test checks for it.
 
 The design §8 records that nothing in the programme mentions SACM, assurance cases, Toulmin or nanopublications. This document discharges that. It must cover, with a verified citation for each:
 
@@ -2169,8 +2314,9 @@ Follow the specification's `docs/references.md` convention: every source verifie
 
 The metamodel repository's copy was deleted in Task 1 — it catalogued the
 SysML v2 realisation's limits, which are the binding's. This one carries the
-ontology's, and it starts with at least these three, all discovered while
-building the reference binding rather than anticipated by the design:
+ontology's. Give it the CC-BY-4.0 header, as every file under `docs/` needs one
+for Step 4's release test. Start it with at least these three, all discovered
+while building the reference binding rather than anticipated by the design:
 
 1. **The ontology defines no attachment relation.** `GovernedClaim` carries
    `claimId` and `revision`; nothing joins it to the `EpistemicStatus` or
@@ -2195,6 +2341,26 @@ building the reference binding rather than anticipated by the design:
    such instances therefore proves the shapes hold over *reconstructed* data.
 3. **Whatever `docs/adr-010-test.md` records**, in the words it records it.
 
+- [ ] **Step 1c: Write `docs/entities.md`**
+
+Design §5.1 lists this as the entity model and no earlier task creates it. It is
+the human-readable pass over the thirteen definitions in `model/ontology.yaml`:
+one section per entity, its parameters with types and multiplicities, and a
+sentence on what it is for. Cross-link each to its row in `docs/warrant.md`
+rather than restating the warrant.
+
+Keep it generated-adjacent, not generated: it is prose about the schema, and a
+generator that emitted prose would emit the same sentence thirteen times. But add
+a test asserting every entity in `model/ontology.yaml` has a section, so it
+cannot fall behind:
+
+```python
+def test_entities_doc_covers_every_definition():
+    text = (ROOT / "docs" / "entities.md").read_text(encoding="utf-8")
+    for name in load_metamodel(SOURCE).metadata_definitions:
+        assert f"## {name}" in text, f"docs/entities.md omits {name}"
+```
+
 - [ ] **Step 2: Write `README.md`**
 
 Cover: what the repository is, the conceptually-prior/normatively-subordinate relationship to the specification (design §4) stated in those words, the three-tier layout (`model/` → `ontology/` → `bindings/`), how to run the three gates, and a "what this is not" section — not a standard, not a checker, not a study.
@@ -2218,16 +2384,43 @@ jobs:
       - run: pytest -q
       - run: eaont check-drift
       - run: eaont validate
-      - name: no language type may enter the ontology
+      - name: no language type may enter the schema
+        # model/ only: load.py names the prefixes in order to refuse them.
         run: |
-          ! grep -rn "KerML::\|SysML::\|UML::" model/ src/
+          ! grep -rn "KerML::\|SysML::\|UML::" model/
 ```
 
 The final step is the agnosticism gate at the CI level, backing up the load-time refusal from Task 2. Two independent checks, because this is the property the repository exists to hold.
 
 - [ ] **Step 4: Write the release test**
 
-Create `tests/test_release.py` asserting: every `.py` under `src/` carries an SPDX-MIT line; every `.md` under `docs/` carries a CC-BY-4.0 header; `model/ontology.yaml`'s `version` matches `CITATION.cff`; and `bindings/reference/binding.yaml`'s `ontology_version` matches `model/ontology.yaml`'s `version`.
+Create `tests/test_release.py` asserting: every `.py` under `src/` carries an
+SPDX-MIT line; every `.md` under `docs/` carries a CC-BY-4.0 header;
+`model/ontology.yaml`'s `version` matches `CITATION.cff`; and
+`bindings/reference/binding.yaml`'s `ontology_version` matches
+`model/ontology.yaml`'s `version`.
+
+Exit criteria 6 and 7 are otherwise unchecked prose, so assert them here too:
+
+```python
+def test_adr010_verdict_is_recorded_and_passed():
+    """Exit criterion 6. The falsifier must have been RUN, not assumed away,
+    and a FAIL blocks Phase 3 rather than being noted and stepped over."""
+    text = (ROOT / "docs" / "adr-010-test.md").read_text(encoding="utf-8")
+    assert "VERDICT:" in text, "no verdict line in docs/adr-010-test.md"
+    verdict = text.split("VERDICT:", 1)[1].split("\n", 1)[0].strip()
+    assert verdict.startswith("PASS"), f"ADR-010 falsifier verdict is {verdict!r}"
+
+
+def test_related_work_positions_against_sacm():
+    """Exit criterion 7."""
+    text = (ROOT / "docs" / "related-work.md").read_text(encoding="utf-8")
+    assert "SACM" in text
+    assert "omg.org" in text or "doi.org" in text, "SACM is named but not cited"
+```
+
+`docs/adr-010-test.md` must therefore carry a line beginning `VERDICT: PASS` or
+`VERDICT: FAIL`. Add that requirement to Task 12 Step 4 when you write it.
 
 ```python
 def test_binding_pin_matches_the_ontology_version():
@@ -2246,7 +2439,7 @@ def test_binding_pin_matches_the_ontology_version():
 pytest -q
 eaont check-drift
 eaont validate
-grep -rn "KerML::\|SysML::" model/ src/ && echo FOUND || echo CLEAN
+grep -rn "KerML::\|SysML::" model/ && echo FOUND || echo CLEAN
 ```
 
 Expected: all tests pass; no drift across 3 artefacts; shapes hold over 3 instances; `CLEAN`.
@@ -2271,7 +2464,7 @@ All of the following, verified by running them:
 1. `pytest -q` green.
 2. `eaont check-drift` reports `no drift across 3 generated artefacts`.
 3. `eaont validate` reports `shapes hold over 3 instances`.
-4. `grep -rn "KerML::\|SysML::" model/ src/` finds nothing.
+4. `grep -rn "KerML::\|SysML::" model/` finds nothing. (`src/` is excluded by design — `load.py` names the prefixes in order to refuse them.)
 5. `tests/test_warrant.py` passes — every entity marked, nine and four.
 6. `docs/adr-010-test.md` records a verdict, and it is PASS. **A FAIL here blocks Phase 3.**
 7. `docs/related-work.md` positions against SACM with a verified citation.
