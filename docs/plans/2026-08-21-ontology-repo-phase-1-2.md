@@ -74,6 +74,12 @@ git rm --quiet docs/conformance-claim.md docs/gap-register.md \
   docs/one-claim-five-representations.md docs/compatibility.md \
   docs/limitations.md docs/diagrams.md
 git rm -r --quiet docs/plans docs/spikes docs/design docs/vocabularies
+
+# The release gate's manifest is "49 required files, 96 headers", most of them
+# just deleted. tests/test_check_release.py and tests/test_diagrams.py invoke
+# it, so leaving it makes Step 6 fail for a reason that looks like a bad strip.
+# Task 13's tests/test_release.py replaces its role against the new tree.
+git rm --quiet scripts/check_release.py tests/test_check_release.py   tests/test_diagrams.py
 ```
 
 Then remove ADR-010's row from `docs/adr/README.md` and add a line recording
@@ -312,6 +318,30 @@ sed -i 's/type: "KerML::Element"/type: ElementRef/;
         s/type: "KerML::Predicate"/type: PredicateRef/;
         s/type: "SysML::EnumerationDefinition"/type: VocabularyRef/' model/ontology.yaml
 ```
+
+- [ ] **Step 5b: Update the generator comment that names the old prefixes**
+
+`src/eaont/generate/owl.py` carries this comment at the end of
+`_add_metadata_def`, and it will be false the moment Step 5 lands:
+
+```python
+        # External SysML/KerML metaclasses have no OWL range; the SysML layer
+        # types them and the resolver enforces admissibility (design §3.9).
+```
+
+Replace it with:
+
+```python
+        # Abstract reference types have no OWL range: the ontology names what
+        # a reference IS, and a binding's type map says what carries it. This
+        # is a fall-through, not a special case - ElementRef reaches here by
+        # matching none of the three branches above, exactly as KerML::Element
+        # did, which is why abstracting the types changes no triple.
+```
+
+Do the same for any equivalent comment in `generate/shacl.py`. This is
+documentation of the fall-through the whole of §9.1 rests on; leaving it
+naming SysML would make the one load-bearing claim look like a special case.
 
 - [ ] **Step 6: Verify no language type survives anywhere**
 
@@ -1643,17 +1673,18 @@ from eaont.validate import validate_instance
 
 ROOT = pathlib.Path(__file__).parents[1]
 SHAPES = ROOT / "ontology" / "shapes.ttl"
+ONT = ROOT / "ontology" / "epistemic-adequacy.ttl"
 INSTANCES = ROOT / "bindings" / "reference" / "instances"
 NS = "https://systems-researcher.org/ns/reference-binding#"
 
 
 def test_grounded_instance_conforms():
-    ok, report = validate_instance(INSTANCES / "grounded.json", SHAPES, NS)
+    ok, report = validate_instance(INSTANCES / "grounded.json", SHAPES, NS, ONT)
     assert ok, report
 
 
 def test_validation_report_is_returned_either_way():
-    _, report = validate_instance(INSTANCES / "grounded.json", SHAPES, NS)
+    _, report = validate_instance(INSTANCES / "grounded.json", SHAPES, NS, ONT)
     assert isinstance(report, str) and report
 
 
@@ -1673,7 +1704,7 @@ def test_a_status_outside_the_vocabulary_is_refused(tmp_path):
     broken["claims"][0]["status"] = "probably_fine"
     path = tmp_path / "broken.json"
     path.write_text(json.dumps(broken), encoding="utf-8")
-    ok, _ = validate_instance(path, SHAPES, NS)
+    ok, _ = validate_instance(path, SHAPES, NS, ONT)
     assert not ok, (
         "the shapes accepted a standing outside the declared vocabulary"
     )
@@ -1708,12 +1739,20 @@ from pyshacl import validate as shacl_validate
 from eaont.lift import lift
 
 
-def validate_instance(instance_path, shapes_path, namespace: str) -> tuple[bool, str]:
+def validate_instance(instance_path, shapes_path, namespace: str,
+                     ontology_path) -> tuple[bool, str]:
     """(conforms, report). The report is returned whether or not it conformed,
     because a passing run that prints nothing is indistinguishable from a run
     that checked nothing."""
     document = json.loads(pathlib.Path(instance_path).read_text(encoding="utf-8"))
     data = lift(document, namespace)
+
+    # `sh:class ea:EpistemicStatusKind` resolves rdf:type in the DATA graph,
+    # and the enumeration members are typed in epistemic-adequacy.ttl, not in
+    # shapes.ttl. Without this parse every sh:class constraint fails - for a
+    # correct standing exactly as for a bogus one, which would make the gate
+    # look strict while testing nothing.
+    data.parse(str(ontology_path), format="turtle")
 
     shapes = rdflib.Graph()
     shapes.parse(str(shapes_path), format="turtle")
@@ -1736,6 +1775,7 @@ In `src/eaont/cli.py`, add near the other imports:
 BINDING = ROOT / "bindings" / "reference" / "binding.yaml"
 INSTANCES = ROOT / "bindings" / "reference" / "instances"
 SHAPES = ROOT / "ontology" / "shapes.ttl"
+ONTOLOGY = ROOT / "ontology" / "epistemic-adequacy.ttl"
 ```
 
 Add the command:
@@ -1754,7 +1794,7 @@ def validate() -> int:
         # markers where warrant would be. A marker is a well-formed Unresolved
         # node, so it conforms structurally - what it fails is a clause, and
         # clauses are the toolkit's business, not SHACL's.
-        ok, report = validate_instance(path, SHAPES, namespace)
+        ok, report = validate_instance(path, SHAPES, namespace, ONTOLOGY)
         print(f"{'PASS' if ok else 'FAIL'} {path.name}")
         if not ok:
             failures.append((path.name, report))
@@ -1781,12 +1821,12 @@ Expected: PASS, 4 tests.
 
 If `test_grounded_instance_conforms` fails, read the report before changing anything. The likely cause is a shape whose `sh:minCount` is 1 for a property the lift does not populate — the fix is to populate it in the lift or enrich `grounded.json`, **never** to loosen a generated shape, which would be hand-editing a generated file.
 
-If instead `test_a_status_outside_the_vocabulary_is_refused` **passes
-validation** — that is, the shapes accept a standing the ontology never
-declared — do not delete the test. The generated shapes are then weaker than
-the clause checks the toolkit runs, and that gap is a finding: record it in
-`docs/limitations.md`, mark the test `xfail` with that file as the reason, and
-carry it. A silently weak gate is the exact failure this task exists to end.
+`test_a_status_outside_the_vocabulary_is_refused` is known to be able to fail,
+which is what makes it a gate: `ea:EpistemicStatusShape_standing sh:class
+ea:EpistemicStatusKind` is present in the generated shapes (verified
+2026-08-21), and `probably_fine` lifts to an individual carrying no such type.
+If it nonetheless passes, the ontology graph is not reaching the data graph —
+re-read the `data.parse` line above before touching the test.
 
 - [ ] **Step 6: Run the whole suite and the CLI**
 
@@ -1925,7 +1965,19 @@ def test_cq6_the_expression_is_named_never_inlined():
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run: `pytest tests/test_competency_questions.py -v`
-Expected: FAIL — likely on the percent-encoded IRI in CQ1 if the identifier form differs. Fix the fixture identifier or the query so they agree; do not weaken the assertion to `assert True`.
+Expected: FAIL on CQ1. The cause is specific and the fix is not a fork:
+SPARQL does **not** percent-decode inside a prefixed name, so
+`bind:SIC%3A%3Astage%3A%3AthrustTotal` builds an IRI that keeps the literal
+`%3A` and never matches `ns["SIC::stage::thrustTotal"]`. Replace the prefixed
+name with a full IRI in angle brackets:
+
+```sparql
+<https://systems-researcher.org/ns/reference-binding#SIC::stage::thrustTotal>
+```
+
+Do **not** rename the claim identifiers to avoid the colons — the `SIC::` form
+is the Apollo echo that makes the fixture legible, and it is what a real
+substrate emits.
 
 - [ ] **Step 3: Make the questions pass**
 
@@ -2055,7 +2107,9 @@ def test_per_instance_standing_is_expressible():
 
 
 def test_per_instance_fixture_still_conforms():
-    ok, report = validate_instance(PATH, ROOT / "ontology" / "shapes.ttl", NS)
+    ok, report = validate_instance(
+        PATH, ROOT / "ontology" / "shapes.ttl", NS,
+        ROOT / "ontology" / "epistemic-adequacy.ttl")
     assert ok, report
 ```
 
@@ -2118,9 +2172,22 @@ SysML v2 realisation's limits, which are the binding's. This one carries the
 ontology's, and it starts with at least these three, all discovered while
 building the reference binding rather than anticipated by the design:
 
-1. **The ontology defines no attachment relation.** Every binding supplies its
-   own, so a query written against one binding's attachment vocabulary does
-   not run against another's. See `docs/binding-contract.md`.
+1. **The ontology defines no attachment relation.** `GovernedClaim` carries
+   `claimId` and `revision`; nothing joins it to the `EpistemicStatus` or
+   `Derivation` that describes it. Every binding supplies that edge in its own
+   namespace, so a query written against one binding's attachment vocabulary
+   does not run against another's.
+
+   State this as a **deliberate deferral with a reason**, not an oversight — a
+   reader will stop on it, because the relation between a claim and what is
+   known about it plainly exists in the world whatever SysML's annotation
+   syntax does. The reason is ADR-008: `GovernedClaim` is a population marker
+   answering *is this part of the authoritative record*, and every other
+   annotation answers *what is known about it*. Giving the marker attachment
+   properties would collapse that distinction, which is load-bearing for how
+   an unannotated substrate is still assessable. Whether the next version
+   should add a neutral `ea:describes` is a real open question and belongs
+   here as one.
 2. **The canonical claim graph is a lossy carrier.** `Unresolved.since`,
    `Agent.kind`, `Agent.name`, `Method.kind` and `Method.description` are
    multiplicity 1 in the ontology and have no field in the canonical form, so
