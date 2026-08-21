@@ -28,11 +28,13 @@ const ACCOUNTS = [
     handle: "systems-researcher",
     label: "The research",
     detail: "This programme, and the studies as they become public.",
+    cue: "Follow for new studies",
   },
   {
     handle: "jgsystemsconsulting",
     label: "JG Systems Consulting",
     detail: "MBSE and AI-in-engineering work outside the doctorate.",
+    cue: "Follow the practice",
   },
 ]
 
@@ -112,8 +114,23 @@ export function GetInvolved() {
       </ul>
 
       {/* Following is a smaller commitment than asking for access, so it sits
-          apart from the routes rather than competing with them. */}
-      <div className="mt-4 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2">
+          apart from the routes rather than competing with them. The ask is
+          stated: a reader who would happily follow will not think to unless
+          invited. */}
+      <p className="mt-8 text-[13px] text-muted-foreground">
+        <span className="font-medium text-foreground">Follow the work.</span>{" "}
+        Following either account, or{" "}
+        <a
+          href="https://github.com/systems-researcher/research-programme"
+          rel="noopener"
+          className="underline decoration-border underline-offset-4 hover:decoration-foreground"
+        >
+          starring this map
+        </a>
+        , is the easiest way to see studies as they are published — and it
+        tells me the work is worth continuing to publish.
+      </p>
+      <div className="mt-3 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2">
         {ACCOUNTS.map((account) => (
           <a
             key={account.handle}
@@ -131,6 +148,9 @@ export function GetInvolved() {
               </span>
               <span className="mt-1.5 block text-[13px] leading-relaxed text-muted-foreground">
                 {account.detail}
+              </span>
+              <span className="mt-2 block text-[11px] font-medium text-foreground underline decoration-border underline-offset-4 group-hover:decoration-foreground">
+                {account.cue} →
               </span>
             </span>
             <span className="sr-only">(opens GitHub)</span>
