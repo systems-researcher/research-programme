@@ -67,6 +67,17 @@ python -m scripts.build --check # must pass before committing
 Every script runs as a module (`python -m scripts.build`), never as a path
 (`python scripts/build.py`) — the latter breaks the package imports.
 
+The banner above is generated too. After changing `repos.yml`, regenerate it
+alongside the payload:
+
+```bash
+npm --prefix app run banner        # the README banner
+npm --prefix app run preview:card  # the social preview card
+```
+
+CI fails if either image no longer matches the data, so a stale banner cannot
+reach the front page unnoticed.
+
 `data/map.json` is generated and committed. It holds the page already resolved:
 entries in render order, badges composed, dependencies inverted. The app reads
 it and derives nothing, so those rules stay in Python where the tests are, and

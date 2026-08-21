@@ -82,3 +82,29 @@ jobs:
       # page contacts nothing but github.com. This is what keeps that true.
       - name: The built page fetches nothing off-origin
         run: python tests/check_external_links.py
+
+      # The banner and the preview card are drawn from data/map.json and
+      # committed as PNGs. Nothing regenerates them on a data change, so
+      # without this they would quietly go on advertising last month's study
+      # counts. Both generators are deterministic — same input, byte-identical
+      # output — so a diff here means the data moved and the images did not.
+      # Playwright is a committed devDependency solely so this check can run.
+      # Earlier commits deliberately kept it out of package.json; that rule
+      # existed to stop it leaking into the shipped bundle, which it cannot do
+      # — no file under app/src imports it, so it never enters the build graph.
+      - name: Install a browser for the image generators
+        run: npx playwright install --with-deps chromium
+        working-directory: app
+
+      - name: The banner and preview card match the data
+        run: |
+          npm run banner
+          npm run preview:card
+          if ! git diff --quiet -- public/banner.png public/preview.png; then
+            echo "::error::The generated images are stale."
+            echo "Run 'npm --prefix app run banner' and 'npm --prefix app run preview:card', then commit the result."
+            git diff --stat -- public/banner.png public/preview.png
+            exit 1
+          fi
+          echo "generated images match data/map.json"
+        working-directory: app
