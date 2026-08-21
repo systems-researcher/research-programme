@@ -85,26 +85,16 @@ jobs:
 
       # The banner and the preview card are drawn from data/map.json and
       # committed as PNGs. Nothing regenerates them on a data change, so
-      # without this they would quietly go on advertising last month's study
-      # counts. Both generators are deterministic — same input, byte-identical
-      # output — so a diff here means the data moved and the images did not.
-      # Playwright is a committed devDependency solely so this check can run.
-      # Earlier commits deliberately kept it out of package.json; that rule
-      # existed to stop it leaking into the shipped bundle, which it cannot do
-      # — no file under app/src imports it, so it never enters the build graph.
-      - name: Install a browser for the image generators
-        run: npx playwright install --with-deps chromium
-        working-directory: app
-
-      - name: The banner and preview card match the data
+      # without this they would go on advertising last month's study counts.
+      #
+      # The check compares the VALUES the images draw, not their pixels. A
+      # rendered PNG is not reproducible across platforms — Windows and Linux
+      # rasterise the same text to different bytes — so a byte comparison
+      # reports drift that is not there. This one needs no browser.
+      #
+      # It catches data drift, not layout drift: editing a generator's CSS
+      # without regenerating will not fail here.
+      - name: The generated images match the data
         run: |
-          npm run banner
-          npm run preview:card
-          if ! git diff --quiet -- public/banner.png public/preview.png; then
-            echo "::error::The generated images are stale."
-            echo "Run 'npm --prefix app run banner' and 'npm --prefix app run preview:card', then commit the result."
-            git diff --stat -- public/banner.png public/preview.png
-            exit 1
-          fi
-          echo "generated images match data/map.json"
+          node scripts/image-data.mjs --check
         working-directory: app

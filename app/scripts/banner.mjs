@@ -6,41 +6,15 @@
 // cannot claim a shape the programme does not have. Run:
 //   node scripts/banner.mjs
 import { chromium } from "playwright"
-import { readFileSync, writeFileSync } from "node:fs"
+import { writeFileSync } from "node:fs"
 import { resolve } from "node:path"
+import { imageData, manifest } from "./image-data.mjs"
 
-const SITE = "systems-researcher.github.io/research-programme"
-
-const map = JSON.parse(
-  readFileSync(resolve(import.meta.dirname, "../../data/map.json"), "utf8"),
-)
-
-// Each strand's colour comes from the same custom properties the site uses,
-// transcribed here because a headless page has no stylesheet to read them
-// from. A strand whose token is missing would render an invisible rule, so
-// the lookup fails loudly instead.
-const STRAND_COLOUR = {
-  adequacy: "oklch(0.55 0.16 250)",
-  method: "oklch(0.55 0.17 305)",
-  formalisation: "oklch(0.52 0.12 165)",
-}
-
-const strands = map.strands.map((strand) => {
-  const colour = STRAND_COLOUR[strand.token]
-  if (!colour) {
-    throw new Error(
-      `strand "${strand.id}" has token "${strand.token}", which has no colour here. ` +
-        `Add it to STRAND_COLOUR, matching --strand-${strand.token}-line in app/src/index.css.`,
-    )
-  }
-  const studies = strand.entries.filter((entry) => entry.card).length
-  return { title: strand.title, colour, studies }
-})
-
-const studies = strands.reduce((total, strand) => total + strand.studies, 0)
-const published = map.strands
-  .flatMap((strand) => strand.entries)
-  .filter((entry) => entry.paper).length
+// Every drawn value comes from here, and the manifest written beside the PNG
+// holds the same object. CI recomputes it and diffs the JSON, which is how a
+// stale banner is caught without re-rendering across platforms.
+const data = imageData()
+const { title, site, strands, studies, published } = data
 
 const escape = (text) =>
   String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -88,11 +62,11 @@ const html = `<!doctype html>
   <div>
     <div class="rules">${strands.map((s) => `<i style="background:${s.colour}"></i>`).join("")}</div>
     <p class="eyebrow">Doctoral research programme</p>
-    <h1>${escape(map.programme.title)}</h1>
+    <h1>${escape(title)}</h1>
     <ul>${strands.map(strandRow).join("")}</ul>
   </div>
   <div class="foot">
-    <span class="site">${SITE}</span>
+    <span class="site">${escape(site)}</span>
     <span class="stat">
       <b>${studies}</b> studies &middot; <b>${published}</b> in the record
     </span>
@@ -108,6 +82,8 @@ await page.evaluate(() => document.fonts.ready)
 const geistLoaded = await page.evaluate(() => document.fonts.check("600 62px Geist"))
 const out = resolve(import.meta.dirname, "../public/banner.png")
 writeFileSync(out, await page.screenshot({ type: "png" }))
+// The values the PNG draws, so CI can detect drift without a browser.
+writeFileSync(resolve(import.meta.dirname, "../public/images.manifest.json"), manifest(data))
 await browser.close()
 console.log(`wrote ${out} (1280x640, ${studies} studies, ${published} in the record)`)
 console.log(`Geist webfont: ${geistLoaded ? "loaded" : "fell back to system sans"}`)

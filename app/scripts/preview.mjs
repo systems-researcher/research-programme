@@ -5,15 +5,14 @@
 // so the card cannot drift from the page it advertises. Run:
 //   node scripts/preview.mjs
 import { chromium } from "playwright"
-import { readFileSync, writeFileSync } from "node:fs"
+import { writeFileSync } from "node:fs"
 import { resolve } from "node:path"
+import { imageData } from "./image-data.mjs"
 
-const map = JSON.parse(
-  readFileSync(resolve(import.meta.dirname, "../../data/map.json"), "utf8"),
-)
-const studies = map.strands
-  .flatMap((strand) => strand.entries)
-  .filter((entry) => entry.card).length
+// Shared with the banner, so both images draw the same numbers and CI can
+// detect drift in either from one manifest.
+const map = { programme: { title: imageData().title } }
+const { studies, strands: strandData } = imageData()
 
 const html = `<!doctype html>
 <html><head><meta charset="utf-8">
@@ -50,7 +49,7 @@ const html = `<!doctype html>
   <div class="foot">
     <div class="stats">
       <div><div class="n">${studies}</div><div class="l">studies</div></div>
-      <div><div class="n">${map.strands.length}</div><div class="l">strands</div></div>
+      <div><div class="n">${strandData.length}</div><div class="l">strands</div></div>
     </div>
     <div class="l">Loughborough University</div>
   </div>

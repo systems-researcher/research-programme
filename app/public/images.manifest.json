@@ -1,0 +1,23 @@
+{
+  "title": "Architecting Trustworthy AI Integration in MBSE",
+  "site": "systems-researcher.github.io/research-programme",
+  "strands": [
+    {
+      "title": "Epistemic adequacy",
+      "colour": "oklch(0.55 0.16 250)",
+      "studies": 12
+    },
+    {
+      "title": "Do classic SE methods survive an AI practitioner?",
+      "colour": "oklch(0.55 0.17 305)",
+      "studies": 3
+    },
+    {
+      "title": "Formalisation",
+      "colour": "oklch(0.52 0.12 165)",
+      "studies": 0
+    }
+  ],
+  "studies": 15,
+  "published": 1
+}
