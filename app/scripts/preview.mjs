@@ -7,7 +7,7 @@
 import { chromium } from "playwright"
 import { writeFileSync } from "node:fs"
 import { resolve } from "node:path"
-import { imageData } from "./image-data.mjs"
+import { fontFace, imageData } from "./image-data.mjs"
 
 // Shared with the banner, so both images draw the same numbers and CI can
 // detect drift in either from one manifest.
@@ -17,7 +17,7 @@ const { studies, strands: strandData } = imageData()
 const html = `<!doctype html>
 <html><head><meta charset="utf-8">
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap");
+  ${fontFace()}
   * { margin: 0; box-sizing: border-box; }
   body {
     width: 1200px; height: 630px; display: flex; flex-direction: column;

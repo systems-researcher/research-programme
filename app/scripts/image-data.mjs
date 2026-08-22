@@ -18,6 +18,20 @@ import { resolve } from "node:path"
 
 export const SITE = "systems-researcher.github.io/research-programme"
 
+// The bundled Geist variable font, inlined as a data URI so the generators
+// draw the site's own type offline. Fetching Google Fonts here contradicted
+// the self-hosted rule and risked a silent fallback to system sans.
+export function fontFace() {
+  const woff2 = readFileSync(
+    resolve(import.meta.dirname, "../node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2"),
+  )
+  return `@font-face {
+  font-family: "Geist";
+  src: url(data:font/woff2;base64,${woff2.toString("base64")}) format("woff2-variations");
+  font-weight: 100 900;
+}`
+}
+
 // The strand colours the site defines as --strand-<token>-line. Transcribed
 // because a headless page has no stylesheet to read them from.
 const STRAND_COLOUR = {
