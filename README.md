@@ -102,11 +102,22 @@ npm run build    # writes ../site, deployed by pages.yml to GitHub Pages
 Run `python -m scripts.build` before `npm run build`: the app renders whatever
 `data/map.json` last held.
 
-Two checks worth running after a build:
+Three checks worth running after a build:
 
 ```bash
 python -m pytest                    # data rules, diagram, payload
 python tests/check_external_links.py  # the built page must fetch nothing off-origin
+cd app && npm run test:meta           # og/twitter tags survived the build
+```
+
+Two more need a served page and a browser (`npx --prefix app playwright
+install chromium` once), so they stay manual:
+
+```bash
+cd app
+npm run preview                      # serves ../site on :4173
+npm run test:layout                  # nothing scrolls sideways at 390/768/1440
+node tests/deep-link.spec.mjs        # hash deep links open and close the sheet
 ```
 
 ## Licence

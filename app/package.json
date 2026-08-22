@@ -9,6 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "preview:card": "node scripts/preview.mjs",
+    "test:meta": "node tests/meta.spec.mjs",
+    "test:layout": "node tests/layout.spec.mjs",
     "banner": "node scripts/banner.mjs"
   },
   "dependencies": {

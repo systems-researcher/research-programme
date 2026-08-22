@@ -78,6 +78,12 @@ jobs:
       - run: npm run build
         working-directory: app
 
+      # og/twitter tags are static in index.html and only the build output is
+      # published, so the built file is the thing to assert against.
+      - name: Social tags survive the build
+        run: npm run test:meta
+        working-directory: app
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
