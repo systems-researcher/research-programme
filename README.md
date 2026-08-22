@@ -12,7 +12,7 @@ doctoral research. This repository is the front door: what each repository in th
 programme is for, what question it answers, and how they link.
 
 The same content, with a dependency diagram, is published as a single page:
-<!-- SITE-URL -->
+https://systems-researcher.github.io/research-programme/
 
 ## The argument
 

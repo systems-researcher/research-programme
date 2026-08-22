@@ -12,6 +12,7 @@ from scripts import mapdata
 
 BEGIN = "<!-- BEGIN:repos -->"
 END = "<!-- END:repos -->"
+SITE_URL_MARKER = "<!-- SITE-URL -->"
 STAGE_ORDER = mapdata.STAGES
 STRAND_ORDER = mapdata.STRANDS
 
@@ -100,7 +101,20 @@ def readme_block(current: str, data: mapdata.MapData) -> str:
             f"README.md has no {BEGIN} ... {END} block; add one before building"
         )
     replacement = f"{BEGIN}\n\n{readme_table(data)}\n\n{END}"
-    return pattern.sub(lambda _: replacement, current, count=1)
+    rendered = pattern.sub(lambda _: replacement, current, count=1)
+
+    # The link to the published page is data, not prose: it lives in repos.yml
+    # beside everything else the README restates. A marker left unsubstituted
+    # would ship a promise with no link, which is worse than a build failure.
+    site = _collapse(data.programme.get("site") or "")
+    if SITE_URL_MARKER in rendered:
+        if not site:
+            raise RenderError(
+                f"README.md has a {SITE_URL_MARKER} marker but repos.yml sets "
+                "no programme.site; add one or remove the marker"
+            )
+        rendered = rendered.replace(SITE_URL_MARKER, site)
+    return rendered
 
 
 def _collapse(value: object) -> str:

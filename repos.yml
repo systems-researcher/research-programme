@@ -24,6 +24,7 @@
 
 programme:
   title: "Architecting Trustworthy AI Integration in MBSE"
+  site: "https://systems-researcher.github.io/research-programme/"
   question: >
     AI assistants already read engineering models and answer questions from
     them. The answers are fluent, mostly true, and largely unauthorised by the
