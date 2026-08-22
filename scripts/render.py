@@ -205,6 +205,7 @@ def graph(data: mapdata.MapData) -> dict:
         return depth[key]
 
     strand_of = {e["key"]: e["strand"] for e in studies}
+    entry_of = {e["key"]: e for e in studies}
     columns: dict[int, list[str]] = {}
     for entry in studies:
         columns.setdefault(column(entry["key"]), []).append(entry["key"])
@@ -223,6 +224,9 @@ def graph(data: mapdata.MapData) -> dict:
                     "column": len(members),
                     "strand": strand_of[key],
                     "token": STRAND_TOKEN[strand_of[key]],
+                    # The same status word the tile prints; the diagram turns
+                    # it into dashed-versus-solid rather than a second colour.
+                    "status": STATUS_LABELS.get(entry_of[key]["status"], ""),
                 }
             )
 

@@ -626,3 +626,11 @@ def test_every_study_carries_the_question_and_objective_the_sheet_shows() -> Non
         else:
             # The written column is not a study and asks nothing.
             assert "question" not in item
+
+
+def test_every_graph_node_carries_its_status_label() -> None:
+    """The diagram draws lifecycle as dashed-versus-solid, so each node must
+    arrive carrying the same status word the matrix tile prints."""
+    payload = render.graph(data_with(entry(status="released")))
+    node = next(n for n in payload["nodes"] if n["key"] == "alpha")
+    assert node["status"] == "released"

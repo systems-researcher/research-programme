@@ -244,7 +244,7 @@ export function DependencyGraph({
               transform={`translate(${spot.cx} ${spot.cy})`}
               tabIndex={0}
               role="button"
-              aria-label={`${node.key}. Show its dependencies, or open its detail.`}
+              aria-label={`${node.key}${node.status ? ` (${node.status})` : ""}. Show its dependencies, or open its detail.`}
               onMouseEnter={() => setActive(node.key)}
               onFocus={() => setActive(node.key)}
               onBlur={() => setActive(null)}
@@ -265,6 +265,7 @@ export function DependencyGraph({
                 rx="6"
                 className="graph-node-box"
                 strokeWidth={isActive ? 1.5 : 1}
+                strokeDasharray={node.status === "design" ? "4 3" : undefined}
               />
               {/* The strand's colour on the left edge, matching its tile. */}
               <rect x="0" y="8" width="3" height={NODE_H - 16} rx="1.5" fill="var(--accent)" />

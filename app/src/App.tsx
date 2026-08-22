@@ -165,7 +165,7 @@ export default function App() {
               How the studies depend on each other
             </h2>
             <p className="text-xs text-muted-foreground">
-              Left to right is dependency order. Hover a study to see what it touches.
+              Left to right is dependency order. Hover a study to see what it touches. A dashed outline is still design.
             </p>
           </div>
           <DependencyGraph graph={graph} entries={all} onOpen={openEntry} />

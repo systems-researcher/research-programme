@@ -72,6 +72,8 @@ export type GraphNode = {
   column: number
   strand: string
   token: string
+  /** The payload's status label; the diagram draws it as dash, not colour. */
+  status?: string
 }
 
 export type GraphEdge = { from: string; to: string }
