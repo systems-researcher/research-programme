@@ -36,9 +36,9 @@ Design §9 states the exit criterion as a byte-match. It cannot hold, for two re
 
 `models/apollo-annotated.sysml:29-34` sets `revisionScheme`, `criticalityPolicy` and `profileClaimed` on its `@SubstrateDeclaration`. All three parameters were removed from the ontology in Phase 1 — correctly: `RevisionSchemeKind`'s member `apiCommit` is a SysML v2 API concept, and the other two duplicate `conformance/profiles.md` and `clauses.yaml`.
 
-They are read by `src/eamm/resolve/rules.py`, `scripts/check_profile_claim.py`, `scripts/apollo_delta.py`, `tests/test_apollo_annotated.py` and `tests/test_conformance_claim.py`. Deleting them breaks the Apollo regression, which is this phase's exit criterion.
+They are read by `src/eamm/resolve/rules.py`, `scripts/check_profile_claim.py`, `tests/test_apollo_annotated.py` and `tests/test_conformance_claim.py` (`scripts/apollo_delta.py` mentions `profileClaimed` in its prose but reads none of the three). Deleting them breaks the Apollo regression, which is this phase's exit criterion.
 
-ADR-012 already anticipated this and the plan follows it verbatim:
+ADR-012 — `docs/adr/012-profiles-are-not-ontology.md`, which lives in the **ontology repository** (this repository's `docs/adr/` ends at 011) — already anticipated this and the plan follows it verbatim:
 
 > A substrate still declares a claimed profile — but it does so in the binding, against the specification's vocabulary, with no second definition here.
 
@@ -54,12 +54,12 @@ This is the same discipline Phase 1 Task 2 used when it ordered the provenance e
 
 ## Global Constraints
 
-- **Use `.venv/Scripts/python.exe`, never bare `python`.** The ambient interpreter has an editable `eamm` install pointing at a dead scratchpad from an earlier session (`AppData/Local/Temp/claude/…/p2-r8/src/eamm`), so `import eamm` there resolves to a partial copy and the suite fails to collect with `ModuleNotFoundError: No module named 'eamm.generate.owl'`. **Every command in this plan uses the venv interpreter explicitly.**
+- **Use `.venv/Scripts/python.exe`, never bare `python`.** The ambient interpreter has an editable `eamm` install pointing at a dead scratchpad from an earlier session (`AppData/Local/Temp/claude/…/p2-r8/src/eamm`), so `import eamm` there resolves to a partial copy and the suite fails to collect with `ModuleNotFoundError: No module named 'eamm.generate.owl'`. **Every command in this plan that runs inside this repository uses the venv interpreter explicitly.** The one exception is Task 7 Step 3's `python -m scripts.build`, which runs in `research-programme` — a different checkout with no `.venv` of this kind.
 - **`JAVA_HOME` must point at JDK 21.** `java` on `PATH` is JRE 1.8, which cannot run tiers 2 or 3. JDK 21 is installed at `C:\Program Files\Microsoft\jdk-21.0.10.7-hotspot`. Export it and prepend its `bin`.
-- **`EAMM_PILOT_HOME=.pilot`**, which is already provisioned (`kernel.conda`, `share/…/jupyter-sysml-kernel-0.60.1-all.jar`) and whose exporter is already compiled (`java/classes/ModelExport.class`).
+- **`EAMM_PILOT_HOME=.pilot`**, which is already provisioned (`kernel.conda`, `share/…/jupyter-sysml-kernel-0.60.1-all.jar`). The exporter it drives is already compiled — in this repository's `java/classes/ModelExport.class`, not under `.pilot`.
 - **Toolkit pin:** `6374b6715aca8d206003919e3824f9d41915fc89`, recorded in `docs/conformance-claim.md`. Do not change it in this phase — a claim scored against a different instrument version is a different claim.
-- **Baseline to preserve: `294 passed`**, all three tiers, measured 2026-08-22. Any number below that is a regression.
-- Python ≥ 3.14; all file writes `newline="\n"`; `.py` carries `# SPDX-License-Identifier: MIT`; `.md` an HTML-comment CC-BY-4.0 header; **never SPDX in `.ttl` or `.sysml`**.
+- **Baseline to preserve: `294 passed`**, all three tiers, measured 2026-08-22. This phase ends at **282** — 16 additions, 28 deletions riding the retired subjects; see the exit-criteria arithmetic. Any drop **not** accounted for by Task 5's deletion list is a regression.
+- Python ≥ 3.14; all file writes `newline="\n"`; `.py` carries `# SPDX-License-Identifier: MIT`; `.md` an HTML-comment CC-BY-4.0 header. **Never SPDX in `.ttl`** — an ontology-repository rule. It does *not* apply to this repository's generated `.sysml`, whose header carries an SPDX line and whose release gate requires it.
 - **`library/EpistemicAdequacy.sysml` is generated.** `Derivations.sysml`, `Constraints.sysml` and `Queries.sysml` are hand-written behaviour and no generator touches them.
 - The ontology is consumed **at a pin**. Never edit anything under the installed `eaont`.
 
@@ -76,7 +76,7 @@ Nothing in this phase means anything measured against an unknown starting point,
 **Interfaces:**
 - Produces: `scripts/env.sh`, sourced by every later task to set `JAVA_HOME`, `PATH` and `EAMM_PILOT_HOME`. Later tasks assume `PY=.venv/Scripts/python.exe`.
 
-- [ ] **Step 1: Confirm the two environment defects for yourself**
+- [x] **Step 1: Confirm the two environment defects for yourself**
 
 ```bash
 python -c "import eamm; print(eamm.__file__)"          # ambient: a dead scratchpad path
@@ -87,7 +87,7 @@ java -version 2>&1 | head -1                            # 1.8 - cannot run tiers
 
 Expected: the first two disagree, and the last two disagree. If the ambient `eamm` now resolves into this repository, say so in your report — it means someone reinstalled it and the hazard has changed shape, not gone.
 
-- [ ] **Step 2: Write `scripts/env.sh`**
+- [x] **Step 2: Write `scripts/env.sh`**
 
 ```bash
 # Copyright (c) 2026 Jason D. Gower. See LICENSE.
@@ -108,7 +108,7 @@ echo "java: $(java -version 2>&1 | head -1)"
 echo "PY:   $PY"
 ```
 
-- [ ] **Step 3: Record the baseline**
+- [x] **Step 3: Record the baseline**
 
 ```bash
 . scripts/env.sh
@@ -119,7 +119,7 @@ Expected: `294 passed`, roughly two minutes. **If it is not 294 passed, stop and
 
 Write `docs/phase-3-baseline.md` with the CC-BY-4.0 header recording: the date, the count, the three environment settings, the toolkit pin, and the commit (`git rev-parse HEAD`).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/env.sh docs/phase-3-baseline.md
@@ -141,7 +141,7 @@ deleted scratchpad and PATH java is 1.8; both silently produce a false red."
 - Consumes: the ontology repository at `../epistemic-adequacy-ontology`.
 - Produces: `eaont` importable in the venv; `ONTOLOGY_PIN` recorded in `pyproject.toml`'s `[tool.eamm]` table and asserted by `tests/test_ontology_pin.py`.
 
-- [ ] **Step 1: Record the pin and install**
+- [x] **Step 1: Record the pin and install**
 
 Take the ontology's current commit:
 
@@ -170,7 +170,7 @@ Install it editable, into the venv only:
 
 Expected: two distinct paths, `eaont` in the ontology repo and `eamm` in this one. They are different top-level packages and do not shadow each other.
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Create `tests/test_ontology_pin.py`:
 
@@ -206,7 +206,10 @@ def test_the_installed_ontology_is_the_pinned_commit():
     Skipped rather than failed when the ontology repo is absent: tier 1 of this
     repository must stay runnable without it.
     """
-    import eaont
+    try:
+        import eaont
+    except ModuleNotFoundError:
+        pytest.skip("ontology not installed; tier 1 stays runnable without it")
 
     repo = pathlib.Path(eaont.__file__).parents[2]
     if not (repo / ".git").exists():
@@ -236,7 +239,7 @@ def test_the_two_loaders_refuse_each_other():
         eamm.load.load_metamodel(ontology_schema)
 ```
 
-- [ ] **Step 3: Run it**
+- [x] **Step 3: Run it**
 
 ```bash
 . scripts/env.sh
@@ -245,11 +248,32 @@ def test_the_two_loaders_refuse_each_other():
 
 Expected: PASS, 3 tests. If `test_the_two_loaders_refuse_each_other` fails, the binding's loader has changed and Task 4's design premise needs re-checking before you continue.
 
-- [ ] **Step 4: Full suite, then commit**
+- [x] **Step 4: Teach CI about the private ontology**
+
+The moment this task lands, CI goes red by construction: `.github/workflows/validate.yml` pip-installs only `eamm`, and both its jobs now run tests that import `eaont`. Mirror the toolkit job's clone-at-a-pin pattern — both the `validate` and `apollo` jobs gain, before any pytest or `eamm` step:
+
+```yaml
+      - name: Install the ontology from source at a pin
+        env:
+          GH_TOKEN: ${{ secrets.ONTOLOGY_READ_TOKEN }}
+          # Must equal tool.eamm.ontology_pin in pyproject.toml. An empty value
+          # here silently checks out the default branch, so refuse instead.
+          ONTOLOGY_PIN: ${{ vars.ONTOLOGY_PIN }}
+        run: |
+          gh repo clone systems-researcher/epistemic-adequacy-ontology ../eaont-src
+          test -n "$ONTOLOGY_PIN" || { echo "ONTOLOGY_PIN is not set"; exit 1; }
+          git -C ../eaont-src checkout "$ONTOLOGY_PIN"
+          pip install -e ../eaont-src
+```
+
+Set the `ONTOLOGY_PIN` repository variable to the same sha recorded in Step 1, and grant the secret the same read-only scope `TOOLKIT_READ_TOKEN` has.
+
+- [x] **Step 5: Full suite, then commit**
 
 ```bash
+. scripts/env.sh
 "$PY" -m pytest -q 2>&1 | tail -2     # expect 297 passed
-git add pyproject.toml tests/test_ontology_pin.py
+git add pyproject.toml tests/test_ontology_pin.py .github/workflows/validate.yml
 git commit -m "feat: consume the ontology at a pin, and prove why a type map is needed
 
 The two loaders refuse each other's schemas by construction - eamm.load does
@@ -268,9 +292,9 @@ reusing its own loader, and it is now a test."
 
 **Interfaces:**
 - Consumes: `eaont.load.ABSTRACT_REFS` (exactly `ElementRef`, `ExpressionRef`, `PredicateRef`, `VocabularyRef`).
-- Produces: `type-map.yaml` with top-level keys `ontology_version`, `types`, `enumerations`, `extends`. Task 4's generator reads all four.
+- Produces: `type-map.yaml` with top-level keys `ontology_version`, `types`, `enumerations`, `extends`, `defaults`. Task 4's generator reads the first four. `defaults` carries the default revision scheme under the key `revision_scheme` — the vocabulary the retired schema spelled `default_revision_scheme`, which the ontology deliberately does not own (`eaont`'s `tests/test_no_binding_concerns.py` asserts that name's absence). It gains its reader in Task 5, when `tests/test_vocabularies_agree.py` is repointed at it.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/test_type_map.py`:
 
@@ -336,7 +360,7 @@ def test_ontology_version_agrees_with_pyproject():
     assert MAP["ontology_version"] == cfg["tool"]["eamm"]["ontology_version"]
 ```
 
-- [ ] **Step 2: Run it to see it fail**
+- [x] **Step 2: Run it to see it fail**
 
 ```bash
 . scripts/env.sh
@@ -345,7 +369,7 @@ def test_ontology_version_agrees_with_pyproject():
 
 Expected: FAIL, `FileNotFoundError` on `type-map.yaml`.
 
-- [ ] **Step 3: Write `type-map.yaml`**
+- [x] **Step 3: Write `type-map.yaml`**
 
 ```yaml
 # Copyright (c) 2026 Jason D. Gower
@@ -405,8 +429,8 @@ enumerations:
         Governed, EA-REQ-10 at MUST for all claims, plus EA-REQ-16, 17, 18.
 
 # Parameters this binding adds to an ontology entity. models/apollo-annotated.sysml
-# sets all three, and resolve/rules.py, scripts/check_profile_claim.py and
-# scripts/apollo_delta.py read them.
+# sets all three, and src/eamm/resolve/rules.py, scripts/check_profile_claim.py,
+# tests/test_apollo_annotated.py and tests/test_conformance_claim.py read them.
 extends:
   SubstrateDeclaration:
     revisionScheme:
@@ -426,19 +450,25 @@ extends:
       after: specVersion
 
 defaults:
+  # The default revision scheme, called default_revision_scheme under the
+  # retired schema. The ontology refuses to own it - its
+  # test_no_binding_concerns.py asserts that name's absence - so it survives
+  # here under the plainer key; tests/test_vocabularies_agree.py reads it
+  # after Task 5.
   revision_scheme: gitCommit
 ```
 
 `after:` fixes each extension's position in the rendered `metadata def`, so the generated library keeps the parameter order the committed one has. Task 4's structural comparison depends on it.
 
-- [ ] **Step 4: Run the tests, then the suite**
+- [x] **Step 4: Run the tests, then the suite**
 
 ```bash
+. scripts/env.sh
 "$PY" -m pytest tests/test_type_map.py -v      # expect PASS, 7 tests
 "$PY" -m pytest -q 2>&1 | tail -2              # expect 304 passed
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add type-map.yaml tests/test_type_map.py
@@ -459,14 +489,17 @@ The heart of the phase. The generator stops reading a local schema and starts re
 
 **Files:**
 - Modify: `src/eamm/generate/sysml.py`
+- Modify: `src/eamm/cli.py`
+- Modify: `tests/test_generate_sysml.py`
+- Modify: `tests/test_check_release.py`
 - Create: `tests/fixtures/library-before.sysml`
 - Create: `tests/test_library_equivalence.py`
 
 **Interfaces:**
 - Consumes: `eaont.load.load_metamodel`, `eaont.model.{Metamodel,MetadataDef,Parameter,Enumeration,Member}`, `type-map.yaml`.
-- Produces: `render_library(ontology_model, type_map) -> str`. Task 5 calls it through the CLI.
+- Produces: `render_library(ontology_model, type_map) -> str`, called by the CLI this task also repoints (Step 5).
 
-- [ ] **Step 1: Capture the before-library as a fixture**
+- [x] **Step 1: Capture the before-library as a fixture**
 
 ```bash
 mkdir -p tests/fixtures
@@ -477,7 +510,7 @@ grep -c "^    enum def " tests/fixtures/library-before.sysml        # 12
 
 This is the artefact the refactor must reproduce. Commit it — a baseline that is not committed is not a baseline.
 
-- [ ] **Step 2: Write the equivalence test**
+- [x] **Step 2: Write the equivalence test**
 
 **Byte-identity is not the criterion and cannot be** — Phase 1 deliberately rewrote doc text, and the enumeration counts differ by the three the binding now supplies. What must hold is structure.
 
@@ -506,9 +539,12 @@ AFTER = (ROOT / "library" / "EpistemicAdequacy.sysml").read_text(encoding="utf-8
 
 DEF = re.compile(r"^    metadata def (\w+) \{", re.M)
 ENUM = re.compile(r"^    enum def (\w+) \{", re.M)
-MEMBER = re.compile(r"^        enum (\w+)", re.M)
-# `attribute foo : Bar;` / `attribute foo[1..*] : Bar;` / `ref foo : Bar;`
-PARAM = re.compile(r"^        (attribute|ref) (\w+)(\[[^\]]+\])? : ([\w:]+);", re.M)
+MEMBER = re.compile(r"^        enum '?(\w+)'?", re.M)
+# `attribute foo : Bar;` / `attribute foo[1..*] : Bar;` / `ref 'subject' : Bar;`
+# The quotes are optional in the pattern because RESERVED names ('entry',
+# 'subject', 'constraint', …) are emitted quoted - a bare (\w+) would silently
+# skip every reserved identifier, exactly the names most worth checking.
+PARAM = re.compile(r"^        (attribute|ref) '?(\w+)'?(\[[^\]]+\])? : ([\w:]+);", re.M)
 
 
 def _params(text: str, name: str) -> set[tuple[str, ...]]:
@@ -516,12 +552,12 @@ def _params(text: str, name: str) -> set[tuple[str, ...]]:
     return {(k, n, m or "", t) for k, n, m, t in PARAM.findall(block)}
 
 
-def test_the_same_definitions_exist():
-    assert set(DEF.findall(AFTER)) == set(DEF.findall(BEFORE))
+def test_the_same_definitions_exist_in_the_same_order():
+    assert DEF.findall(AFTER) == DEF.findall(BEFORE)
 
 
-def test_the_same_enumerations_exist():
-    assert set(ENUM.findall(AFTER)) == set(ENUM.findall(BEFORE))
+def test_the_same_enumerations_exist_in_the_same_order():
+    assert ENUM.findall(AFTER) == ENUM.findall(BEFORE)
 
 
 def test_the_same_enumeration_members_exist():
@@ -555,7 +591,7 @@ def test_doc_text_is_allowed_to_differ_and_does():
     assert "Fails EA-REQ-10" not in AFTER
 ```
 
-- [ ] **Step 3: Run it to see it fail**
+- [x] **Step 3: Run it to see it fail**
 
 ```bash
 . scripts/env.sh
@@ -564,7 +600,7 @@ def test_doc_text_is_allowed_to_differ_and_does():
 
 Expected: `test_doc_text_is_allowed_to_differ_and_does` FAILS — `library/` is still the old file, so `BEFORE == AFTER`. That failure is the proof the test is comparing two real things.
 
-- [ ] **Step 4: Rewrite the generator**
+- [x] **Step 4: Rewrite the generator**
 
 `src/eamm/generate/sysml.py` is 106 lines and its rendering primitives stay exactly as they are. **Do not touch `RESERVED`, `_identifier`, `_doc`, `_multiplicity`, `render_enum` or `render_metadata_def`'s formatting** — `RESERVED` in particular was determined empirically against `sysml-validate` 0.15.7 by probing 47 enum members and 48 parameter names, and `entry` unquoted makes the resource stop indexing silently.
 
@@ -706,9 +742,50 @@ HEADER = """// Copyright (c) 2026 Jason D. Gower.
 
 `_ordered_merge` raising on an unknown anchor is not defensive clutter: a typo in an `after:` would otherwise drop a parameter or a vocabulary silently, and the structural test would then be comparing against a library that had quietly lost something.
 
-- [ ] **Step 5: Regenerate and compare**
+- [x] **Step 5: Repoint the CLI at the pinned ontology**
+
+`src/eamm/cli.py` still loads the local schema and calls the renderers with one argument. Left as is, Step 6's generate would raise `TypeError` before writing anything — so the CLI moves in this task, not in Task 5. Change its head:
+
+```python
+import eaont
+import yaml
+
+from eaont.load import load_metamodel
+
+ONTOLOGY_ROOT = pathlib.Path(eaont.__file__).parents[2]
+SOURCE = ONTOLOGY_ROOT / "model" / "ontology.yaml"
+TYPE_MAP = yaml.safe_load((ROOT / "type-map.yaml").read_text(encoding="utf-8"))
+```
+
+This replaces the existing module-level `from eamm.load import load_metamodel` — delete it, do not add beside it: two bindings of `load_metamodel` in one module is a coin-flip over import order, and the loser is a `MetamodelError` on generate.
+
+and render **only the SysML library** from now on. The OWL, SHACL and PROV imports (`render_ontology`, `render_shapes`, `render_prov_alignment`) and their three `TARGETS` entries come off together:
+
+```python
+SYSML_TARGETS = {
+    ROOT / "library" / "EpistemicAdequacy.sysml": render_library,
+}
+
+
+def _render_all() -> dict[pathlib.Path, str]:
+    m = load_metamodel(SOURCE)
+    return {path: render(m, TYPE_MAP) for path, render in SYSML_TARGETS.items()}
+```
+
+Three consumers inside `cli.py` need the same pass, or Step 6 cannot go green:
+
+- `extract()` imports `load_metamodel` **inside the function body** (`from eamm.load import load_metamodel`). Repoint that import to `eaont.load`. What keeps working is everything behind it: `extract()` reads `metamodel.enumerations["EpistemicStatusKind"]` and `status_vocabulary_from(metamodel)`'s `status_rank_order`, both owned and shipped by the ontology.
+- `check_drift()` prints `len(TARGETS)` and its drift message names `metamodel.yaml`. Point the count at `SYSML_TARGETS` and reword the message to name the pinned ontology plus `type-map.yaml`. Rename the CI drift step in `.github/workflows/validate.yml` to "Generated artefacts agree with the pinned ontology" in the same commit — until this commit it still renders four artefacts from `metamodel.yaml`, which is why the rename did not happen back in Task 2.
+- `tests/test_check_release.py` imports `eamm.cli.TARGETS` and asserts four generated artefacts. Update it to import `SYSML_TARGETS` and assert it covers exactly `library/EpistemicAdequacy.sysml`.
+
+The TTL targets are removed here rather than left for Task 5 because their source schema stops being `metamodel.yaml` the moment `SOURCE` moves: regenerating them from `ontology.yaml` would rewrite the committed TTL files minus the three vocabularies this binding owns — a silent diff this phase must not make. They are deleted outright in Task 5; the ontology repository generates and gates its own TTLs (design §5.2's tree, `eaont check-drift`).
+
+Update `tests/test_generate_sysml.py` in the same step: every `render_metadata_def(d)` and `render_library(m)` call gains the map argument (pass `{}` where the test means *no extensions*), and `test_library_has_a_header_a_package_and_every_declaration` loads the ontology through `eaont.load.load_metamodel(SOURCE)` instead of `metamodel/metamodel.yaml`, passes the real type map, and asserts the new `// GENERATED - DO NOT EDIT` header instead of `// GENERATED FROM metamodel/metamodel.yaml - DO NOT EDIT`.
+
+- [x] **Step 6: Regenerate and compare**
 
 ```bash
+. scripts/env.sh
 "$PY" -m eamm.cli generate      # or `eamm generate` if the console script is on PATH
 "$PY" -m pytest tests/test_library_equivalence.py -v
 ```
@@ -717,19 +794,21 @@ Expected: PASS, 6 tests.
 
 **If a structural test fails, read the diff before changing anything.** `git diff library/` shows exactly what moved. A missing parameter means the type map is short an extension; a missing enumeration means it is short a vocabulary; a changed type means a mapping is wrong. Do not relax the test — it is the only thing standing between this refactor and a silently different library.
 
-- [ ] **Step 6: Parse gate and full suite**
+- [x] **Step 7: Parse gate and full suite**
 
 ```bash
+. scripts/env.sh
 npx sysml-validate library/ --format compact --strict
 "$PY" -m pytest -q 2>&1 | tail -2
 ```
 
-Expected: the parse gate clean, and `309 passed`. The parse gate covers `library/` and not `models/` — that is deliberate and pre-existing.
+Expected: the parse gate clean, and `310 passed` (294 baseline, +3 Task 2, +7 Task 3, +6 here). The parse gate covers `library/` and not `models/` — that is deliberate and pre-existing.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
-git add src/eamm/generate/sysml.py library/ tests/fixtures/library-before.sysml \
+git add src/eamm/generate/sysml.py src/eamm/cli.py tests/test_generate_sysml.py \
+        tests/test_check_release.py library/ tests/fixtures/library-before.sysml \
         tests/test_library_equivalence.py
 git commit -m "feat(generate): render the library from the pinned ontology and the type map
 
@@ -745,51 +824,56 @@ multiplicities, same order. Six tests hold it."
 
 ---
 
-### Task 5: Retire this repository's schema and loader
+### Task 5: Retire this repository's schema, generators and derived TTLs
+
+The ontology repository owns not just `model/ontology.yaml` but the whole OWL/SHACL/PROV pipeline — design §5.2's tree puts `epistemic-adequacy.ttl`, `shapes.ttl` and `prov-alignment.ttl` under `eaont`, gated by `eaont check-drift`. Copies rendered here from a schema that no longer exists are exactly the drift the split ends, so they go too.
 
 **Files:**
-- Delete: `metamodel/metamodel.yaml`, `src/eamm/load.py`, `src/eamm/model.py`, `tests/test_load.py`, `tests/test_model.py`
-- Modify: `src/eamm/cli.py`, and every module importing `eamm.load` or `eamm.model`
+- Delete: `metamodel/metamodel.yaml`, `src/eamm/load.py`, `src/eamm/model.py`, `src/eamm/generate/owl.py` (which also carries `render_prov_alignment`), `src/eamm/generate/shacl.py`, `ontology/epistemic-adequacy.ttl`, `ontology/shapes.ttl`, `ontology/prov-alignment.ttl`
+- Delete: `tests/test_load.py` (9 tests), `tests/test_model.py` (3), `tests/test_generate_owl.py` (5), `tests/test_generate_shacl.py` (8 — its serialisation test is parametrised ×3), `tests/test_prov_alignment.py` (3) — **28 collected tests** whose subject retires with them, the same rule Phase 1 Task 1 used
+- Modify: every consumer in Step 2's table
 
 **Interfaces:**
 - Consumes: `eaont.load.load_metamodel`, `eaont.model`.
-- Produces: `eamm.cli.SOURCE` now points at the installed ontology's `model/ontology.yaml`.
+- Produces: this repository holds no schema, no OWL/SHACL renderers and no derived TTLs.
 
-- [ ] **Step 1: Find every consumer**
+- [x] **Step 1: Find every consumer**
+
+Module imports:
 
 ```bash
 . scripts/env.sh
-grep -rn "from eamm.load\|from eamm.model\|eamm\.load\|eamm\.model" src/ scripts/ tests/ --include=*.py
+grep -rn "eamm\.load\|eamm\.model\|eamm\.generate\.owl\|eamm\.generate\.shacl" src/ scripts/ tests/ --include=*.py
 ```
 
-Every hit is either repointed to `eaont` or deleted. Record the list in your report — it is the blast radius, and a later reader needs it.
-
-- [ ] **Step 2: Repoint the CLI**
-
-`src/eamm/cli.py` currently sets `SOURCE = ROOT / "metamodel" / "metamodel.yaml"`. The schema is no longer here. Resolve it from the installed package instead:
-
-```python
-import eaont
-
-from eaont.load import load_metamodel
-
-ONTOLOGY_ROOT = pathlib.Path(eaont.__file__).parents[2]
-SOURCE = ONTOLOGY_ROOT / "model" / "ontology.yaml"
-TYPE_MAP = ROOT / "type-map.yaml"
-```
-
-and load the type map beside the model wherever `render_library` is called.
-
-- [ ] **Step 3: Delete, and run**
+Path-based consumers of the retired file, which the import grep cannot see:
 
 ```bash
-git rm --quiet metamodel/metamodel.yaml src/eamm/load.py src/eamm/model.py \
-               tests/test_load.py tests/test_model.py
-rmdir metamodel 2>/dev/null || true
-"$PY" -m pytest -q 2>&1 | tail -3
+grep -rln "metamodel\.yaml" src/ scripts/ tests/ --include=*.py
 ```
 
-`tests/test_load.py` and `tests/test_model.py` go because their subject went — the same rule Phase 1 Task 1 used. **`tests/test_ontology_pin.py::test_the_two_loaders_refuse_each_other` imports `eamm.load` and must be updated in this step**, since the module it asserts against no longer exists. Replace that test with one asserting the schema is *not* present in this repository:
+Record both lists in your report — they are the blast radius, and a later reader needs them.
+
+- [x] **Step 2: Dispositions**
+
+| Consumer | Disposition |
+| --- | --- |
+| `src/eamm/load.py`, `src/eamm/model.py`, `src/eamm/generate/owl.py`, `src/eamm/generate/shacl.py` | Delete — superseded by `eaont`'s loader, model and generators |
+| `metamodel/metamodel.yaml`, `ontology/*.ttl` | Delete — owned and regenerated by the ontology repository |
+| `tests/test_load.py`, `test_model.py`, `test_generate_owl.py`, `test_generate_shacl.py`, `test_prov_alignment.py` | Delete — their subject moved to `eaont`, which tests its own pipeline |
+| `tests/test_extract_canonical.py` (`test_rank_agrees_with_the_metamodel_that_defines_the_order`) | Repoint its path at the installed ontology's `model/ontology.yaml`, loaded through `eaont.load` |
+| `tests/test_vocabularies_agree.py` | Load `(eaont model + type-map.yaml)`: `RevisionSchemeKind` members come from the map's `enumerations`, the default revision scheme from `defaults`.`revision_scheme` — the name the retired schema spelled `default_revision_scheme`. The ontology deliberately lacks both (`eaont`'s `test_no_binding_concerns.py` asserts that name's absence), so neither can be read from `eaont` alone |
+| `tests/test_generate_sysml.py` | Every remaining `eamm.model` import (`MetadataDef`, `Parameter`, `Enumeration`, `Member`) and any `eamm.load` import repoints to `eaont` (Task 4 already gave the calls their map argument) |
+| `tests/test_plan1_complete.py` | Required-artefact list: `metamodel/metamodel.yaml` **and both `ontology/*.ttl` entries** go; `type-map.yaml` replaces them |
+| `tests/test_library_parses.py` | Wherever it reads the schema, the same union as below |
+| `scripts/check_release.py` | Required list: drop `metamodel/metamodel.yaml` and the three `ontology/*.ttl`; add `type-map.yaml`. Also clear the three TTL paths from `HEADER_EXEMPT` and rewrite `pyproject.toml`'s description, which still claims this package generates the OWL/SHACL ontology |
+| `docs/compatibility.md`, `docs/diagrams.md`, `docs/vocabularies/*.md` | Repoint every machine-readable-source line, diagram label and provenance note that names `metamodel/metamodel.yaml` or `ontology/*.ttl` at the pinned ontology plus `type-map.yaml` |
+| `scripts/check_trace.py` | `ONTOLOGY_ROOT = pathlib.Path(eaont.__file__).parents[2]`; `SOURCE = ONTOLOGY_ROOT / "model" / "ontology.yaml"`; each `ONTOLOGY_FILES` entry resolves under `ONTOLOGY_ROOT / "ontology"` (the ontology repo keeps its TTLs at its root, which is where an editable install's `parents[2]` lands). For `declares_metamodel`, the merged source is spelled out: definitions come from the parsed ontology.yaml's `metadata_definitions`; then for every `extends` entry in type-map.yaml, that definition's parameter-name set grows by the extension names; enumerations are ontology.yaml's keys unioned with type-map.yaml's `enumerations` keys. Checking against anything less is what lets a trace row name a parameter the library does not render |
+| `src/eamm/cli.py` | Imports only — Task 4 Step 5 did the work. Delete the module-level `from eamm.load import load_metamodel` if any remnant survived |
+
+- [x] **Step 3: Update the pin test, delete, run**
+
+**`tests/test_ontology_pin.py::test_the_two_loaders_refuse_each_other` imports `eamm.load` and must be updated in this step**, since the module it asserts against no longer exists. Replace that test with one asserting the schema is *not* present in this repository:
 
 ```python
 def test_this_repository_no_longer_owns_a_schema():
@@ -799,18 +883,35 @@ def test_this_repository_no_longer_owns_a_schema():
     assert not (ROOT / "src" / "eamm" / "load.py").exists()
 ```
 
-- [ ] **Step 4: Regenerate, verify, commit**
+Then delete:
 
 ```bash
+. scripts/env.sh
+git rm --quiet metamodel/metamodel.yaml src/eamm/load.py src/eamm/model.py \
+               src/eamm/generate/owl.py src/eamm/generate/shacl.py \
+               ontology/epistemic-adequacy.ttl ontology/shapes.ttl ontology/prov-alignment.ttl \
+               tests/test_load.py tests/test_model.py tests/test_generate_owl.py \
+               tests/test_generate_shacl.py tests/test_prov_alignment.py
+rmdir metamodel ontology 2>/dev/null || true
+"$PY" -m pytest -q 2>&1 | tail -3
+```
+
+Expected: **282 passed** — the 310 after Task 4 less these 28 collected tests, whose subject retired. Any other number means a consumer from Step 1 was missed; fix the consumer, never the count.
+
+- [x] **Step 4: Regenerate, verify, commit**
+
+```bash
+. scripts/env.sh
 "$PY" -m eamm.cli generate
 "$PY" -m pytest tests/test_library_equivalence.py -q
-"$PY" -m pytest -q 2>&1 | tail -2
+"$PY" scripts/check_trace.py
 git add -A
-git commit -m "refactor: retire this repository's schema and loader
+git commit -m "refactor: retire this repository's schema, generators and derived TTLs
 
-The ontology owns the schema; keeping a second copy here would be exactly the
-drift the split exists to end. eamm.load and eamm.model are superseded by
-eaont's, which is why the CLI now resolves SOURCE from the installed package."
+The ontology owns the schema and the OWL/SHACL/PROV pipeline; keeping copies
+here would be exactly the drift the split exists to end. eamm.load, eamm.model,
+the ttl renderers and the committed ttl files are gone; check_trace resolves
+against the pinned ontology plus type-map.yaml."
 ```
 
 ---
@@ -823,7 +924,7 @@ This is the phase's real exit criterion. Everything so far could pass while the 
 - Modify: `docs/conformance-claim.md`, `docs/round-trip-loss.md`, `docs/annotation-burden.md` (only if their numbers changed)
 - Modify: `README.md`
 
-- [ ] **Step 1: Run everything**
+- [x] **Step 1: Run everything**
 
 ```bash
 . scripts/env.sh
@@ -834,9 +935,9 @@ npx sysml-validate library/ --format compact --strict
 "$PY" scripts/check_release.py
 ```
 
-Expected: **at least 294 passed** (309 with this phase's additions), `clause trace clean: 18 clauses, pin intact, targets resolve`, `every model earns the profile it claims`, parse gate clean, release gate passed.
+Expected: **282 passed** (the 294 baseline plus this phase's 16 additions from Tasks 2–4, less the 28 tests deleted in Task 5 with the retired schema, generators and TTLs), `clause trace clean: 18 clauses, pin intact, targets resolve`, `every model earns the profile it claims`, parse gate clean, release gate passed.
 
-- [ ] **Step 2: Confirm the findings did not move**
+- [x] **Step 2: Confirm the findings did not move**
 
 The three findings documents carry measured numbers. The refactor changed how the library is produced, not what it says, so they must be unchanged:
 
@@ -846,19 +947,22 @@ git diff --stat docs/conformance-claim.md docs/annotation-burden.md docs/round-t
 
 Expected: no changes. **If a number moved, stop and report it.** A refactor that alters a published finding is not a refactor, and `docs/conformance-claim.md` is scored against a pinned toolkit — a different number means either the instrument or the substrate changed, and this phase changed neither deliberately.
 
-- [ ] **Step 3: Update the README's prerequisites**
+- [x] **Step 3: Update the README's prerequisites**
 
-The README's tier table now needs `eaont` and the pin, and its "Expected: `178 passed, 4 skipped`" numbers are stale — the tier-1 suite is 196 passed, 4 skipped, and the full suite is 309. Record the ontology dependency in the tier-1 row, and correct every count.
+The README's tier table now needs `eaont` and the pin, and its "Expected: `178 passed, 4 skipped`" is stale. After this phase the tier-1 suite collects **184 passed, 4 skipped** (today's 196 + 4, plus this phase's 16 additions, less Task 5's 28 deletions), and the full suite is **282** — see the exit-criteria arithmetic. Correct every count **from measured pytest output at execution time**, never from a number stated in this plan; if measurement disagrees with the arithmetic above, the measurement wins and the discrepancy gets reported.
 
-- [ ] **Step 4: Commit**
+The tier table is not the only stale prose. Sweep the whole README for claims the retirement falsifies: any "no drift across N generated artefacts" count, required-file and header counts quoted from `check_release.py`, artefact rows listing `metamodel/metamodel.yaml` or `ontology/*.ttl`, and any caption describing `eamm generate` as rendering *from metamodel.yaml*. Each becomes either deleted or a description of the pinned-ontology-plus-type-map pipeline.
+
+- [x] **Step 4: Commit**
 
 ```bash
 git add -A
 git commit -m "test(phase-3): the Apollo regression is green against the pinned ontology
 
-309 passed across all three tiers, up from a 294 baseline by this phase's own
-additions. conformance-claim.md, annotation-burden.md and round-trip-loss.md
-are byte-unchanged: the refactor changed how the library is produced, not what
+All three tiers pass against the pinned ontology: 16 tests added by this
+phase, 28 deleted with the retired schema, generators and derived TTLs.
+conformance-claim.md, annotation-burden.md and round-trip-loss.md are
+byte-unchanged: the refactor changed how the library is produced, not what
 it says."
 ```
 
@@ -869,10 +973,10 @@ it says."
 Deliberately last. A rename is ten files and a GitHub redirect; a half-regenerated library inside a renamed repository is a state where failures cannot be attributed.
 
 **Files:**
-- Modify (this repo): `README.md`, `CITATION.cff`, `pyproject.toml`, `docs/*.md`
+- Modify (this repo): `README.md`, `CITATION.cff`, `NOTICE`, `package.json`, `package-lock.json`, `docs/*.md` — not `pyproject.toml`: its `[project] name` is `eamm`, so it carries no occurrence of the old name
 - Modify (other repos): `research-programme/repos.yml` + generated `data/map.json`, `epistemic-adequacy-toolkit`, `publications/README.md`, `epistemic-adequacy-under-pressure-probe` (2 files)
 
-- [ ] **Step 1: Rename on GitHub, then the remote**
+- [x] **Step 1: Rename on GitHub, then the remote**
 
 ```bash
 gh repo rename epistemic-adequacy-sysml-v2-binding \
@@ -884,7 +988,7 @@ git remote -v
 
 GitHub redirects the old URL, so nothing breaks immediately — but the redirect is a courtesy, not a contract. Update every reference.
 
-- [ ] **Step 2: Rename the working directory**
+- [x] **Step 2: Rename the working directory**
 
 ```bash
 cd .. && mv epistemic-adequacy-metamodel epistemic-adequacy-sysml-v2-binding
@@ -893,16 +997,21 @@ cd epistemic-adequacy-sysml-v2-binding && . scripts/env.sh && "$PY" -m pytest -q
 
 The venv holds absolute paths; if the suite fails after the move, recreate it (`"$PY" -m venv --clear .venv` then reinstall) rather than editing paths by hand.
 
-- [ ] **Step 3: Sweep the references**
+- [x] **Step 3: Sweep the references**
 
 ```bash
-grep -rln "epistemic-adequacy-metamodel" . --include=*.md --include=*.toml --include=*.cff --include=*.yml \
-  | grep -v "\.git/" | grep -v "docs/adr/" | grep -v "docs/design/"
+grep -rln "epistemic-adequacy-metamodel" . \
+  --include=*.md --include=*.toml --include=*.cff --include=*.yml --include=*.json \
+  | grep -v "\.git/" | grep -v node_modules \
+  | grep -v "docs/adr/" | grep -v "docs/design/" | grep -v "docs/plans/"
+grep -rn "epistemic-adequacy-metamodel" NOTICE package.json package-lock.json
 ```
 
-`docs/adr/` and `docs/design/` are **excluded on purpose**: they are extracted decision records and the design they cite, and renaming inside them makes a historical document assert a name that did not exist when it was written. The same rule Phase 1 applied to `docs/design/`.
+`--include=*.json` is what catches `package.json` and `package-lock.json`, which a markdown-biased sweep misses; `NOTICE` is swept explicitly because it has no extension for `--include` to match. Both commands must come back empty before Step 4 commits.
 
-Then the four sibling repositories:
+`docs/adr/`, `docs/design/` **and `docs/plans/`** are **excluded on purpose**: decision records, the design they cite, and this repository's completed phase plans are all historical documents, and renaming inside one makes it assert a name that did not exist when it was written. The same rule Phase 1 applied to `docs/design/`. (The Phase 3 plan itself lives in `research-programme`, a different repository with its own sweep.)
+
+Then the four sibling repositories. `research-programme` first:
 
 ```bash
 cd ../research-programme
@@ -912,7 +1021,19 @@ grep -rln "epistemic-adequacy-metamodel" repos.yml docs/ README.md
 python -m scripts.build && python -m scripts.build --check && python -m pytest -q
 ```
 
-- [ ] **Step 4: Verify and commit**
+Then the three the Files list names, which nothing so far touches:
+
+```bash
+for repo in ../epistemic-adequacy-toolkit ../publications ../epistemic-adequacy-under-pressure-probe; do
+  echo "== $repo"
+  grep -rn "epistemic-adequacy-metamodel" "$repo" \
+    --include=*.md --include=*.yml --include=*.toml --include=*.json | grep -v "\.git/"
+done
+```
+
+Known hits: `publications/README.md` and two files in `epistemic-adequacy-under-pressure-probe`; update every line found, then commit and push each repository separately (`chore: follow the epistemic-adequacy-metamodel → epistemic-adequacy-sysml-v2-binding rename`). A sibling left behind keeps cloning, citing or installing a name GitHub only redirects by courtesy.
+
+- [x] **Step 4: Verify and commit**
 
 ```bash
 cd ../epistemic-adequacy-sysml-v2-binding && . scripts/env.sh
@@ -924,9 +1045,10 @@ This repository is a binding, not a metamodel - the ontology it renders lives
 in epistemic-adequacy-ontology and this repo consumes it at a pin. The name has
 been wrong since Phase 1 landed.
 
-docs/adr/ and docs/design/ are deliberately not swept: they are extracted
-records and the design they cite, and renaming inside one makes a historical
-document assert a name that did not exist when it was written."
+docs/adr/, docs/design/ and docs/plans/ are deliberately not swept: they are
+extracted records, the design they cite, and completed phase plans, and
+renaming inside one makes a historical document assert a name that did not
+exist when it was written."
 git push
 ```
 
@@ -934,10 +1056,10 @@ git push
 
 ## Phase 3 exit criteria
 
-1. `"$PY" -m pytest -q` reports **at least 294 passed** — the pre-refactor baseline — across all three tiers.
+1. `"$PY" -m pytest -q` reports **282 passed** across all three tiers: the 294 baseline, plus this phase's 16 additions (Tasks 2–4), less the 28 tests that died with the retired schema, generators and derived TTLs (Task 5).
 2. `library/EpistemicAdequacy.sysml` is generated from the pinned ontology plus `type-map.yaml`, and is **structurally identical** to `tests/fixtures/library-before.sysml`: same definitions, parameters, types, multiplicities and order.
 3. `npx sysml-validate library/ --strict` is clean.
-4. This repository contains **no schema of its own** — no `metamodel/`, no `eamm/load.py`.
+4. This repository contains **no schema of its own** — no `metamodel/`, no `eamm/load.py`, no OWL/SHACL renderers, no derived `ontology/*.ttl`.
 5. `docs/conformance-claim.md`, `docs/annotation-burden.md` and `docs/round-trip-loss.md` are **byte-unchanged**.
 6. `scripts/check_trace.py` and `scripts/check_profile_claim.py` both pass.
 7. The repository is named `epistemic-adequacy-sysml-v2-binding`, and `research-programme`'s `python -m scripts.build --check` passes with the new key.
@@ -946,4 +1068,4 @@ git push
 
 - **Phase 4** (spec v0.2.0: `docs/ontology.md` becomes a pointer), **Phase 5** (write-side entities, `admissibility-spec`) and **Phase 6** (programme bookkeeping beyond the rename) are separate plans.
 - The toolkit pin is not moved. `docs/conformance-claim.md` is scored against `6374b67`, and rescoring against a newer instrument is a different claim requiring its own justification.
-- `docs/adr/` and `docs/design/` are not swept for the rename, per Task 7 Step 3.
+- `docs/adr/`, `docs/design/` and `docs/plans/` are not swept for the rename, per Task 7 Step 3.
