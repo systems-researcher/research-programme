@@ -218,3 +218,31 @@
 @media (prefers-reduced-motion: reduce) {
     .graph-node-box { transition: none; }
 }
+
+/* ------------------------------------------------------------------
+   Print.
+
+   The masthead is chrome, overlays do not print, and the scrollers
+   would clip a paper copy at anything narrower than their min-widths.
+   Best effort, not typeset: the graph shrinks to fit the sheet.
+   ------------------------------------------------------------------ */
+@media print {
+    header {
+        display: none !important;
+    }
+    main {
+        max-width: none;
+        padding: 0;
+    }
+    .overflow-x-auto {
+        overflow-x: visible !important;
+    }
+    table {
+        min-width: 0 !important;
+    }
+    svg {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+    }
+}

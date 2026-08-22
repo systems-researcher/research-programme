@@ -72,6 +72,7 @@ as source we own and can edit.
 - **Border radius:** `--radius`, 0.625rem. Square corners were the old system.
 - **Signature chrome:** sticky dark masthead, mono repository names, badge row
   per card, strand-coloured left edge.
+- **Print:** masthead hidden, scrollers relaxed, graph scaled to the sheet.
 
 ## Motion
 
