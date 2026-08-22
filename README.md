@@ -93,7 +93,7 @@ built from the committed `data/map.json`. See [DESIGN.md](DESIGN.md).
 cd app
 npm install
 npm run dev      # local preview on :5173
-npm run build    # writes ../site, which Vercel serves
+npm run build    # writes ../site, deployed by pages.yml to GitHub Pages
 ```
 
 Run `python -m scripts.build` before `npm run build`: the app renders whatever
