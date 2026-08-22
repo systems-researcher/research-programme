@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Jason D. Gower
 // SPDX-License-Identifier: MIT
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Monitor, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Detail } from "@/components/detail"
@@ -46,6 +46,10 @@ function keyFromHash(): string | null {
 export default function App() {
   const { programme, strands, stages, statuses, graph, refreshedAt } = map
   const [openKey, setOpenKey] = useState<string | null>(() => keyFromHash())
+  // True once THIS session has pushed a study hash onto history. An inherited
+  // hash (pasted deep link, shared URL) was never pushed here, so closing it
+  // must not call back() — that would leave the page entirely.
+  const pushedRef = useRef(false)
 
   // Browser navigation owns the hash: Back must close the panel, Forward
   // reopen it, so this listener keeps state in step with either.
@@ -58,6 +62,7 @@ export default function App() {
   // State and hash move together. Assigning location.hash pushes a history
   // entry, which is what makes Back mean "close".
   const openByKey = useCallback((key: string) => {
+    pushedRef.current = true
     setOpenKey(key)
     window.location.hash = `study=${key}`
   }, [])
@@ -210,10 +215,25 @@ export default function App() {
         onStep={step}
         onClose={() => {
           // Closing via Esc or overlay pops the history entry this open
-          // pushed, keeping one Back = one close. Without a hash there is
+          // pushed, keeping one Back = one close. An inherited hash (a pasted
+          // deep link) was never pushed here, so Back would leave the page
+          // entirely — clear it in place instead. Without a hash there is
           // nothing to pop, so clear directly.
-          if (/^#study=/.test(window.location.hash)) window.history.back()
-          else setOpenKey(null)
+          if (/^#study=/.test(window.location.hash)) {
+            if (pushedRef.current) {
+              window.history.back()
+            } else {
+              pushedRef.current = false
+              window.history.replaceState(
+                null,
+                "",
+                window.location.pathname + window.location.search,
+              )
+              setOpenKey(null)
+            }
+          } else {
+            setOpenKey(null)
+          }
         }}
       />
     </div>
