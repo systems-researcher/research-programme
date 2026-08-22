@@ -70,6 +70,10 @@ jobs:
       - run: npm ci
         working-directory: app
 
+      - name: Lint
+        run: npm run lint
+        working-directory: app
+
       # tsc -b runs first inside this script, so a type error fails here.
       - run: npm run build
         working-directory: app

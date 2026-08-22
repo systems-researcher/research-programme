@@ -49,4 +49,6 @@ function Badge({
   )
 }
 
+// The co-exported cva helper is the shadcn/ui pattern; keep it beside Badge.
+// oxlint-disable-next-line react/only-export-components
 export { Badge, badgeVariants }

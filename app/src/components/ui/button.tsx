@@ -67,4 +67,6 @@ function Button({
   )
 }
 
+// The co-exported cva helper is the shadcn/ui pattern; keep it beside Button.
+// oxlint-disable-next-line react/only-export-components
 export { Button, buttonVariants }
