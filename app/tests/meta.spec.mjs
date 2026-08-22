@@ -32,6 +32,24 @@ if (/property="og:image" content="\//.test(html)) {
   failures += 1
 }
 
+// A malformed ld+json block is silently ignored by every crawler, which is
+// worse than none: it advertises structure it does not have.
+const ldMatch = html.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/)
+if (!ldMatch) {
+  console.log("  MISS application/ld+json block")
+  failures += 1
+} else {
+  try {
+    const ld = JSON.parse(ldMatch[1])
+    const okType = ld["@type"] === "ResearchProject"
+    console.log(`  ${okType ? "ok  " : "MISS"} ld+json @type ResearchProject`)
+    if (!okType) failures += 1
+  } catch (error) {
+    console.log(`  MISS ld+json does not parse: ${error.message}`)
+    failures += 1
+  }
+}
+
 if (failures) {
   console.error(`\n${failures} preview tag(s) missing or malformed`)
   process.exit(1)
