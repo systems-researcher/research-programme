@@ -150,7 +150,7 @@ repos:
 
   # --------------------------------------------------------------- measure ---
 
-  - key: epistemic-adequacy-metamodel
+  - key: epistemic-adequacy-sysml-v2-binding
     owner: local
     strand: adequacy
     stage: define
@@ -313,7 +313,7 @@ repos:
       investigation, an influence-prompt library of seven levers, ensemble
       judging, and an analysis layer. Harness and scenario set are built; the
       runs have not been executed.
-    depends_on: [epistemic-adequacy-testing-toolkit, epistemic-adequacy-metamodel]
+    depends_on: [epistemic-adequacy-testing-toolkit, epistemic-adequacy-sysml-v2-binding]
 
   - key: epistemic-adequacy-under-pressure-probe
     owner: systems-researcher
@@ -341,7 +341,7 @@ repos:
       rather than a single observation. Reported as the ungrounded-answer rate
       per cell and, as the headline, how much of the metadata's benefit remains
       once pressure is applied.
-    depends_on: [epistemic-adequacy-metamodel, pressure-susceptibility-probe]
+    depends_on: [epistemic-adequacy-sysml-v2-binding, pressure-susceptibility-probe]
 
   # -------------------------------------------- architecture, write-side ---
 
@@ -362,7 +362,7 @@ repos:
       schemas and a Python admissibility gate in front of the API, evaluated by
       a three-arm harness. The design contract is complete; the gate checks
       still raise NotImplementedError.
-    depends_on: [epistemic-adequacy-metamodel, admissibility-spec]
+    depends_on: [epistemic-adequacy-sysml-v2-binding, admissibility-spec]
 
   - key: sysml-v2-metadata-graph-Arch-B
     owner: systems-researcher
@@ -480,7 +480,7 @@ repos:
       Not applicable: this is the destination, not a study.
     method: >
       Not applicable.
-    depends_on: [epistemic-adequacy-spec, epistemic-adequacy-metamodel,
+    depends_on: [epistemic-adequacy-spec, epistemic-adequacy-sysml-v2-binding,
                  epistemic-adequacy-testing-toolkit, sysml2-bench,
                  epistemic-adequacy-probe, pressure-susceptibility-probe,
                  SysML-v2-API-Services-Arch-A, sysml-v2-metadata-graph-Arch-B,

@@ -122,7 +122,7 @@
           ],
           "feeds": [
             {
-              "key": "epistemic-adequacy-metamodel",
+              "key": "epistemic-adequacy-sysml-v2-binding",
               "linkable": true
             },
             {
@@ -168,7 +168,7 @@
               "linkable": true
             },
             {
-              "key": "epistemic-adequacy-metamodel",
+              "key": "epistemic-adequacy-sysml-v2-binding",
               "linkable": true
             }
           ],
@@ -180,7 +180,7 @@
           "paper": null
         },
         {
-          "key": "epistemic-adequacy-metamodel",
+          "key": "epistemic-adequacy-sysml-v2-binding",
           "stage": "define",
           "card": true,
           "objective": "Owns the metadata model itself — a conceptual ontology, a logical data model, and a generated SysML v2 library, kept in sync — so that the specification's non-normative binding becomes something a tool can mechanically check.",
@@ -384,7 +384,7 @@
               "linkable": true
             },
             {
-              "key": "epistemic-adequacy-metamodel",
+              "key": "epistemic-adequacy-sysml-v2-binding",
               "linkable": true
             }
           ],
@@ -418,7 +418,7 @@
           ],
           "dependsOn": [
             {
-              "key": "epistemic-adequacy-metamodel",
+              "key": "epistemic-adequacy-sysml-v2-binding",
               "linkable": true
             },
             {
@@ -447,7 +447,7 @@
           ],
           "dependsOn": [
             {
-              "key": "epistemic-adequacy-metamodel",
+              "key": "epistemic-adequacy-sysml-v2-binding",
               "linkable": true
             },
             {
@@ -645,7 +645,7 @@
               "linkable": true
             },
             {
-              "key": "epistemic-adequacy-metamodel",
+              "key": "epistemic-adequacy-sysml-v2-binding",
               "linkable": true
             },
             {
@@ -761,7 +761,7 @@
         "token": "adequacy"
       },
       {
-        "key": "epistemic-adequacy-metamodel",
+        "key": "epistemic-adequacy-sysml-v2-binding",
         "x": 3,
         "y": 0,
         "column": 2,
@@ -848,11 +848,11 @@
       },
       {
         "from": "epistemic-adequacy-spec",
-        "to": "epistemic-adequacy-metamodel"
+        "to": "epistemic-adequacy-sysml-v2-binding"
       },
       {
         "from": "admissibility-spec",
-        "to": "epistemic-adequacy-metamodel"
+        "to": "epistemic-adequacy-sysml-v2-binding"
       },
       {
         "from": "epistemic-adequacy-spec",
@@ -871,11 +871,11 @@
         "to": "pressure-susceptibility-probe"
       },
       {
-        "from": "epistemic-adequacy-metamodel",
+        "from": "epistemic-adequacy-sysml-v2-binding",
         "to": "pressure-susceptibility-probe"
       },
       {
-        "from": "epistemic-adequacy-metamodel",
+        "from": "epistemic-adequacy-sysml-v2-binding",
         "to": "epistemic-adequacy-under-pressure-probe"
       },
       {
@@ -883,7 +883,7 @@
         "to": "epistemic-adequacy-under-pressure-probe"
       },
       {
-        "from": "epistemic-adequacy-metamodel",
+        "from": "epistemic-adequacy-sysml-v2-binding",
         "to": "SysML-v2-API-Services-Arch-A"
       },
       {
