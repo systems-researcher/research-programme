@@ -65,6 +65,32 @@ def test_readme_block_raises_when_markers_are_absent() -> None:
         raise AssertionError("expected RenderError")
 
 
+def test_site_url_marker_is_replaced_with_the_programme_site() -> None:
+    data = data_with(entry())
+    data.programme["site"] = "https://systems-researcher.github.io/research-programme/"
+    updated = render.readme_block(
+        f"published as a single page:\n<!-- SITE-URL -->\n{BEGIN}\n{END}\n", data
+    )
+    assert "<!-- SITE-URL -->" not in updated
+    assert "https://systems-researcher.github.io/research-programme/" in updated
+
+
+def test_site_url_marker_without_a_site_is_an_error() -> None:
+    try:
+        render.readme_block(
+            f"page:\n<!-- SITE-URL -->\n{BEGIN}\n{END}\n", data_with(entry())
+        )
+    except render.RenderError as exc:
+        assert "SITE-URL" in str(exc)
+    else:
+        raise AssertionError("expected RenderError")
+
+
+def test_readme_without_the_marker_is_unchanged_by_site_handling() -> None:
+    updated = render.readme_block(f"x\n{BEGIN}\n{END}\n", data_with(entry()))
+    assert "SITE-URL" not in updated
+
+
 def test_readme_table_lists_stage_status_and_objective() -> None:
     updated = render.readme_block(
         f"{BEGIN}\n{END}\n", data_with(entry(status="published"))
@@ -600,3 +626,11 @@ def test_every_study_carries_the_question_and_objective_the_sheet_shows() -> Non
         else:
             # The written column is not a study and asks nothing.
             assert "question" not in item
+
+
+def test_every_graph_node_carries_its_status_label() -> None:
+    """The diagram draws lifecycle as dashed-versus-solid, so each node must
+    arrive carrying the same status word the matrix tile prints."""
+    payload = render.graph(data_with(entry(status="released")))
+    node = next(n for n in payload["nodes"] if n["key"] == "alpha")
+    assert node["status"] == "released"

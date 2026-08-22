@@ -25,7 +25,7 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      # The nine validation rules, before anything is generated from the file.
+      # The ten validation rules, before anything is generated from the file.
       - name: Validate repos.yml
         run: python -m scripts.build --check
 
@@ -70,8 +70,18 @@ jobs:
       - run: npm ci
         working-directory: app
 
+      - name: Lint
+        run: npm run lint
+        working-directory: app
+
       # tsc -b runs first inside this script, so a type error fails here.
       - run: npm run build
+        working-directory: app
+
+      # og/twitter tags are static in index.html and only the build output is
+      # published, so the built file is the thing to assert against.
+      - name: Social tags survive the build
+        run: npm run test:meta
         working-directory: app
 
       - uses: actions/setup-python@v5

@@ -74,14 +74,27 @@ function Refs({
 export function Detail({
   entry,
   strand,
+  orderedKeys,
+  onStep,
   onOpenKey,
   onClose,
 }: {
   entry: Entry | null
   strand: Strand | undefined
+  orderedKeys: string[]
+  onStep: (dir: 1 | -1) => void
   onOpenKey: (key: string) => void
   onClose: () => void
 }) {
+  // Neighbours in render order, wrapping around: the sheet is a walk through
+  // the programme, not a dead end per study.
+  const position = entry ? orderedKeys.indexOf(entry.key) : -1
+  const prev =
+    position > -1
+      ? orderedKeys[(position - 1 + orderedKeys.length) % orderedKeys.length]
+      : null
+  const next =
+    position > -1 ? orderedKeys[(position + 1) % orderedKeys.length] : null
   return (
     <Sheet open={!!entry} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-lg">
@@ -175,6 +188,34 @@ export function Detail({
               <Refs label="Depends on" refs={entry.dependsOn ?? []} onOpen={onOpenKey} />
               <Refs label="Feeds" refs={entry.feeds ?? []} onOpen={onOpenKey} />
             </dl>
+
+            {(prev || next) && (
+              <div className="sticky bottom-0 mt-auto flex items-center justify-between gap-2 border-t border-border bg-background px-4 py-3">
+                {prev ? (
+                  <button
+                    type="button"
+                    onClick={() => onStep(-1)}
+                    className="max-w-[45%] truncate rounded border border-border bg-background px-2 py-1 text-left font-mono text-[11px] transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    ← {prev}
+                  </button>
+                ) : (
+                  <span />
+                )}
+                {next && (
+                  <button
+                    type="button"
+                    onClick={() => onStep(1)}
+                    className="max-w-[45%] truncate rounded border border-border bg-background px-2 py-1 text-right font-mono text-[11px] transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {next} →
+                  </button>
+                )}
+                <span className="sr-only">
+                  Move to the previous or next repository in programme order.
+                </span>
+              </div>
+            )}
           </>
         )}
       </SheetContent>

@@ -58,8 +58,9 @@ as source we own and can edit.
   for **both** colour schemes and used in two places at once — the card's left
   edge and its node in the diagram — so a reader can move between them.
   `test_every_strand_token_resolves_in_both_colour_schemes` fails under
-  `python -m pytest` if a strand is missing from either scheme. There is no CI
-  in this repository, so run the suite before committing a colour change.
+  `python -m pytest` if a strand is missing from either scheme. CI runs the
+  suite on every push (`check.yml`), so a strand missing from either scheme
+  fails before it can reach main.
 - **Dark mode:** class-based (`.dark` on `<html>`), the shadcn convention.
   Defaults to the system setting; an explicit choice is remembered. An inline
   script in `app/index.html` paints it before first render to avoid a flash.
@@ -71,6 +72,7 @@ as source we own and can edit.
 - **Border radius:** `--radius`, 0.625rem. Square corners were the old system.
 - **Signature chrome:** sticky dark masthead, mono repository names, badge row
   per card, strand-coloured left edge.
+- **Print:** masthead hidden, scrollers relaxed, graph scaled to the sheet.
 
 ## Motion
 

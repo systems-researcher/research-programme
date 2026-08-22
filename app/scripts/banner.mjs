@@ -8,7 +8,7 @@
 import { chromium } from "playwright"
 import { writeFileSync } from "node:fs"
 import { resolve } from "node:path"
-import { imageData, manifest } from "./image-data.mjs"
+import { fontFace, imageData, manifest } from "./image-data.mjs"
 
 // Every drawn value comes from here, and the manifest written beside the PNG
 // holds the same object. CI recomputes it and diffs the JSON, which is how a
@@ -33,7 +33,7 @@ const strandRow = (strand) => `
 const html = `<!doctype html>
 <html><head><meta charset="utf-8">
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap");
+  ${fontFace()}
   * { margin: 0; box-sizing: border-box; }
   body {
     width: 1280px; height: 640px; display: flex; flex-direction: column;

@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Jason D. Gower
 // SPDX-License-Identifier: MIT
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Monitor, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Detail } from "@/components/detail"
@@ -36,9 +36,46 @@ function ThemeToggle() {
   )
 }
 
+/** The hash is the open panel's address: #study=<key>. Parsing lives here so
+ *  initial load, popstate and the writers all agree on the format. */
+function keyFromHash(): string | null {
+  const match = /^#study=([A-Za-z0-9_-]+)$/.exec(window.location.hash)
+  return match ? match[1] : null
+}
+
 export default function App() {
   const { programme, strands, stages, statuses, graph, refreshedAt } = map
-  const [openKey, setOpenKey] = useState<string | null>(null)
+  const [openKey, setOpenKey] = useState<string | null>(() => keyFromHash())
+  // True once THIS session has pushed a study hash onto history. An inherited
+  // hash (pasted deep link, shared URL) was never pushed here, so closing it
+  // must not call back() — that would leave the page entirely.
+  const pushedRef = useRef(false)
+
+  // Browser navigation owns the hash: Back must close the panel, Forward
+  // reopen it, so this listener keeps state in step with either.
+  useEffect(() => {
+    const sync = () => {
+      // We are here because of a traversal, so this entry was never pushed
+      // by this session — the next close must clear the hash in place
+      // rather than call back(), which could walk off the page entirely.
+      pushedRef.current = false
+      setOpenKey(keyFromHash())
+    }
+    window.addEventListener("popstate", sync)
+    return () => window.removeEventListener("popstate", sync)
+  }, [])
+
+  // State and hash move together. pushState pushes a history entry, which is
+  // what makes Back mean "close" — and unlike assigning location.hash it
+  // fires no events of its own, so a popstate can only ever mean the user
+  // (or close) actually traversed, which is what sync above relies on.
+  const openByKey = useCallback((key: string) => {
+    pushedRef.current = true
+    setOpenKey(key)
+    window.history.pushState(null, "", `#study=${key}`)
+  }, [])
+
+  const openEntry = useCallback((entry: Entry) => openByKey(entry.key), [openByKey])
 
   // One flat index, so the sheet's own dependency links can open a sibling
   // without the matrix having to hand its position down.
@@ -53,9 +90,20 @@ export default function App() {
   }, [strands])
 
   const current = openKey ? index.get(openKey) : undefined
-  const openEntry = useCallback((entry: Entry) => setOpenKey(entry.key), [])
 
   const all = useMemo(() => strands.flatMap((s) => s.entries), [strands])
+
+  const orderedKeys = useMemo(() => all.map((e) => e.key), [all])
+
+  const step = useCallback(
+    (dir: 1 | -1) => {
+      if (!openKey) return
+      const i = orderedKeys.indexOf(openKey)
+      const next = orderedKeys[(i + dir + orderedKeys.length) % orderedKeys.length]
+      openByKey(next)
+    },
+    [openKey, orderedKeys, openByKey],
+  )
 
   const counts = useMemo(
     () => ({ repos: all.length, published: all.filter((e) => e.paper).length }),
@@ -140,7 +188,7 @@ export default function App() {
               How the studies depend on each other
             </h2>
             <p className="text-xs text-muted-foreground">
-              Left to right is dependency order. Hover a study to see what it touches.
+              Left to right is dependency order. Hover a study to see what it touches. A dashed outline is still design.
             </p>
           </div>
           <DependencyGraph graph={graph} entries={all} onOpen={openEntry} />
@@ -170,8 +218,31 @@ export default function App() {
       <Detail
         entry={current?.entry ?? null}
         strand={strands.find((s) => s.id === current?.strandId)}
-        onOpenKey={setOpenKey}
-        onClose={() => setOpenKey(null)}
+        orderedKeys={orderedKeys}
+        onOpenKey={openByKey}
+        onStep={step}
+        onClose={() => {
+          // Closing via Esc or overlay pops the history entry this open
+          // pushed, keeping one Back = one close. An inherited hash (a pasted
+          // deep link) was never pushed here, so Back would leave the page
+          // entirely — clear it in place instead. Without a hash there is
+          // nothing to pop, so clear directly.
+          if (/^#study=/.test(window.location.hash)) {
+            if (pushedRef.current) {
+              window.history.back()
+            } else {
+              pushedRef.current = false
+              window.history.replaceState(
+                null,
+                "",
+                window.location.pathname + window.location.search,
+              )
+              setOpenKey(null)
+            }
+          } else {
+            setOpenKey(null)
+          }
+        }}
       />
     </div>
   )

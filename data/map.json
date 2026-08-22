@@ -702,7 +702,8 @@
         "y": 0,
         "column": 5,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "built"
       },
       {
         "key": "epistemic-adequacy-probe",
@@ -710,7 +711,8 @@
         "y": 1,
         "column": 5,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "published"
       },
       {
         "key": "model-vs-document-defect-probe",
@@ -718,7 +720,8 @@
         "y": 2,
         "column": 5,
         "strand": "method-validation",
-        "token": "method"
+        "token": "method",
+        "status": "design"
       },
       {
         "key": "ahp-framing-fragility-probe",
@@ -726,7 +729,8 @@
         "y": 3,
         "column": 5,
         "strand": "method-validation",
-        "token": "method"
+        "token": "method",
+        "status": "design"
       },
       {
         "key": "dsm-sequencing-probe",
@@ -734,7 +738,8 @@
         "y": 4,
         "column": 5,
         "strand": "method-validation",
-        "token": "method"
+        "token": "method",
+        "status": "design"
       },
       {
         "key": "epistemic-adequacy-ontology",
@@ -742,7 +747,8 @@
         "y": 0,
         "column": 1,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "built"
       },
       {
         "key": "epistemic-adequacy-spec",
@@ -750,7 +756,8 @@
         "y": 0,
         "column": 2,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "released"
       },
       {
         "key": "admissibility-spec",
@@ -758,7 +765,8 @@
         "y": 1,
         "column": 2,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "design"
       },
       {
         "key": "epistemic-adequacy-sysml-v2-binding",
@@ -766,7 +774,8 @@
         "y": 0,
         "column": 2,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "design"
       },
       {
         "key": "epistemic-adequacy-testing-toolkit",
@@ -774,7 +783,8 @@
         "y": 1,
         "column": 2,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "built"
       },
       {
         "key": "pressure-susceptibility-probe",
@@ -782,7 +792,8 @@
         "y": 0,
         "column": 2,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "built"
       },
       {
         "key": "SysML-v2-API-Services-Arch-A",
@@ -790,7 +801,8 @@
         "y": 1,
         "column": 2,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "design"
       },
       {
         "key": "governed-interaction-cost-probe",
@@ -798,7 +810,8 @@
         "y": 0,
         "column": 3,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "design"
       },
       {
         "key": "epistemic-adequacy-under-pressure-probe",
@@ -806,7 +819,8 @@
         "y": 1,
         "column": 3,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "design"
       },
       {
         "key": "sysml-v2-metadata-graph-Arch-B",
@@ -814,7 +828,8 @@
         "y": 2,
         "column": 3,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "design"
       },
       {
         "key": "sysml-v2-governed-substrate-Arch-C",
@@ -822,7 +837,8 @@
         "y": 0,
         "column": 1,
         "strand": "adequacy",
-        "token": "adequacy"
+        "token": "adequacy",
+        "status": "design"
       }
     ],
     "edges": [
