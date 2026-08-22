@@ -79,6 +79,10 @@ export function Detail({
 }: {
   entry: Entry | null
   strand: Strand | undefined
+  /** Panel order for step navigation; consumed by Task 12's stepper. */
+  orderedKeys?: string[]
+  /** Step between studies; consumed by Task 12's stepper. */
+  onStep?: () => void
   onOpenKey: (key: string) => void
   onClose: () => void
 }) {

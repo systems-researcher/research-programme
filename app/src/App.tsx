@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Jason D. Gower
 // SPDX-License-Identifier: MIT
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Monitor, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Detail } from "@/components/detail"
@@ -36,9 +36,33 @@ function ThemeToggle() {
   )
 }
 
+/** The hash is the open panel's address: #study=<key>. Parsing lives here so
+ *  initial load, popstate and the writers all agree on the format. */
+function keyFromHash(): string | null {
+  const match = /^#study=([A-Za-z0-9_-]+)$/.exec(window.location.hash)
+  return match ? match[1] : null
+}
+
 export default function App() {
   const { programme, strands, stages, statuses, graph, refreshedAt } = map
-  const [openKey, setOpenKey] = useState<string | null>(null)
+  const [openKey, setOpenKey] = useState<string | null>(() => keyFromHash())
+
+  // Browser navigation owns the hash: Back must close the panel, Forward
+  // reopen it, so this listener keeps state in step with either.
+  useEffect(() => {
+    const sync = () => setOpenKey(keyFromHash())
+    window.addEventListener("popstate", sync)
+    return () => window.removeEventListener("popstate", sync)
+  }, [])
+
+  // State and hash move together. Assigning location.hash pushes a history
+  // entry, which is what makes Back mean "close".
+  const openByKey = useCallback((key: string) => {
+    setOpenKey(key)
+    window.location.hash = `study=${key}`
+  }, [])
+
+  const openEntry = useCallback((entry: Entry) => openByKey(entry.key), [openByKey])
 
   // One flat index, so the sheet's own dependency links can open a sibling
   // without the matrix having to hand its position down.
@@ -53,9 +77,10 @@ export default function App() {
   }, [strands])
 
   const current = openKey ? index.get(openKey) : undefined
-  const openEntry = useCallback((entry: Entry) => setOpenKey(entry.key), [])
 
   const all = useMemo(() => strands.flatMap((s) => s.entries), [strands])
+
+  const orderedKeys = useMemo(() => all.map((e) => e.key), [all])
 
   const counts = useMemo(
     () => ({ repos: all.length, published: all.filter((e) => e.paper).length }),
@@ -170,8 +195,16 @@ export default function App() {
       <Detail
         entry={current?.entry ?? null}
         strand={strands.find((s) => s.id === current?.strandId)}
-        onOpenKey={setOpenKey}
-        onClose={() => setOpenKey(null)}
+        orderedKeys={orderedKeys}
+        onOpenKey={openByKey}
+        onStep={() => {}}
+        onClose={() => {
+          // Closing via Esc or overlay pops the history entry this open
+          // pushed, keeping one Back = one close. Without a hash there is
+          // nothing to pop, so clear directly.
+          if (/^#study=/.test(window.location.hash)) window.history.back()
+          else setOpenKey(null)
+        }}
       />
     </div>
   )
