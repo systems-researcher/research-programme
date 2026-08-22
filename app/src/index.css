@@ -230,6 +230,10 @@
     header {
         display: none !important;
     }
+    [data-slot="sheet-overlay"],
+    [data-slot="sheet-content"] {
+        display: none !important;
+    }
     main {
         max-width: none;
         padding: 0;

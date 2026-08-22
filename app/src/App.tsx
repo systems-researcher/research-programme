@@ -54,17 +54,25 @@ export default function App() {
   // Browser navigation owns the hash: Back must close the panel, Forward
   // reopen it, so this listener keeps state in step with either.
   useEffect(() => {
-    const sync = () => setOpenKey(keyFromHash())
+    const sync = () => {
+      // We are here because of a traversal, so this entry was never pushed
+      // by this session — the next close must clear the hash in place
+      // rather than call back(), which could walk off the page entirely.
+      pushedRef.current = false
+      setOpenKey(keyFromHash())
+    }
     window.addEventListener("popstate", sync)
     return () => window.removeEventListener("popstate", sync)
   }, [])
 
-  // State and hash move together. Assigning location.hash pushes a history
-  // entry, which is what makes Back mean "close".
+  // State and hash move together. pushState pushes a history entry, which is
+  // what makes Back mean "close" — and unlike assigning location.hash it
+  // fires no events of its own, so a popstate can only ever mean the user
+  // (or close) actually traversed, which is what sync above relies on.
   const openByKey = useCallback((key: string) => {
     pushedRef.current = true
     setOpenKey(key)
-    window.location.hash = `study=${key}`
+    window.history.pushState(null, "", `#study=${key}`)
   }, [])
 
   const openEntry = useCallback((entry: Entry) => openByKey(entry.key), [openByKey])

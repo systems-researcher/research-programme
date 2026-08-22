@@ -40,7 +40,29 @@ check("a pasted deep link opens the sheet", await page.getByRole("dialog").isVis
 await page.keyboard.press("Escape")
 await page.waitForTimeout(300)
 check("Escape strips an inherited hash", !page.url().includes("#study="))
+check("closing an inherited deep link shuts the sheet", !(await page.getByRole("dialog").isVisible()))
 check("closing an inherited deep link stays on the page", page.url().startsWith(origin))
+
+// Regression: any traversal retires the session's pushed flag, because the
+// entry we landed on was not pushed here. Stepping from an inherited deep
+// link to another study pushes onto the inherited entry; one Escape steps
+// back to the inherited study, and only then does the hash get cleared —
+// never a walk off the page. The sheet's own next-study button drives the
+// same openByKey push as a matrix cell, without fighting the overlay.
+await page.goto(`${url}#study=sysml2-bench`, { waitUntil: "networkidle", timeout: 45000 })
+await page.waitForTimeout(300)
+await page.getByRole("button", { name: /governed-interaction-cost-probe →/ }).click()
+await page.waitForTimeout(300)
+check("stepping from an inherited deep link pushes a new entry", page.url().includes("#study=governed-interaction-cost-probe"))
+await page.keyboard.press("Escape")
+await page.waitForTimeout(500)
+check("one Escape steps back to the inherited study", page.url().includes("#study=sysml2-bench"))
+check("the sheet is still open on the inherited study", await page.getByRole("dialog").isVisible())
+await page.keyboard.press("Escape")
+await page.waitForTimeout(500)
+check("a second Escape clears the hash", !page.url().includes("#study="))
+check("a second Escape stays on the app origin", page.url().startsWith(origin))
+check("a second Escape closes the sheet", !(await page.getByRole("dialog").isVisible()))
 
 await browser.close()
 process.exit(failures ? 1 : 0)

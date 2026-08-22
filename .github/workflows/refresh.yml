@@ -8,6 +8,7 @@ name: refresh
 # intended.
 on:
   schedule:
+    # Mondays 06:23 UTC
     - cron: "23 6 * * 1"
   workflow_dispatch:
 
