@@ -79,6 +79,9 @@ npm --prefix app run preview:card  # the social preview card
 CI fails if either image no longer matches the data, so a stale banner cannot
 reach the front page unnoticed.
 
+Both images are drawn headlessly, which needs a browser once:
+`npx --prefix app playwright install chromium`.
+
 `data/map.json` is generated and committed. It holds the page already resolved:
 entries in render order, badges composed, dependencies inverted. The app reads
 it and derives nothing, so those rules stay in Python where the tests are, and
