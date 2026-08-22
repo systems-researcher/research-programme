@@ -82,6 +82,16 @@ export default function App() {
 
   const orderedKeys = useMemo(() => all.map((e) => e.key), [all])
 
+  const step = useCallback(
+    (dir: 1 | -1) => {
+      if (!openKey) return
+      const i = orderedKeys.indexOf(openKey)
+      const next = orderedKeys[(i + dir + orderedKeys.length) % orderedKeys.length]
+      openByKey(next)
+    },
+    [openKey, orderedKeys, openByKey],
+  )
+
   const counts = useMemo(
     () => ({ repos: all.length, published: all.filter((e) => e.paper).length }),
     [all],
@@ -197,7 +207,7 @@ export default function App() {
         strand={strands.find((s) => s.id === current?.strandId)}
         orderedKeys={orderedKeys}
         onOpenKey={openByKey}
-        onStep={() => {}}
+        onStep={step}
         onClose={() => {
           // Closing via Esc or overlay pops the history entry this open
           // pushed, keeping one Back = one close. Without a hash there is
