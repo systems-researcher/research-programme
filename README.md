@@ -85,7 +85,9 @@ Both images are drawn headlessly, which needs a browser once:
 `data/map.json` is generated and committed. It holds the page already resolved:
 entries in render order, badges composed, dependencies inverted. The app reads
 it and derives nothing, so those rules stay in Python where the tests are, and
-the deployment build needs Node only.
+the deployment build needs Node only. A scheduled workflow (`refresh.yml`)
+refreshes the live fields weekly, so the badges move without anyone
+remembering.
 
 ## The site
 

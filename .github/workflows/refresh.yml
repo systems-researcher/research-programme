@@ -1,0 +1,54 @@
+# Copyright (c) 2026 Jason D. Gower
+# SPDX-License-Identifier: MIT
+name: refresh
+
+# Live fields (visibility, pushed_at, homepage) go stale unless someone
+# remembers to run refresh.py locally. Weekly, a bot runs it instead. A push
+# here triggers pages.yml, so the redeploy with fresh badges is automatic and
+# intended.
+on:
+  schedule:
+    - cron: "23 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: pull live GitHub fields
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # gh reads GH_TOKEN from the environment. The job token can write, which
+      # is all the push at the end needs.
+      - name: Refresh live fields and rebuild the payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m scripts.refresh
+          python -m scripts.build
+
+      - name: Commit if anything moved
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- data/live.json data/map.json; then
+            git add data/live.json data/map.json
+            git commit -m "chore(refresh): weekly live-data refresh"
+            git push
+          else
+            echo "nothing moved since last week"
+          fi
