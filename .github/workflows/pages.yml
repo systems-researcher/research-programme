@@ -6,6 +6,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # GITHUB_TOKEN pushes from refresh.yml do not start other workflows.
+  # Rebuild after a successful refresh instead of relying on that push.
+  workflow_run:
+    workflows: [refresh]
+    types: [completed]
 
 # Least privilege: read the repo, write the Pages artifact, and mint the
 # token the deploy step exchanges. Nothing else.
@@ -22,6 +27,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

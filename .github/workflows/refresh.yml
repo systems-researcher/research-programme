@@ -3,9 +3,9 @@
 name: refresh
 
 # Live fields (visibility, pushed_at, homepage) go stale unless someone
-# remembers to run refresh.py locally. Weekly, a bot runs it instead. A push
-# here triggers pages.yml, so the redeploy with fresh badges is automatic and
-# intended.
+# remembers to run refresh.py locally. Weekly, a bot runs it instead. The
+# bot push uses GITHUB_TOKEN, which does not start pages.yml; pages.yml
+# listens for this workflow via workflow_run and rebuilds after success.
 on:
   schedule:
     # Mondays 06:23 UTC
