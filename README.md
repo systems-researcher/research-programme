@@ -113,13 +113,14 @@ cd app && npm run test:meta           # og/twitter tags survived the build
 ```
 
 Two more need a served page and a browser (`npx --prefix app playwright
-install chromium` once), so they stay manual:
+install chromium` once). CI runs both on every push; run them locally
+against the same served URL:
 
 ```bash
 cd app
 npm run preview                      # serves ../site on :4173
-npm run test:layout                  # nothing scrolls sideways at 390/768/1440
-node tests/deep-link.spec.mjs        # hash deep links open and close the sheet
+node tests/layout.spec.mjs http://localhost:4173/
+node tests/deep-link.spec.mjs http://localhost:4173/
 ```
 
 ## Licence

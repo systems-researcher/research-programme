@@ -84,6 +84,34 @@ jobs:
         run: npm run test:meta
         working-directory: app
 
+      # npm ci installs the playwright package, not the browser binary.
+      # --with-deps is the flag Playwright documents for CI runners: it
+      # apt-installs the OS libraries chromium needs. The local dry-run in
+      # the acceptance criteria cannot exercise those libraries, so this
+      # step carries the Linux side.
+      - name: Install the chromium binary
+        run: npx playwright install --with-deps chromium
+        working-directory: app
+
+      - name: Serve the built site
+        run: |
+          npm run preview -- --strictPort &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo "::error::vite preview never answered on :4173"
+          exit 1
+        working-directory: app
+
+      - name: Nothing scrolls sideways (layout)
+        run: node tests/layout.spec.mjs http://localhost:4173/
+        working-directory: app
+
+      - name: Hash deep links open and close the sheet
+        run: node tests/deep-link.spec.mjs http://localhost:4173/
+        working-directory: app
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
