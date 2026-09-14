@@ -90,6 +90,10 @@
             {
               "key": "epistemic-adequacy-spec",
               "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-sysml-v2-binding",
+              "linkable": true
             }
           ],
           "question": "Can the entities epistemic adequacy needs be characterised without committing to a modelling language, and can that independence be demonstrated rather than asserted?",
@@ -183,15 +187,19 @@
           "key": "epistemic-adequacy-sysml-v2-binding",
           "stage": "define",
           "card": true,
-          "objective": "Owns the metadata model itself — a conceptual ontology, a logical data model, and a generated SysML v2 library, kept in sync — so that the specification's non-normative binding becomes something a tool can mechanically check.",
-          "url": null,
+          "objective": "Maps the specification's clause metadata into SysML v2, so the eighteen clauses become mechanically checkable on a real model. The entity model and its schema live in epistemic-adequacy-ontology; this repository owns neither.",
+          "url": "https://github.com/systems-researcher/epistemic-adequacy-sysml-v2-binding",
           "badges": [
-            "not yet published",
+            "awaiting refresh",
             "design"
           ],
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
+              "linkable": true
+            },
+            {
+              "key": "epistemic-adequacy-ontology",
               "linkable": true
             },
             {
@@ -218,7 +226,7 @@
             }
           ],
           "question": "Can the eighteen clauses be expressed as SysML v2 metadata that a tool actually checks on a real model, and what does the existing binding lack for that to be true?",
-          "method": "One hand-edited schema generates both an OWL 2 plus SHACL ontology and the SysML v2 library, with reader, resolver, and extractor stages emitting the toolkit's canonical claim graph. Correctness is pinned by a bare-versus- annotated Apollo reference pair under a stated profile regression contract and an eighteen-row clause trace in CI. The repository exists because parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation accepting a derivation whose upstream references nothing.",
+          "method": "Consumes the published epistemic-adequacy-ontology at a pinned version and supplies the concrete SysML v2 types through a type map; the SysML v2 library is generated from the ontology model plus that type map, not from a schema of its own. Correctness is pinned by a bare-versus-annotated Apollo reference pair under a stated profile regression contract and an eighteen-row clause trace in CI. The repository exists because parse testing on 2026-08-19 showed off-the-shelf SysML v2 validation accepting a derivation whose upstream references nothing.",
           "headline": null,
           "output": null,
           "site": null,
@@ -428,7 +436,7 @@
           ],
           "feeds": [],
           "question": "Does the protection epistemic metadata gives against ungrounded engineering answers hold when the work pushes on the AI consumer, and by how much is it eroded under deadline, seniority, and false-premise pressure?",
-          "method": "A two-by-two design — governed against ungoverned record, calm against pressed instruction — reusing the influence-prompt library from the pressure susceptibility probe and the annotated sidecar from the metamodel, so neither factor is newly invented here. The published governed-pressed cell is one lever over five questions; this varies the lever and widens the question set, so the 33% can be read as an estimate rather than a single observation. Reported as the ungrounded-answer rate per cell and, as the headline, how much of the metadata's benefit remains once pressure is applied.",
+          "method": "A two-by-two design — governed against ungoverned record, calm against pressed instruction — reusing the influence-prompt library from the pressure susceptibility probe and the annotated sidecar from the adequacy probe, so neither factor is newly invented here. The published governed-pressed cell is one lever over five questions; this varies the lever and widens the question set, so the 33% can be read as an estimate rather than a single observation. Reported as the ungrounded-answer rate per cell and, as the headline, how much of the metadata's benefit remains once pressure is applied.",
           "headline": null,
           "output": null,
           "site": null,
@@ -864,6 +872,10 @@
       },
       {
         "from": "epistemic-adequacy-spec",
+        "to": "epistemic-adequacy-sysml-v2-binding"
+      },
+      {
+        "from": "epistemic-adequacy-ontology",
         "to": "epistemic-adequacy-sysml-v2-binding"
       },
       {
