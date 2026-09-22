@@ -152,6 +152,37 @@ repos:
       left to the architecture candidates.
     depends_on: [epistemic-adequacy-probe, epistemic-adequacy-ontology]
 
+  - key: machine-actionable-requirements
+    owner: systems-researcher
+    strand: adequacy
+    stage: define
+    status: design
+    objective: >
+      The requirement-side artefact that sits upstream of the record: what a
+      requirement representation must expose so that an AI participant can
+      tell how satisfaction is to be established, where the requirement came
+      from, how far it is supported, what it applies to, and what may be done
+      with it.
+    question: >
+      What minimum machine-actionable semantics must an engineering
+      requirement expose to support reliable AI consumption and
+      participation, and which of those semantics do existing standards
+      already supply directly, by extension, or only through surrounding
+      artefacts?
+    method: >
+      A captured literature corpus with an evidence register, one verdict per
+      source on whether it supports, weakens or sits beside the claim,
+      followed by a test plan stating seven hypotheses, a competing
+      hypothesis, five experiment arms, the dependent variables, and decision
+      rules written down before the data exists. The comparison that would
+      decide the matter is current practice plus governed retrieval over the
+      surrounding artefacts, since comparing only against bare requirement
+      text would flatter any representation.
+    output: >
+      No measurement yet. 38 corpus records, and a repository gate running ten
+      mutation tests in CI.
+    depends_on: [epistemic-adequacy-spec, admissibility-spec]
+
   # --------------------------------------------------------------- measure ---
 
   - key: epistemic-adequacy-sysml-v2-binding

@@ -134,6 +134,10 @@
               "linkable": true
             },
             {
+              "key": "machine-actionable-requirements",
+              "linkable": true
+            },
+            {
               "key": "publications",
               "linkable": false
             }
@@ -174,12 +178,44 @@
             {
               "key": "epistemic-adequacy-sysml-v2-binding",
               "linkable": true
+            },
+            {
+              "key": "machine-actionable-requirements",
+              "linkable": true
             }
           ],
           "question": "What must an AI-generated engineering contribution expose — its author, its warrant, the standing of its review, and its effect on claims already in the record — for a substrate to decide admissibility by rule rather than by reviewer judgement?",
           "method": "The same clause form the adequacy specification uses: testable MUST/SHOULD/MAY clauses, each with a Check line written against an abstract substrate, organised into conformance profiles, with a machine-readable manifest validated against the prose in CI. Scope is the admission decision alone; how a substrate stores or enforces it is left to the architecture candidates.",
           "headline": null,
           "output": null,
+          "site": null,
+          "paper": null
+        },
+        {
+          "key": "machine-actionable-requirements",
+          "stage": "define",
+          "card": true,
+          "objective": "The requirement-side artefact that sits upstream of the record: what a requirement representation must expose so that an AI participant can tell how satisfaction is to be established, where the requirement came from, how far it is supported, what it applies to, and what may be done with it.",
+          "url": "https://github.com/systems-researcher/machine-actionable-requirements",
+          "badges": [
+            "awaiting refresh",
+            "design"
+          ],
+          "dependsOn": [
+            {
+              "key": "epistemic-adequacy-spec",
+              "linkable": true
+            },
+            {
+              "key": "admissibility-spec",
+              "linkable": true
+            }
+          ],
+          "feeds": [],
+          "question": "What minimum machine-actionable semantics must an engineering requirement expose to support reliable AI consumption and participation, and which of those semantics do existing standards already supply directly, by extension, or only through surrounding artefacts?",
+          "method": "A captured literature corpus with an evidence register, one verdict per source on whether it supports, weakens or sits beside the claim, followed by a test plan stating seven hypotheses, a competing hypothesis, five experiment arms, the dependent variables, and decision rules written down before the data exists. The comparison that would decide the matter is current practice plus governed retrieval over the surrounding artefacts, since comparing only against bare requirement text would flatter any representation.",
+          "headline": null,
+          "output": "No measurement yet. 38 corpus records, and a repository gate running ten mutation tests in CI.",
           "site": null,
           "paper": null
         },
@@ -777,10 +813,19 @@
         "status": "design"
       },
       {
-        "key": "epistemic-adequacy-sysml-v2-binding",
+        "key": "machine-actionable-requirements",
         "x": 3,
         "y": 0,
-        "column": 2,
+        "column": 3,
+        "strand": "adequacy",
+        "token": "adequacy",
+        "status": "design"
+      },
+      {
+        "key": "epistemic-adequacy-sysml-v2-binding",
+        "x": 3,
+        "y": 1,
+        "column": 3,
         "strand": "adequacy",
         "token": "adequacy",
         "status": "design"
@@ -788,8 +833,8 @@
       {
         "key": "epistemic-adequacy-testing-toolkit",
         "x": 3,
-        "y": 1,
-        "column": 2,
+        "y": 2,
+        "column": 3,
         "strand": "adequacy",
         "token": "adequacy",
         "status": "built"
@@ -869,6 +914,14 @@
       {
         "from": "epistemic-adequacy-ontology",
         "to": "admissibility-spec"
+      },
+      {
+        "from": "epistemic-adequacy-spec",
+        "to": "machine-actionable-requirements"
+      },
+      {
+        "from": "admissibility-spec",
+        "to": "machine-actionable-requirements"
       },
       {
         "from": "epistemic-adequacy-spec",
