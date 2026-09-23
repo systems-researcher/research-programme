@@ -5,28 +5,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
-import tempfile
 from pathlib import Path
 
 from scripts import mapdata, render
+from scripts.atomic import write_atomic
 
 ROOT = Path(__file__).resolve().parent.parent
 REPOS_YML = ROOT / "repos.yml"
-
-
-def write_atomic(path: Path, text: str) -> None:
-    """Write via a temporary file in the same directory, then replace.
-
-    A crashed build must never leave a half-written page, or a README with one
-    marker and not the other.
-    """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    handle, temporary = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")
-    with os.fdopen(handle, "w", encoding="utf-8", newline="\n") as stream:
-        stream.write(text)
-    os.replace(temporary, path)
 
 
 def main(argv: list[str] | None = None) -> int:

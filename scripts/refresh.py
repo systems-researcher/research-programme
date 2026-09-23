@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Callable
 
 from scripts import mapdata
+from scripts.atomic import write_atomic
 
 ROOT = Path(__file__).resolve().parent.parent
 REPOS_YML = ROOT / "repos.yml"
@@ -60,7 +61,18 @@ def collect(
     """Query every non-local entry. Keep the previous value for anything that fails."""
     old: dict[str, dict] = {}
     if previous and Path(previous).exists():
-        old = json.loads(Path(previous).read_text(encoding="utf-8")).get("repos", {})
+        try:
+            parsed = json.loads(Path(previous).read_text(encoding="utf-8"))
+            repos = parsed.get("repos") if isinstance(parsed, dict) else None
+            if not isinstance(repos, dict):
+                raise TypeError("live.json repos must be a dict")
+            old = repos
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, AttributeError):
+            print(
+                "warning: previous live.json unreadable/corrupt; treating as empty",
+                file=sys.stderr,
+            )
+            old = {}
 
     result = Refreshed()
     for entry in data.repos:
@@ -118,9 +130,9 @@ def main(argv: list[str] | None = None) -> int:
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "repos": result.repos,
     }
-    LIVE_JSON.parent.mkdir(parents=True, exist_ok=True)
-    LIVE_JSON.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    write_atomic(
+        LIVE_JSON,
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
     )
 
     print(f"refreshed {len(result.repos)} repositories into {LIVE_JSON.name}")
