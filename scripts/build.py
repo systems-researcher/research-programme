@@ -44,7 +44,31 @@ def main(argv: list[str] | None = None) -> int:
     live = None
     live_path = ROOT / "data" / "live.json"
     if live_path.exists():
-        live = json.loads(live_path.read_text(encoding="utf-8"))
+        try:
+            live = json.loads(live_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            print(
+                "warning: data/live.json unreadable/corrupt; "
+                "building without live GitHub fields",
+                file=sys.stderr,
+            )
+            live = None
+        if isinstance(live, dict):
+            if "repos" in live and not isinstance(live.get("repos"), dict):
+                print(
+                    "warning: live.json repos shape unusable; "
+                    "building without live GitHub fields",
+                    file=sys.stderr,
+                )
+                live = None
+        elif live is not None:
+            # JSON root was not an object (array/string/number)
+            print(
+                "warning: data/live.json unreadable/corrupt; "
+                "building without live GitHub fields",
+                file=sys.stderr,
+            )
+            live = None
     else:
         print(
             "warning: data/live.json is absent; building without live GitHub fields",
