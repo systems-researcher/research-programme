@@ -114,15 +114,22 @@ cd app && npm run test:meta           # og/twitter tags survived the build
 ```
 
 Two more need a served page and a browser (`npx --prefix app playwright
-install chromium` once). CI runs both on every push; run them locally
-against the same served URL:
+install chromium` once). CI runs both on every push against the
+production build, served under the Pages prefix. To run them the way CI
+does:
 
 ```bash
 cd app
-npm run preview                      # serves ../site on :4173
-node tests/layout.spec.mjs http://localhost:4173/
-node tests/deep-link.spec.mjs http://localhost:4173/
+export BASE_PATH=/research-programme/ MSYS_NO_PATHCONV=1  # MSYS_NO_PATHCONV stops Git Bash rewriting the path
+npm run build
+npm run preview                      # serves ../site on :4173/research-programme/
+node tests/layout.spec.mjs http://localhost:4173/research-programme/
+node tests/deep-link.spec.mjs http://localhost:4173/research-programme/
 ```
+
+In a fresh shell, skip the export and drop `research-programme/` from both URLs to test a root build.
+
+pages.yml publishes a commit only after check passes on it, and only while it is still the tip of main. The weekly refresh bot pushes with `GITHUB_TOKEN`, which starts no workflows, so check listens for refresh to finish and tests the bot's commit before pages publishes it. To redeploy by hand, run `gh workflow run check.yml --ref main`.
 
 ## Licence
 
