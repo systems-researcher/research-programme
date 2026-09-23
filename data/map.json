@@ -24,6 +24,11 @@
       "id": "published",
       "label": "published",
       "note": "The result is in the written record, in a venue or a frozen report."
+    },
+    {
+      "id": "retired",
+      "label": "retired",
+      "note": "Closed with no results. Its surviving value continues in another study."
     }
   ],
   "programme": {
@@ -415,11 +420,11 @@
           "key": "pressure-susceptibility-probe",
           "stage": "evidence",
           "card": true,
-          "objective": "Measures how susceptible an AI assistant is to producing unauthorised engineering answers when the work itself pushes on it: a deadline, a senior engineer's stated conclusion, a board that has already agreed, or a question with a false premise baked in.",
+          "objective": "Retiring. It produced no results: the only runs it reached were pipeline validation. Its remaining value transfers into epistemic-adequacy-under-pressure-probe at pin 2c030ca, and the GitHub repository is archived once that extraction lands.",
           "url": "https://github.com/systems-researcher/pressure-susceptibility-probe",
           "badges": [
             "private",
-            "built",
+            "retired",
             "last commit 2026-07-30"
           ],
           "dependsOn": [
@@ -432,18 +437,9 @@
               "linkable": true
             }
           ],
-          "feeds": [
-            {
-              "key": "epistemic-adequacy-under-pressure-probe",
-              "linkable": true
-            },
-            {
-              "key": "publications",
-              "linkable": false
-            }
-          ],
-          "question": "How much does social and operational pressure raise the rate of ungrounded engineering answers, and which kinds of pressure do most of the damage?",
-          "method": "Six scenarios drawn from design review, verification sign-off, and anomaly investigation, an influence-prompt library of seven levers, ensemble judging, and an analysis layer. Harness and scenario set are built; the runs have not been executed.",
+          "feeds": [],
+          "question": "How much does social and operational pressure raise the rate of ungrounded engineering answers, and which kinds of pressure do most of the damage? Closed unanswered; the measurement never ran.",
+          "method": "Six scenarios drawn from design review, verification sign-off, and anomaly investigation, an influence-prompt library of seven levers, ensemble judging, and an analysis layer. The harness code and the never-run Phase-1 grid are not transferred; the receiving study runs on the testing toolkit's ea run command instead.",
           "headline": null,
           "output": null,
           "site": null,
@@ -464,15 +460,11 @@
             {
               "key": "epistemic-adequacy-sysml-v2-binding",
               "linkable": true
-            },
-            {
-              "key": "pressure-susceptibility-probe",
-              "linkable": true
             }
           ],
           "feeds": [],
           "question": "Does the protection epistemic metadata gives against ungrounded engineering answers hold when the work pushes on the AI consumer, and by how much is it eroded under deadline, seniority, and false-premise pressure?",
-          "method": "A two-by-two design — governed against ungoverned record, calm against pressed instruction — reusing the influence-prompt library from the pressure susceptibility probe and the annotated sidecar from the adequacy probe, so neither factor is newly invented here. The published governed-pressed cell is one lever over five questions; this varies the lever and widens the question set, so the 33% can be read as an estimate rather than a single observation. Reported as the ungrounded-answer rate per cell and, as the headline, how much of the metadata's benefit remains once pressure is applied.",
+          "method": "A two-by-two design: governed against ungoverned record, calm against pressed instruction. Reuses the influence-prompt library that transfers from the pressure susceptibility probe at pin 2c030ca and the annotated sidecar from the adequacy probe, so neither factor is newly invented here. The published governed-pressed cell is one lever over five questions; this varies the lever and widens the question set, so the 33% can be read as an estimate rather than a single observation. Reported as the ungrounded-answer rate per cell and, as the headline, how much of the metadata's benefit remains once pressure is applied.",
           "headline": null,
           "output": null,
           "site": null,
@@ -705,10 +697,6 @@
               "linkable": true
             },
             {
-              "key": "pressure-susceptibility-probe",
-              "linkable": true
-            },
-            {
               "key": "SysML-v2-API-Services-Arch-A",
               "linkable": true
             },
@@ -843,16 +831,25 @@
         "key": "pressure-susceptibility-probe",
         "x": 4,
         "y": 0,
-        "column": 2,
+        "column": 3,
         "strand": "adequacy",
         "token": "adequacy",
-        "status": "built"
+        "status": "retired"
+      },
+      {
+        "key": "epistemic-adequacy-under-pressure-probe",
+        "x": 4,
+        "y": 1,
+        "column": 3,
+        "strand": "adequacy",
+        "token": "adequacy",
+        "status": "design"
       },
       {
         "key": "SysML-v2-API-Services-Arch-A",
         "x": 4,
-        "y": 1,
-        "column": 2,
+        "y": 2,
+        "column": 3,
         "strand": "adequacy",
         "token": "adequacy",
         "status": "design"
@@ -861,16 +858,7 @@
         "key": "governed-interaction-cost-probe",
         "x": 5,
         "y": 0,
-        "column": 3,
-        "strand": "adequacy",
-        "token": "adequacy",
-        "status": "design"
-      },
-      {
-        "key": "epistemic-adequacy-under-pressure-probe",
-        "x": 5,
-        "y": 1,
-        "column": 3,
+        "column": 2,
         "strand": "adequacy",
         "token": "adequacy",
         "status": "design"
@@ -878,8 +866,8 @@
       {
         "key": "sysml-v2-metadata-graph-Arch-B",
         "x": 5,
-        "y": 2,
-        "column": 3,
+        "y": 1,
+        "column": 2,
         "strand": "adequacy",
         "token": "adequacy",
         "status": "design"
@@ -957,10 +945,6 @@
       },
       {
         "from": "epistemic-adequacy-sysml-v2-binding",
-        "to": "epistemic-adequacy-under-pressure-probe"
-      },
-      {
-        "from": "pressure-susceptibility-probe",
         "to": "epistemic-adequacy-under-pressure-probe"
       },
       {

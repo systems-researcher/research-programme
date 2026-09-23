@@ -41,6 +41,7 @@ STATUS_LABELS = {
     "released": "released",
     "results": "results",
     "published": "published",
+    "retired": "retired",
     "not-applicable": "",
 }
 
@@ -53,6 +54,7 @@ STATUS_NOTES = {
     "released": "Tagged and versioned. Others can depend on it.",
     "results": "Run for record. The numbers are in hand and being read.",
     "published": "The result is in the written record, in a venue or a frozen report.",
+    "retired": "Closed with no results. Its surviving value continues in another study.",
 }
 
 

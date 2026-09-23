@@ -335,20 +335,22 @@ repos:
     owner: systems-researcher
     strand: adequacy
     stage: evidence
-    status: built-runs-pending
+    status: retired
     objective: >
-      Measures how susceptible an AI assistant is to producing unauthorised
-      engineering answers when the work itself pushes on it: a deadline, a
-      senior engineer's stated conclusion, a board that has already agreed, or a
-      question with a false premise baked in.
+      Retiring. It produced no results: the only runs it reached were pipeline
+      validation. Its remaining value transfers into
+      epistemic-adequacy-under-pressure-probe at pin 2c030ca, and the GitHub
+      repository is archived once that extraction lands.
     question: >
       How much does social and operational pressure raise the rate of ungrounded
       engineering answers, and which kinds of pressure do most of the damage?
+      Closed unanswered; the measurement never ran.
     method: >
       Six scenarios drawn from design review, verification sign-off, and anomaly
       investigation, an influence-prompt library of seven levers, ensemble
-      judging, and an analysis layer. Harness and scenario set are built; the
-      runs have not been executed.
+      judging, and an analysis layer. The harness code and the never-run
+      Phase-1 grid are not transferred; the receiving study runs on the
+      testing toolkit's ea run command instead.
     depends_on: [epistemic-adequacy-testing-toolkit, epistemic-adequacy-sysml-v2-binding]
 
   - key: epistemic-adequacy-under-pressure-probe
@@ -368,16 +370,16 @@ repos:
       by how much is it eroded under deadline, seniority, and false-premise
       pressure?
     method: >
-      A two-by-two design — governed against ungoverned record, calm against
-      pressed instruction — reusing the influence-prompt library from the
-      pressure susceptibility probe and the annotated sidecar from the
-      adequacy probe, so neither factor is newly invented here. The published
-      governed-pressed cell is one lever over five questions; this varies the
-      lever and widens the question set, so the 33% can be read as an estimate
-      rather than a single observation. Reported as the ungrounded-answer rate
-      per cell and, as the headline, how much of the metadata's benefit remains
-      once pressure is applied.
-    depends_on: [epistemic-adequacy-sysml-v2-binding, pressure-susceptibility-probe]
+      A two-by-two design: governed against ungoverned record, calm against
+      pressed instruction. Reuses the influence-prompt library that transfers
+      from the pressure susceptibility probe at pin 2c030ca and the annotated
+      sidecar from the adequacy probe, so neither factor is newly invented
+      here. The published governed-pressed cell is one lever over five
+      questions; this varies the lever and widens the question set, so the 33%
+      can be read as an estimate rather than a single observation. Reported as
+      the ungrounded-answer rate per cell and, as the headline, how much of
+      the metadata's benefit remains once pressure is applied.
+    depends_on: [epistemic-adequacy-sysml-v2-binding]
 
   # -------------------------------------------- architecture, write-side ---
 
@@ -518,7 +520,7 @@ repos:
       Not applicable.
     depends_on: [epistemic-adequacy-spec, epistemic-adequacy-sysml-v2-binding,
                  epistemic-adequacy-testing-toolkit, sysml2-bench,
-                 epistemic-adequacy-probe, pressure-susceptibility-probe,
+                 epistemic-adequacy-probe,
                  SysML-v2-API-Services-Arch-A, sysml-v2-metadata-graph-Arch-B,
                  sysml-v2-governed-substrate-Arch-C,
                  model-vs-document-defect-probe, ahp-framing-fragility-probe,

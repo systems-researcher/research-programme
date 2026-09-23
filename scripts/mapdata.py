@@ -17,12 +17,15 @@ import yaml
 
 STRANDS = ("adequacy", "method-validation", "formalisation")
 STAGES = ("define", "measure", "evidence", "architecture", "release")
+# Lifecycle order first; "retired" and "not-applicable" sit outside it and
+# render last in the legend.
 STATUSES = (
     "design",
     "built-runs-pending",
     "released",
     "results",
     "published",
+    "retired",
     "not-applicable",
 )
 RENDERS = ("card", "node-only")
