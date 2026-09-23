@@ -32,7 +32,7 @@ jobs:
           python-version: "3.13"
           cache: pip
 
-      - run: pip install -r requirements.txt
+      - run: pip install --require-hashes -r requirements.txt
 
       # gh reads GH_TOKEN from the environment. The job token can write, which
       # is all the push at the end needs.

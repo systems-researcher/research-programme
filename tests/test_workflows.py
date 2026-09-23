@@ -9,6 +9,7 @@ key ``on`` as boolean True, so triggers are read from ``wf[True]``.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import yaml
@@ -97,3 +98,31 @@ def test_base_path_and_prefixed_site_urls() -> None:
     assert 'localhost:4173${BASE_PATH}' in site_text
     # probe + both specs
     assert site_text.count("localhost:4173${BASE_PATH}") >= 3
+
+
+def test_python_lock_is_hash_pinned_and_complete() -> None:
+    lock = (ROOT / "requirements.txt").read_text(encoding="utf-8")
+    assert "--hash=sha256:" in lock
+    for name in (
+        "PyYAML",
+        "pytest",
+        "iniconfig",
+        "packaging",
+        "pluggy",
+        "pygments",
+    ):
+        assert re.search(rf"^{re.escape(name)}==", lock, re.M | re.I)
+    assert "Regenerate:" in lock or "piptools compile" in lock
+
+
+def test_workflows_install_require_hashes_on_lock() -> None:
+    for name in ("check.yml", "refresh.yml"):
+        text = (WF / name).read_text(encoding="utf-8")
+        assert "pip install --require-hashes -r requirements.txt" in text
+
+
+def test_workflows_python_313_with_pip_cache() -> None:
+    for name in ("check.yml", "refresh.yml"):
+        text = (WF / name).read_text(encoding="utf-8")
+        assert 'python-version: "3.13"' in text
+        assert "cache: pip" in text

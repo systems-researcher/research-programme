@@ -34,7 +34,7 @@ jobs:
           python-version: "3.13"
           cache: pip
 
-      - run: pip install -r requirements.txt
+      - run: pip install --require-hashes -r requirements.txt
 
       # The ten validation rules, before anything is generated from the file.
       - name: Validate repos.yml

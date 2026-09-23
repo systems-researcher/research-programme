@@ -113,6 +113,13 @@ python tests/check_external_links.py  # the built page must fetch nothing off-or
 cd app && npm run test:meta           # og/twitter tags survived the build
 ```
 
+Python deps for scripts/tests are pinned with hashes in `requirements.txt`
+(generated from `requirements.in`). Regenerate after bumping floors:
+
+```bash
+python -m piptools compile --generate-hashes requirements.in -o requirements.txt
+```
+
 Two more need a served page and a browser (`npx --prefix app playwright
 install chromium` once). CI runs both on every push against the
 production build, served under the Pages prefix. To run them the way CI
