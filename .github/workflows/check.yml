@@ -8,6 +8,17 @@ on:
   pull_request:
   workflow_dispatch:
 
+  # The weekly refresh bot pushes with GITHUB_TOKEN, which starts no
+  # workflows. Without this listener its commit would never be checked, and
+  # pages.yml, which deploys only what check passed, would never publish it.
+  # A workflow_run run checks out main's tip, which is the bot's commit. No job in this file carries an if, so every run's
+  # conclusion is a verdict on the commit it checked out. "refresh" is
+  # refresh.yml's name field.
+  workflow_run:
+    workflows: [refresh]
+    types: [completed]
+    branches: [main]
+
 permissions:
   contents: read
 
@@ -55,6 +66,12 @@ jobs:
   site:
     name: the page builds
     runs-on: ubuntu-latest
+    # The production configuration, the same BASE_PATH pages.yml deploys
+    # with. Set on the job rather than the build step because vite preview
+    # re-reads vite.config.ts, so the served base comes from this
+    # environment too.
+    env:
+      BASE_PATH: /${{ github.event.repository.name }}/
     steps:
       - uses: actions/checkout@v4
 
@@ -93,23 +110,26 @@ jobs:
         run: npx playwright install --with-deps chromium
         working-directory: app
 
+      # Probe the prefixed URL. Under a base path, vite preview answers /
+      # with a redirect, which curl -f accepts, so a root probe would pass
+      # without serving the page.
       - name: Serve the built site
         run: |
           npm run preview -- --strictPort &
           for i in $(seq 1 30); do
-            if curl -sf http://localhost:4173/ > /dev/null; then exit 0; fi
+            if curl -sf "http://localhost:4173${BASE_PATH}" > /dev/null; then exit 0; fi
             sleep 1
           done
-          echo "::error::vite preview never answered on :4173"
+          echo "::error::vite preview never answered on :4173${BASE_PATH}"
           exit 1
         working-directory: app
 
       - name: Nothing scrolls sideways (layout)
-        run: node tests/layout.spec.mjs http://localhost:4173/
+        run: node tests/layout.spec.mjs "http://localhost:4173${BASE_PATH}"
         working-directory: app
 
       - name: Hash deep links open and close the sheet
-        run: node tests/deep-link.spec.mjs http://localhost:4173/
+        run: node tests/deep-link.spec.mjs "http://localhost:4173${BASE_PATH}"
         working-directory: app
 
       - uses: actions/setup-python@v5
