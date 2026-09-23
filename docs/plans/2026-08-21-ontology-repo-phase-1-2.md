@@ -5,7 +5,13 @@ SPDX-License-Identifier: CC-BY-4.0
 
 # Epistemic Adequacy Ontology — Phases 1 and 2 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Status:** COMPLETE (phases 1-2), recorded 2026-08-21, banner dated 2026-09-23
+**Record:** task completion lives in [`2026-08-21-ontology-repo-phase-1-2-execution-log.md`](2026-08-21-ontology-repo-phase-1-2-execution-log.md) (13 tasks, 21 commits, 101 tests, 8 fix rounds). The step checkboxes in this file were never ticked during execution and stay unticked on purpose.
+**Location:** implementation landed in the sibling repository `epistemic-adequacy-ontology`, not in `research-programme`. Do not re-run clone-and-strip or purification steps from this checkout.
+**Programme map:** `repos.yml` lists `epistemic-adequacy-ontology` as `owner: systems-researcher`, `status: built-runs-pending`. This banner does not change `repos.yml`.
+**Archive:** agentic task-by-task execution from this file is retired.
+
+> **Archived work order.** Agentic task-by-task execution is retired. See the Status block above.
 
 **Goal:** Stand up `epistemic-adequacy-ontology` as a language-agnostic repository whose entity model refuses SysML v2 types by construction, and give it a validation gate that runs SHACL over real claim-graph instances.
 
