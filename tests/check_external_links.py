@@ -32,7 +32,7 @@ from urllib.parse import urlparse
 # listed. Adding to this set should be a deliberate act: an unexpected host
 # is how a tracking pixel or a dead redirect gets onto a research page.
 ALLOWED = {"github.com", "doi.org"}
-ALLOWED_SUFFIXES = ("github.io",)
+ALLOWED_SUFFIXES = (".github.io",)
 
 
 def permitted(host: str) -> bool:

@@ -520,6 +520,167 @@ def test_a_public_repository_still_advertises_its_result_site() -> None:
     assert find(payload, "alpha")["site"] == "https://x.github.io/alpha/"
 
 
+def test_javascript_homepage_is_dropped_for_public_repo() -> None:
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {
+                "alpha": {"visibility": "public", "homepage": "javascript:alert(1)"}
+            },
+        },
+    )
+    assert find(payload, "alpha")["site"] is None
+
+
+def test_data_uri_homepage_is_dropped_for_public_repo() -> None:
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {
+                "alpha": {
+                    "visibility": "public",
+                    "homepage": "data:text/html,hi",
+                }
+            },
+        },
+    )
+    assert find(payload, "alpha")["site"] is None
+
+
+def test_http_homepage_is_dropped_for_public_repo() -> None:
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {
+                "alpha": {
+                    "visibility": "public",
+                    "homepage": "http://example.github.io/x",
+                }
+            },
+        },
+    )
+    assert find(payload, "alpha")["site"] is None
+
+
+def test_off_allowlist_https_homepage_is_dropped() -> None:
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {
+                "alpha": {
+                    "visibility": "public",
+                    "homepage": "https://evil.example/x",
+                }
+            },
+        },
+    )
+    assert find(payload, "alpha")["site"] is None
+
+
+def test_lookalike_github_io_host_is_dropped() -> None:
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {
+                "alpha": {
+                    "visibility": "public",
+                    "homepage": "https://evilgithub.io/x",
+                }
+            },
+        },
+    )
+    assert find(payload, "alpha")["site"] is None
+
+
+def test_example_github_io_still_folds_for_public_repo() -> None:
+    url = "https://example.github.io/x/"
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {"alpha": {"visibility": "public", "homepage": url}},
+        },
+    )
+    assert find(payload, "alpha")["site"] == url
+
+
+def test_mixed_case_allowlisted_host_still_folds() -> None:
+    url = "https://GitHub.com/systems-researcher/alpha"
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {"alpha": {"visibility": "public", "homepage": url}},
+        },
+    )
+    assert find(payload, "alpha")["site"] == url
+
+
+def test_netloc_port_is_rejected() -> None:
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {
+                "alpha": {
+                    "visibility": "public",
+                    "homepage": "https://github.com:443",
+                }
+            },
+        },
+    )
+    assert find(payload, "alpha")["site"] is None
+
+
+def test_netloc_userinfo_or_backslash_smuggle_is_rejected() -> None:
+    # Browser authority must equal hostname; reject rather than parse further.
+    for bad in (
+        "https://evil.example\\@github.io/",
+        "https://user:pass@github.com/x",
+    ):
+        payload = render.payload(
+            data_with(entry()),
+            {
+                "generated_at": "t",
+                "repos": {"alpha": {"visibility": "public", "homepage": bad}},
+            },
+        )
+        assert find(payload, "alpha")["site"] is None, bad
+
+
+def test_safe_site_preserves_query_and_fragment_on_allowlisted_host() -> None:
+    url = "https://example.github.io/path?q=1#frag"
+    assert render.safe_site(url) == url
+
+
+def test_allowlist_literals_match_external_links_checker() -> None:
+    import ast
+    import re
+    from pathlib import Path
+
+    checker = Path(__file__).resolve().parent / "check_external_links.py"
+    text = checker.read_text(encoding="utf-8")
+    # Parse assignment values from the checker source without importing it.
+    tree = ast.parse(text)
+    got: dict[str, object] = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id in {
+                    "ALLOWED",
+                    "ALLOWED_SUFFIXES",
+                }:
+                    got[target.id] = ast.literal_eval(node.value)
+    assert got["ALLOWED"] == render.ALLOWED
+    assert got["ALLOWED_SUFFIXES"] == render.ALLOWED_SUFFIXES
+    assert render.ALLOWED_SUFFIXES == (".github.io",)
+
+
 # ---------------------------------------------------------------------------
 # graph(): the dependency picture, positioned in Python.
 #

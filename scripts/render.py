@@ -2,13 +2,47 @@
 # SPDX-License-Identifier: MIT
 """Pure rendering: MapData in, the README table and the app payload out.
 
-No file writes, no validation."""
+No file writes. Homepage scheme/host filtering happens here at payload fold
+time."""
 from __future__ import annotations
 
 import re
-
+from urllib.parse import urlsplit
 
 from scripts import mapdata
+
+# Identical literals to tests/check_external_links.py (parity test locks them).
+# Leading dot on the suffix is the registrable-boundary guard so evilgithub.io
+# never matches. Checker cannot be imported (module-level side effects).
+ALLOWED = {"github.com", "doi.org"}
+ALLOWED_SUFFIXES = (".github.io",)
+
+
+def permitted(host: str) -> bool:
+    return host in ALLOWED or host.endswith(ALLOWED_SUFFIXES)
+
+
+def safe_site(homepage: object) -> str | None:
+    """Return homepage only when it is https and host-allowlisted; else None."""
+    if not isinstance(homepage, str):
+        return None
+    value = homepage.strip()
+    if not value:
+        return None
+    parts = urlsplit(value)
+    if parts.scheme.lower() != "https":
+        return None
+    host = parts.hostname
+    if not host:
+        return None
+    if parts.netloc.lower() != host:
+        # Port, userinfo, backslash, or @ means browser authority != hostname;
+        # lower() so mixed-case hosts are not falsely rejected. The spec's
+        # L121 intent (ports/userinfo/backslash/@) is preserved.
+        return None
+    if not permitted(host):
+        return None
+    return value
 
 BEGIN = "<!-- BEGIN:repos -->"
 END = "<!-- END:repos -->"
@@ -296,7 +330,7 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
                         # URL — linking it sends the reader to a 404. Two of
                         # the three set here were dead when this was written.
                         "site": (
-                            live_repos.get(key, {}).get("homepage") or None
+                            safe_site(live_repos.get(key, {}).get("homepage"))
                             if live_repos.get(key, {}).get("visibility") == "public"
                             else None
                         ),
