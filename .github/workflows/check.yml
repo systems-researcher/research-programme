@@ -136,8 +136,9 @@ jobs:
         with:
           python-version: "3.13"
 
-      # Fonts are bundled and Mermaid is an npm dependency precisely so the
-      # page contacts nothing but github.com. This is what keeps that true.
+      # Fonts are bundled into the build, so load-time font/CDN fetches are not
+      # part of the page. The checker allowlists click destinations: github.com,
+      # doi.org, and hosts ending in .github.io.
       - name: The built page fetches nothing off-origin
         run: python tests/check_external_links.py
 
