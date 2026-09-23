@@ -1,6 +1,11 @@
 # Bootstrap Three Scoped Studies — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Status:** COMPLETE (plan scope), 2026-09-23
+**Closure:** Owner flips for `admissibility-spec`, `epistemic-adequacy-under-pressure-probe`, and `governed-interaction-cost-probe` already landed (`owner: systems-researcher` in `repos.yml`). This plan's bootstrap work order is closed.
+**Not claimed:** the three studies remain `status: design` in `repos.yml`. Closing this plan does not mark the research complete.
+**Archive:** step checkboxes below are a frozen work-order archive. Do not execute this plan again from this repository.
+
+> **Archived work order.** Agentic task-by-task execution is retired. See the Status block above.
 
 **Goal:** Create the three GitHub repositories scoped in `repos.yml` on 2026-08-20 — `admissibility-spec`, `epistemic-adequacy-under-pressure-probe`, `governed-interaction-cost-probe` — each carrying the programme's house structure and its own scoped question, so a full research execution can be run against them.
 

@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: MIT
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
-/** shadcn themes on a `.dark` class, so a media query alone cannot drive it.
+/** shadcn themes key off a `.dark` class, so a media query alone is not enough.
  *
- * The page still honours the reader's system setting by default; an explicit
- * choice is remembered. `resolved` is what is actually painted, which is what
- * the diagram needs, since Mermaid fixes its theme at render time. */
+ * Default follows the reader system preference; an explicit choice is stored
+ * under the existing localStorage key. `resolved` is the concrete light/dark
+ * value after resolving `system`, exposed on the context for callers that want
+ * the concrete scheme. */
 
 type Choice = "light" | "dark" | "system"
 type Resolved = "light" | "dark"

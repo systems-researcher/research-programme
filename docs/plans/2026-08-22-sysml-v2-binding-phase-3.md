@@ -5,7 +5,13 @@ SPDX-License-Identifier: CC-BY-4.0
 
 # SysML v2 Binding — Phase 3 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Status:** POINTER, sibling-repo work order (banner 2026-09-23)
+**Location:** Phase 3 executes in the sibling binding repository (`epistemic-adequacy-sysml-v2-binding` / former metamodel tree), not in `research-programme`.
+**Checkboxes:** ticks in this file record that plan's own run state. They are not a claim that programme product status is complete.
+**Programme map:** `repos.yml` still carries `epistemic-adequacy-sysml-v2-binding` at `status: design`. This banner does not change `repos.yml`. Backlog b-05 stays `needs-info` until sibling product evidence is accepted separately.
+**Archive:** do not drive a fresh phase-3 execution from this front-door checkout. Follow the sibling repository's own branch and CI.
+
+> **Archived work order.** Agentic task-by-task execution is retired. See the Status block above.
 
 **Goal:** Make `epistemic-adequacy-metamodel` a *binding* — one that consumes the published ontology at a pinned version, supplies the four concrete types the binding contract asks for, and generates its SysML v2 library from that rather than from a schema of its own — then rename it.
 

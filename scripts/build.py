@@ -5,28 +5,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
-import tempfile
 from pathlib import Path
 
 from scripts import mapdata, render
+from scripts.atomic import write_atomic
 
 ROOT = Path(__file__).resolve().parent.parent
 REPOS_YML = ROOT / "repos.yml"
-
-
-def write_atomic(path: Path, text: str) -> None:
-    """Write via a temporary file in the same directory, then replace.
-
-    A crashed build must never leave a half-written page, or a README with one
-    marker and not the other.
-    """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    handle, temporary = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")
-    with os.fdopen(handle, "w", encoding="utf-8", newline="\n") as stream:
-        stream.write(text)
-    os.replace(temporary, path)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -58,7 +44,31 @@ def main(argv: list[str] | None = None) -> int:
     live = None
     live_path = ROOT / "data" / "live.json"
     if live_path.exists():
-        live = json.loads(live_path.read_text(encoding="utf-8"))
+        try:
+            live = json.loads(live_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            print(
+                "warning: data/live.json unreadable/corrupt; "
+                "building without live GitHub fields",
+                file=sys.stderr,
+            )
+            live = None
+        if isinstance(live, dict):
+            if "repos" in live and not isinstance(live.get("repos"), dict):
+                print(
+                    "warning: live.json repos shape unusable; "
+                    "building without live GitHub fields",
+                    file=sys.stderr,
+                )
+                live = None
+        elif live is not None:
+            # JSON root was not an object (array/string/number)
+            print(
+                "warning: data/live.json unreadable/corrupt; "
+                "building without live GitHub fields",
+                file=sys.stderr,
+            )
+            live = None
     else:
         print(
             "warning: data/live.json is absent; building without live GitHub fields",

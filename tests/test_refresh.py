@@ -107,3 +107,164 @@ def test_previous_entries_survive_a_failed_lookup(tmp_path: Path) -> None:
 
     assert result.repos["alpha"]["pushed_at"] == "old"
     assert result.stale == ["alpha"]
+
+
+def test_corrupt_previous_is_treated_as_empty_and_does_not_raise(
+    tmp_path: Path, capsys
+) -> None:
+    live = tmp_path / "live.json"
+    live.write_text("{not-json", encoding="utf-8")
+    runner = fake_gh(
+        {
+            "repos/systems-researcher/alpha": {
+                "visibility": "public",
+                "pushed_at": "2026-08-19T08:00:00Z",
+                "homepage": "https://example.github.io/alpha/",
+            }
+        }
+    )
+
+    result = refresh.collect(
+        data_with(entry("alpha", "systems-researcher")), runner, previous=live
+    )
+
+    assert result.repos["alpha"]["visibility"] == "public"
+    assert result.stale == []
+    assert "unreadable/corrupt" in capsys.readouterr().err
+
+
+def test_corrupt_previous_under_total_failure_treats_previous_as_empty(
+    tmp_path: Path, capsys
+) -> None:
+    live = tmp_path / "live.json"
+    live.write_text("{truncated", encoding="utf-8")
+    data = data_with(entry("alpha", "systems-researcher"))
+
+    result = refresh.collect(data, fake_gh({}), previous=live)
+
+    assert result.repos == {}
+    assert result.stale == ["alpha"]
+    assert refresh.total_failure(data, result) is True
+    assert "unreadable/corrupt" in capsys.readouterr().err
+
+
+def test_total_failure_with_corrupt_previous_leaves_destination_untouched(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    dest = tmp_path / "live.json"
+    prior = b"PRIOR_UNTOUCHED\n"
+    dest.write_bytes(prior)
+
+    data = data_with(entry("alpha", "systems-researcher"))
+    monkeypatch.setattr(refresh, "LIVE_JSON", dest)
+    monkeypatch.setattr(refresh.mapdata, "load", lambda _p: data)
+    monkeypatch.setattr(refresh.mapdata, "check", lambda _d: [])
+    monkeypatch.setattr(
+        refresh,
+        "collect",
+        lambda *_a, **_k: refresh.Refreshed(repos={}, stale=["alpha"]),
+    )
+
+    assert refresh.main([]) == 1
+    assert dest.read_bytes() == prior
+
+
+def test_corrupt_previous_warns_and_successful_repo_still_records(
+    tmp_path: Path, capsys
+) -> None:
+    live = tmp_path / "live.json"
+    live.write_text("{truncated", encoding="utf-8")
+    runner = fake_gh(
+        {
+            "repos/systems-researcher/alpha": {
+                "visibility": "public",
+                "pushed_at": "2026-08-19T08:00:00Z",
+                "homepage": "https://example.github.io/alpha/",
+            }
+        }
+    )
+    result = refresh.collect(
+        data_with(entry("alpha", "systems-researcher")), runner, previous=live
+    )
+    assert result.stale == []
+    assert result.repos["alpha"]["visibility"] == "public"
+    err = capsys.readouterr().err
+    assert "unreadable/corrupt" in err
+
+
+def test_crash_before_replace_leaves_prior_live_json(
+    tmp_path: Path, monkeypatch
+) -> None:
+    dest = tmp_path / "live.json"
+    prior = '{"generated_at":"old","repos":{}}\n'
+    dest.write_text(prior, encoding="utf-8")
+
+    data = data_with(entry("alpha", "systems-researcher"))
+    monkeypatch.setattr(refresh, "LIVE_JSON", dest)
+    monkeypatch.setattr(refresh.mapdata, "load", lambda _p: data)
+    monkeypatch.setattr(refresh.mapdata, "check", lambda _d: [])
+    monkeypatch.setattr(
+        refresh,
+        "collect",
+        lambda *_a, **_k: refresh.Refreshed(
+            repos={
+                "alpha": {
+                    "visibility": "public",
+                    "pushed_at": "t",
+                    "homepage": "https://example.github.io/a/",
+                }
+            },
+            stale=[],
+        ),
+    )
+
+    import scripts.atomic as atomic
+
+    def boom(src, dst):
+        raise RuntimeError("crash before replace")
+
+    monkeypatch.setattr(atomic.os, "replace", boom)
+    try:
+        refresh.main([])
+    except RuntimeError:
+        pass
+    assert dest.read_text(encoding="utf-8") == prior
+
+
+def test_successful_refresh_write_is_full_payload_via_atomic(
+    tmp_path: Path, monkeypatch
+) -> None:
+    dest = tmp_path / "live.json"
+    data = data_with(entry("alpha", "systems-researcher"))
+    monkeypatch.setattr(refresh, "LIVE_JSON", dest)
+    monkeypatch.setattr(refresh.mapdata, "load", lambda _p: data)
+    monkeypatch.setattr(refresh.mapdata, "check", lambda _d: [])
+    monkeypatch.setattr(
+        refresh,
+        "collect",
+        lambda *_a, **_k: refresh.Refreshed(
+            repos={
+                "alpha": {
+                    "visibility": "public",
+                    "pushed_at": "t",
+                    "homepage": "https://example.github.io/a/",
+                }
+            },
+            stale=[],
+        ),
+    )
+    assert refresh.main([]) == 0
+    written = json.loads(dest.read_text(encoding="utf-8"))
+    assert written["repos"]["alpha"]["visibility"] == "public"
+    # Formatting contract: sort_keys + trailing newline
+    raw = dest.read_text(encoding="utf-8")
+    assert raw.endswith("\n")
+    assert raw == json.dumps(written, indent=2, sort_keys=True) + "\n"
+
+
+def test_refresh_module_does_not_call_write_text_for_live_output() -> None:
+    import inspect
+    from scripts import refresh as mod
+    src = inspect.getsource(mod.main)
+    assert "write_atomic" in src
+    assert "LIVE_JSON.write_text" not in src

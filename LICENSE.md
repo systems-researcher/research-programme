@@ -26,7 +26,6 @@ copyright notices retained:
 | [Radix UI](https://www.radix-ui.com) | npm dependency of the above | MIT | WorkOS |
 | [Geist](https://github.com/vercel/geist-font) | bundled into `site/assets/` via `@fontsource-variable/geist` | SIL OFL 1.1 | The Geist Project Authors |
 | [Lucide](https://lucide.dev) | icons, npm dependency | ISC | Lucide Contributors |
-| [Mermaid](https://mermaid.js.org) | diagram rendering, npm dependency | MIT | Knut Sveidqvist |
 | [tw-animate-css](https://github.com/Wombosvideo/tw-animate-css) | npm dependency | MIT | Wombosvideo |
 
 Full licence texts ship inside each package under `app/node_modules/`. The

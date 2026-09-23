@@ -4,8 +4,9 @@ name: refresh
 
 # Live fields (visibility, pushed_at, homepage) go stale unless someone
 # remembers to run refresh.py locally. Weekly, a bot runs it instead. The
-# bot push uses GITHUB_TOKEN, which does not start pages.yml; pages.yml
-# listens for this workflow via workflow_run and rebuilds after success.
+# bot push uses GITHUB_TOKEN, which starts no workflows, so check.yml
+# listens for this workflow via workflow_run and tests the bot's commit,
+# and pages.yml deploys it once check passes.
 on:
   schedule:
     # Mondays 06:23 UTC
@@ -31,7 +32,7 @@ jobs:
           python-version: "3.13"
           cache: pip
 
-      - run: pip install -r requirements.txt
+      - run: pip install --require-hashes -r requirements.txt
 
       # gh reads GH_TOKEN from the environment. The job token can write, which
       # is all the push at the end needs.

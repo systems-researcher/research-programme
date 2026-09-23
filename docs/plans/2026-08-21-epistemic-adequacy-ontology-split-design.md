@@ -10,7 +10,7 @@ SPDX-License-Identifier: CC-BY-4.0
 `epistemic-adequacy-spec` (→ v0.2.0),
 `epistemic-adequacy-metamodel` (→ renamed `epistemic-adequacy-sysml-v2-binding`),
 `admissibility-spec` (unblocked), `research-programme` (map, `repos.yml`)
-**Status:** design approved 2026-08-21, not yet implemented
+**Status:** design approved 2026-08-21; phases 1-2 complete per the phase-1-2 execution log (13 tasks, 21 commits, 101 tests); phase-3 steps ticked in that plan's own sibling-run record, binding still at `repos.yml` `status: design`; phases 4-6 remain separate open plans
 
 ---
 

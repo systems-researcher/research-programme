@@ -5,7 +5,12 @@ SPDX-License-Identifier: CC-BY-4.0
 
 # Social Preview and Mobile Overflow Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Status:** COMPLETE, 2026-09-23
+**Closure:** Share card and mobile overflow work shipped in this repository. Browser layout/deep-link specs are declared CI surface; `playwright` is a committed devDependency (`app/package.json`) and Chromium is installed in `.github/workflows/check.yml`.
+**Supersession:** the Global Constraint "Playwright is dev-only and must not be committed" is **superseded by shipped reality**. Do not uninstall Playwright or reverse the CI browser steps to satisfy this archived plan.
+**Archive:** step checkboxes below are a frozen work-order archive. Do not execute this plan again.
+
+> **Archived work order.** Agentic task-by-task execution is retired. See the Status block above.
 
 **Goal:** Make the programme map shareable — a real preview card when the link is pasted, and a page that does not slide sideways on a phone.
 
@@ -19,6 +24,7 @@ SPDX-License-Identifier: CC-BY-4.0
 
 - **Do not add runtime dependencies.** The page currently contacts no host but `github.com`. `tests/check_external_links.py` enforces this and must keep passing.
 - **Playwright is dev-only and must not be committed.** Install it for verification, then `npm --prefix app uninstall playwright` and `git checkout -- app/package-lock.json` before committing. It has leaked into `package.json` before.
+  *(Superseded 2026-09-23: see Status block. Playwright is now a declared dependency and CI browser tool.)*
 - **Every file carries an SPDX header** matching its neighbours (`// SPDX-License-Identifier: MIT` for code, `CC-BY-4.0` for prose).
 - **`repos.yml` and `data/map.json` are owned by another agent in this repo.** Do not stage them. Commit only the files each task names.
 - **Verify on the built output, not the dev server**, wherever a task's check concerns metadata or layout. `npm --prefix app run build` writes to `site/`.
