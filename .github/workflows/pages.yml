@@ -3,14 +3,17 @@
 name: pages
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-  # GITHUB_TOKEN pushes from refresh.yml do not start other workflows.
-  # Rebuild after a successful refresh instead of relying on that push.
+  # Deploy only what check has passed. check runs on every push to main, and
+  # on the refresh bot's commit through its own workflow_run listener
+  # (GITHUB_TOKEN pushes start no workflows), so every main commit reaches
+  # this file through one gate. To redeploy by hand, run check on main:
+  #   gh workflow run check.yml --ref main
+  # "check" is that workflow's name field. Renaming it stops deploys without
+  # an error anywhere.
   workflow_run:
-    workflows: [refresh]
+    workflows: [check]
     types: [completed]
+    branches: [main]
 
 # Least privilege: read the repo, write the Pages artifact, and mint the
 # token the deploy step exchanges. Nothing else.
@@ -27,10 +30,27 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    # Deploy only when all three hold.
+    # 1. check passed. Any other conclusion means no deploy.
+    # 2. check ran for a push, a manual dispatch, or the refresh chain,
+    #    never for a pull request. A fork PR from a branch named main also
+    #    reports head_branch main.
+    # 3. The commit is still main's tip. On a workflow_run run, github.sha
+    #    is the default branch's last commit, so an older check that
+    #    finishes after a newer push is skipped instead of rolling the
+    #    site back.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      contains(fromJSON('["push", "workflow_dispatch", "workflow_run"]'), github.event.workflow_run.event) &&
+      github.event.workflow_run.head_sha == github.sha
     runs-on: ubuntu-latest
     steps:
+      # Build exactly the commit check passed. The job's if makes it main's
+      # tip and never pull-request code, which matters because this
+      # workflow holds pages: write and id-token: write.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - uses: actions/setup-node@v4
         with:
