@@ -1,13 +1,18 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource/eb-garamond/400.css";
+@import "@fontsource/eb-garamond/600.css";
+@import "@fontsource/eb-garamond/700.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
+    --font-heading: 'EB Garamond', Georgia, 'Times New Roman', serif;
+    --font-sans: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,73 +53,78 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Brand tokens: the Figure and Petrol palette from systems-researcher/brandkit
+   (site-tokens/tokens.css). Plate carries the page, Ink the text, Petrol the
+   structure, Annotation Red the destructive/callout role, Grid Grey the rules. */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --background: #F2F3F1;
+    --foreground: #131B22;
+    --card: #F9FAF8;
+    --card-foreground: #131B22;
+    --popover: #F9FAF8;
+    --popover-foreground: #131B22;
+    --primary: #0F5257;
+    --primary-foreground: #F2F3F1;
+    --secondary: #E7E9E6;
+    --secondary-foreground: #131B22;
+    --muted: #E7E9E6;
+    --muted-foreground: #56616B;
+    --accent: #0F5257;
+    --accent-foreground: #F2F3F1;
+    --destructive: #A63A2B;
+    --border: #C9CDC9;
+    --input: #C9CDC9;
+    --ring: #0F5257;
+    --chart-1: #C9CDC9;
+    --chart-2: #56616B;
+    --chart-3: #0F5257;
+    --chart-4: #131B22;
+    --chart-5: #A63A2B;
+    --radius: 0px;
+    --sidebar: #F2F3F1;
+    --sidebar-foreground: #131B22;
+    --sidebar-primary: #0F5257;
+    --sidebar-primary-foreground: #F2F3F1;
+    --sidebar-accent: #E7E9E6;
+    --sidebar-accent-foreground: #131B22;
+    --sidebar-border: #C9CDC9;
+    --sidebar-ring: #0F5257;
 }
 
+/* Dark scheme inverts the same palette: Ink ground, Plate text, and a
+   lightened Petrol so structure keeps contrast on the dark ground. */
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --background: #131B22;
+    --foreground: #F2F3F1;
+    --card: #1A242C;
+    --card-foreground: #F2F3F1;
+    --popover: #1A242C;
+    --popover-foreground: #F2F3F1;
+    --primary: #6AA8A0;
+    --primary-foreground: #0E1519;
+    --secondary: #232F37;
+    --secondary-foreground: #F2F3F1;
+    --muted: #232F37;
+    --muted-foreground: #A6B0AA;
+    --accent: #6AA8A0;
+    --accent-foreground: #0E1519;
+    --destructive: #C9705A;
+    --border: #33414B;
+    --input: #33414B;
+    --ring: #6AA8A0;
+    --chart-1: #33414B;
+    --chart-2: #A6B0AA;
+    --chart-3: #6AA8A0;
+    --chart-4: #F2F3F1;
+    --chart-5: #C9705A;
+    --sidebar: #1A242C;
+    --sidebar-foreground: #F2F3F1;
+    --sidebar-primary: #6AA8A0;
+    --sidebar-primary-foreground: #0E1519;
+    --sidebar-accent: #232F37;
+    --sidebar-accent-foreground: #F2F3F1;
+    --sidebar-border: #33414B;
+    --sidebar-ring: #6AA8A0;
 }
 
 @layer base {
@@ -126,6 +136,9 @@
     }
   html {
     @apply font-sans;
+    }
+  h1, h2, h3, h4 {
+    @apply font-heading;
     }
 }
 /* ------------------------------------------------------------------

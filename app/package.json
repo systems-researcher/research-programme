@@ -14,7 +14,8 @@
     "banner": "node scripts/banner.mjs"
   },
   "dependencies": {
-    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource/eb-garamond": "^5.2.5",
+    "@fontsource/ibm-plex-sans": "^5.2.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.33.0",
