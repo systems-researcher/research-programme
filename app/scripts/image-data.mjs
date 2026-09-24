@@ -18,18 +18,25 @@ import { resolve } from "node:path"
 
 export const SITE = "systems-researcher.github.io/research-programme"
 
-// The bundled Geist variable font, inlined as a data URI so the generators
-// draw the site's own type offline. Fetching Google Fonts here contradicted
-// the self-hosted rule and risked a silent fallback to system sans.
+// The bundled brand fonts, inlined as data URIs so the generators draw the
+// site's own type offline. Fetching Google Fonts here contradicted the
+// self-hosted rule and risked a silent fallback to system fonts.
 export function fontFace() {
-  const woff2 = readFileSync(
-    resolve(import.meta.dirname, "../node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2"),
-  )
-  return `@font-face {
-  font-family: "Geist";
-  src: url(data:font/woff2;base64,${woff2.toString("base64")}) format("woff2-variations");
-  font-weight: 100 900;
+  const face = (file, family, weight) => {
+    const woff2 = readFileSync(
+      resolve(import.meta.dirname, `../node_modules/@fontsource/${file}`),
+    )
+    return `@font-face {
+  font-family: "${family}";
+  src: url(data:font/woff2;base64,${woff2.toString("base64")}) format("woff2");
+  font-weight: ${weight};
 }`
+  }
+  return [
+    face("eb-garamond/files/eb-garamond-latin-600-normal.woff2", "EB Garamond", "600"),
+    face("ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2", "IBM Plex Sans", "400"),
+    face("ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2", "IBM Plex Sans", "600"),
+  ].join("\n")
 }
 
 // The strand colours the site defines as --strand-<token>-line. Transcribed

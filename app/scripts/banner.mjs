@@ -38,25 +38,25 @@ const html = `<!doctype html>
   body {
     width: 1280px; height: 640px; display: flex; flex-direction: column;
     justify-content: space-between; padding: 80px;
-    background: #fafafa; color: #0a0a0a;
-    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    background: #F2F3F1; color: #131B22;
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   }
   .rules { display: flex; gap: 10px; margin-bottom: 30px; }
-  .rules i { display: block; width: 80px; height: 6px; border-radius: 3px; }
+  .rules i { display: block; width: 80px; height: 6px; }
   .eyebrow { font-size: 19px; font-weight: 600; letter-spacing: .18em;
-             text-transform: uppercase; color: #737373; }
-  h1 { font-size: 62px; line-height: 1.08; font-weight: 600;
-       letter-spacing: -.02em; max-width: 16ch; margin-top: 14px; }
+             text-transform: uppercase; color: #56616B; }
+  h1 { font-family: "EB Garamond", Georgia, serif; font-size: 62px; line-height: 1.08;
+       font-weight: 600; letter-spacing: 0; max-width: 16ch; margin-top: 14px; }
   ul { list-style: none; display: flex; flex-direction: column; gap: 14px;
        margin-top: 46px; }
   li { display: flex; align-items: center; gap: 16px; }
-  li i { display: block; width: 42px; height: 4px; border-radius: 2px; flex: none; }
+  li i { display: block; width: 42px; height: 4px; flex: none; }
   .name { font-size: 21px; font-weight: 500; }
-  .count { font-size: 19px; color: #737373; }
+  .count { font-size: 19px; color: #56616B; }
   .foot { display: flex; align-items: flex-end; justify-content: space-between; }
-  .site { font-size: 19px; color: #737373; }
-  .stat { font-size: 19px; color: #737373; }
-  .stat b { font-weight: 600; color: #0a0a0a; font-variant-numeric: tabular-nums; }
+  .site { font-size: 19px; color: #56616B; }
+  .stat { font-size: 19px; color: #56616B; }
+  .stat b { font-weight: 600; color: #131B22; font-variant-numeric: tabular-nums; }
 </style></head>
 <body>
   <div>
@@ -79,11 +79,11 @@ await page.setContent(html, { waitUntil: "networkidle" })
 // `networkidle` does not reliably wait for an @import-ed webfont to finish
 // parsing/applying, so confirm against the Font Loading API before shooting.
 await page.evaluate(() => document.fonts.ready)
-const geistLoaded = await page.evaluate(() => document.fonts.check("600 62px Geist"))
+const brandLoaded = await page.evaluate(() => document.fonts.check("600 62px 'EB Garamond'"))
 const out = resolve(import.meta.dirname, "../public/banner.png")
 writeFileSync(out, await page.screenshot({ type: "png" }))
 // The values the PNG draws, so CI can detect drift without a browser.
 writeFileSync(resolve(import.meta.dirname, "../public/images.manifest.json"), manifest(data))
 await browser.close()
 console.log(`wrote ${out} (1280x640, ${studies} studies, ${published} in the record)`)
-console.log(`Geist webfont: ${geistLoaded ? "loaded" : "fell back to system sans"}`)
+console.log(`Brand webfont: ${brandLoaded ? "loaded" : "fell back to system fonts"}`)
