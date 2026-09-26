@@ -76,8 +76,8 @@ as source we own and can edit.
 - **Approach:** Single column, `max-w-5xl`. The page never scrolls sideways;
   the diagram scrolls inside its own container.
 - **Border radius:** `--radius`, 0px. Corners are square.
-- **Signature chrome:** sticky dark masthead, mono repository names, badge row
-  per card, strand-coloured left edge.
+- **Signature chrome:** sticky dark masthead, the hero plate on the front
+  door, mono repository names, badge row per card, strand-coloured left edge.
 - **Print:** masthead hidden, scrollers relaxed, graph scaled to the sheet.
 
 ## Motion

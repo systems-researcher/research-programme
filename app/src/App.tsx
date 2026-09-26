@@ -12,6 +12,7 @@ import { Publications } from "@/components/publications"
 import { useTheme } from "@/components/theme"
 import type { Entry, MapPayload } from "@/lib/map"
 import payload from "@data/map.json"
+import heroGate from "@/assets/hero-gate.webp"
 
 const map = payload as MapPayload
 
@@ -148,29 +149,43 @@ export default function App() {
 
       <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
         <section className="border-b border-border py-9">
-          <div className="max-w-3xl">
-            <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-              {programme.title}
-            </h1>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              {programme.question}
-            </p>
-            <p className="mt-4 text-sm leading-relaxed text-foreground">{programme.move}</p>
-          </div>
-          <dl className="mt-7 flex flex-wrap gap-x-10 gap-y-3">
-            {[
-              { label: "Repositories", value: counts.repos },
-              { label: "In the record", value: counts.published },
-              { label: "Strands", value: strands.length },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <dt className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  {stat.label}
-                </dt>
-                <dd className="mt-0.5 font-mono text-xl tabular-nums">{stat.value}</dd>
+          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_24rem]">
+            <div>
+              <div className="max-w-3xl">
+                <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+                  {programme.title}
+                </h1>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  {programme.question}
+                </p>
+                <p className="mt-4 text-sm leading-relaxed text-foreground">{programme.move}</p>
               </div>
-            ))}
-          </dl>
+              <dl className="mt-7 flex flex-wrap gap-x-10 gap-y-3">
+                {[
+                  { label: "Repositories", value: counts.repos },
+                  { label: "In the record", value: counts.published },
+                  { label: "Strands", value: strands.length },
+                ].map((stat) => (
+                  <div key={stat.label}>
+                    <dt className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      {stat.label}
+                    </dt>
+                    <dd className="mt-0.5 font-mono text-xl tabular-nums">{stat.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+            <figure className="max-w-md lg:max-w-none">
+              <img
+                src={heroGate}
+                alt="Isometric ink drawing: engineering drawing sheets pass through a narrow petrol-coloured gate into an ordered archive of plates."
+                className="w-full border border-border"
+              />
+              <figcaption className="mt-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Plate I. Records admitted through a governed interface into the written record.
+              </figcaption>
+            </figure>
+          </div>
         </section>
 
         <section id="matrix" className="scroll-mt-4 py-8">
