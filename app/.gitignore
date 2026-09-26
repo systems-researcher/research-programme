@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# npm (package-lock.json) is the locked toolchain; bun state stays local
+bun.lock
+bun.lockb
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

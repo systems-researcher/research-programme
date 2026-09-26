@@ -3,6 +3,8 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .planning/
+.zcode/
+.superpowers/
 *.tmp
 
 node_modules/
