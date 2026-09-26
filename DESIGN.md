@@ -44,16 +44,22 @@ as source we own and can edit.
 
 ## Typography
 
-- **Display / body / UI:** Geist Variable, bundled via `@fontsource-variable`.
-  Self-hosted — no CDN request, no third-party tracking.
+- **Display:** EB Garamond, bundled via `@fontsource/eb-garamond`. Headings and
+  the programme title.
+- **Body / UI:** IBM Plex Sans, bundled via `@fontsource/ibm-plex-sans`.
 - **Data / identifiers:** the mono stack. Repository keys are always mono:
   they are identifiers, not prose.
+- All fonts are self-hosted: no CDN request, no third-party tracking.
 
 ## Colour
 
-- **Approach:** Neutral shadcn base. Colour carries meaning, never decoration.
-- **Tokens:** `--background`, `--foreground`, `--card`, `--muted-foreground`,
-  `--border`, `--ring`, `--primary`. Never hard-code a hex in a component.
+- **Approach:** the Figure/Petrol palette from systems-researcher/brandkit
+  (`site-tokens/tokens.css`). Plate carries the page, Ink the text, Petrol the
+  structure, Annotation Red the destructive role, Grid Grey the rules. Colour
+  carries meaning, never decoration.
+- **Tokens:** the shadcn variable names (`--background`, `--foreground`,
+  `--card`, `--muted-foreground`, `--border`, `--ring`, `--primary`) bound to
+  the brand values in `app/src/index.css`. Never hard-code a hex in a component.
 - **Strands:** each research strand owns one hue, defined in `app/src/index.css`
   for **both** colour schemes and used in two places at once — the card's left
   edge and its node in the diagram — so a reader can move between them.
@@ -69,7 +75,7 @@ as source we own and can edit.
 
 - **Approach:** Single column, `max-w-5xl`. The page never scrolls sideways;
   the diagram scrolls inside its own container.
-- **Border radius:** `--radius`, 0.625rem. Square corners were the old system.
+- **Border radius:** `--radius`, 0px. Corners are square.
 - **Signature chrome:** sticky dark masthead, mono repository names, badge row
   per card, strand-coloured left edge.
 - **Print:** masthead hidden, scrollers relaxed, graph scaled to the sheet.
@@ -122,3 +128,4 @@ free. That is the cost of this decision.
 | 2026-08-20 | A status label is one word, shared verbatim by cell and legend | Cells said DESIGN while the legend said "Design Stage" — two vocabularies for one thing. The explanation lives in STATUS_NOTES, which only the legend shows. |
 | 2026-08-20 | The legend is generated from the validator's status enum | A hand-written key drifts from the vocabulary it documents; a test asserts every status has a label. |
 | 2026-08-20 | A repository's result site and its paper are first-class | The DOI was buried mid-sentence in a prose field and three repositories published findings the map did not link. Both are what a reader was sent here for. |
+| 2026-09-24 | Adopt the Systems Researcher brand kit: EB Garamond for display, IBM Plex Sans for body and UI, the Figure/Petrol palette on the shadcn token names, square corners, and the SR monogram in the masthead and favicon | The programme shares one visual identity across its repositories. Binding the brand values to the existing shadcn variable names keeps the components, the strand colours, and both colour schemes working unchanged. `tests/test_design_contract.py` fails if this file drifts from `app/src/index.css` again. |

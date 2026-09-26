@@ -24,10 +24,11 @@ copyright notices retained:
 |---|---|---|---|
 | [shadcn/ui](https://ui.shadcn.com) | `app/src/components/ui/`, `app/src/lib/utils.ts` — vendored source, modified | MIT | shadcn |
 | [Radix UI](https://www.radix-ui.com) | npm dependency of the above | MIT | WorkOS |
-| [Geist](https://github.com/vercel/geist-font) | bundled into `site/assets/` via `@fontsource-variable/geist` | SIL OFL 1.1 | The Geist Project Authors |
+| [EB Garamond](https://github.com/octaviopardo/EBGaramond12) | bundled into `site/assets/` via `@fontsource/eb-garamond` | SIL OFL 1.1 | The EB Garamond Project Authors |
+| [IBM Plex Sans](https://github.com/IBM/plex) | bundled into `site/assets/` via `@fontsource/ibm-plex-sans` | SIL OFL 1.1 | IBM Corp. |
 | [Lucide](https://lucide.dev) | icons, npm dependency | ISC | Lucide Contributors |
 | [tw-animate-css](https://github.com/Wombosvideo/tw-animate-css) | npm dependency | MIT | Wombosvideo |
 
 Full licence texts ship inside each package under `app/node_modules/`. The
-Geist fonts are served from this origin rather than a font CDN; OFL 1.1 permits
+fonts are served from this origin rather than a font CDN; OFL 1.1 permits
 this, and the reserved-name and bundling conditions are unchanged by it.
