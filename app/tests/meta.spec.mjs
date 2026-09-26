@@ -32,6 +32,16 @@ if (/property="og:image" content="\//.test(html)) {
   failures += 1
 }
 
+// The favicon href is root-relative in source and becomes base-aware only
+// through the build's HTML rewrite, so the built file is the thing to assert.
+const base = process.env.BASE_PATH ?? "/"
+if (html.includes(`href="${base}favicon.svg"`)) {
+  console.log("  ok   favicon href carries the base prefix")
+} else {
+  console.log(`  MISS favicon href carries the base prefix (${base}favicon.svg)`)
+  failures += 1
+}
+
 // A malformed ld+json block is silently ignored by every crawler, which is
 // worse than none: it advertises structure it does not have.
 const ldMatch = html.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/)

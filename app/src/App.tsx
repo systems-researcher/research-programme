@@ -135,7 +135,9 @@ export default function App() {
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <span className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-            <img src="/logo.svg" alt="" className="h-4 w-auto" />
+            {/* BASE_URL, not a root-absolute literal: Vite rewrites HTML and
+                imported assets for the project-pages base, not JSX strings. */}
+            <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" className="h-4 w-auto" />
             Loughborough University
             <span className="mx-2 text-border">/</span>
             Doctoral research programme

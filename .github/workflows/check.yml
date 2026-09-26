@@ -132,6 +132,13 @@ jobs:
         run: node tests/deep-link.spec.mjs "http://localhost:4173${BASE_PATH}"
         working-directory: app
 
+      # A root-absolute path in JSX reaches the browser untouched by the
+      # build's base rewrite, so a missing image only shows on the served
+      # page. Every rendered <img> must decode, and the favicon link fetch.
+      - name: Chrome assets decode under the served base
+        run: node tests/assets.spec.mjs "http://localhost:4173${BASE_PATH}"
+        working-directory: app
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
