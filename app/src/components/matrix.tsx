@@ -55,8 +55,8 @@ function Cell({
 
           // The written column is not a study, so it has no question or
           // method and opens no detail sheet. It is still a real repository
-          // with a state and a link, and what it consumes is the one number
-          // that says how much of the programme has been written up.
+          // with a state and a link. The line under the key states how many
+          // studies have a paper, not how many inputs the node lists.
           if (!entry.card) {
             return (
               <button
@@ -75,9 +75,11 @@ function Cell({
                 </span>
                 <span className="mt-1 flex min-h-4 items-center gap-1.5 pl-2 text-muted-foreground">
                   <span className="text-[10px] uppercase tracking-wider">
-                    {entry.dependsOn?.length
-                      ? `${reported} of ${entry.dependsOn.length} written up`
-                      : "written column"}
+                    {reported === 0
+                      ? "written column"
+                      : reported === 1
+                        ? "1 paper so far"
+                        : `${reported} papers so far`}
                   </span>
                 </span>
               </button>
@@ -142,8 +144,8 @@ export function Matrix({
   onOpen: (entry: Entry) => void
 }) {
   const vocabulary = new Set(statuses.map((status) => status.label))
-  // How much of the programme has entered the written record. The written
-  // column consumes every study, so this is the one place the ratio is known.
+  // How many entries have a paper. The written-column cell states this
+  // count. It is a count, not a denominator.
   const reported = strands
     .flatMap((strand) => strand.entries)
     .filter((entry) => entry.paper).length
