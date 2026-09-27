@@ -132,6 +132,10 @@ jobs:
         run: node tests/deep-link.spec.mjs "http://localhost:4173${BASE_PATH}"
         working-directory: app
 
+      - name: Legend status filter dims and resets
+        run: node tests/status-filter.spec.mjs "http://localhost:4173${BASE_PATH}"
+        working-directory: app
+
       # A root-absolute path in JSX reaches the browser untouched by the
       # build's base rewrite, so a missing image only shows on the served
       # page. Every rendered <img> must decode, and the favicon link fetch.

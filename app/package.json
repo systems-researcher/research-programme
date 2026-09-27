@@ -12,6 +12,7 @@
     "test:meta": "node tests/meta.spec.mjs",
     "test:layout": "node tests/layout.spec.mjs",
     "test:assets": "node tests/assets.spec.mjs",
+    "test:status-filter": "node tests/status-filter.spec.mjs",
     "banner": "node scripts/banner.mjs"
   },
   "dependencies": {
