@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Jason D. Gower
 // SPDX-License-Identifier: MIT
-import { ArrowUpRight } from "lucide-react"
+import { ArrowUpRight, Lock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import {
   Sheet,
@@ -10,6 +10,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Citation } from "@/components/citation"
+import { mailto } from "@/components/involved"
 import type { Entry, LinkRef, Strand } from "@/lib/map"
 
 /** Everything about one repository, in a panel over the matrix.
@@ -112,7 +113,7 @@ export function Detail({
                 </span>
               )}
               <SheetTitle className="font-mono text-base leading-tight break-words">
-                {entry.url ? (
+                {entry.visibility === "public" && entry.url ? (
                   <a
                     href={entry.url}
                     rel="noopener"
@@ -123,9 +124,34 @@ export function Detail({
                     <span className="sr-only">(opens GitHub)</span>
                   </a>
                 ) : (
-                  entry.key
+                  <>
+                    {entry.key}
+                    {entry.visibility !== "public" && (
+                      <Lock aria-hidden="true" className="ml-0.5 inline size-3.5 align-text-top" />
+                    )}
+                  </>
                 )}
               </SheetTitle>
+              {entry.visibility !== "public" && (
+                <div className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  {entry.visibility === "private" &&
+                    "This study is private. The repository is not public."}
+                  {entry.visibility === "local" && "This study is not published yet."}
+                  {entry.visibility !== "private" &&
+                    entry.visibility !== "local" &&
+                    "Visibility is not confirmed yet, so this page will not link the repository."}{" "}
+                  <a
+                    href={mailto(
+                      "Research programme: access request",
+                      `Study: ${entry.key}\nRepository: ${entry.url ?? "not yet published"}\nPage: ${window.location.origin + import.meta.env.BASE_URL + "#study=" + encodeURIComponent(entry.key)}\n\nWhich repository, and what you are working on:\n\n`,
+                    )}
+                    rel="noopener"
+                    className="underline decoration-border underline-offset-4 hover:decoration-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Request access to this study
+                  </a>
+                </div>
+              )}
               <SheetDescription asChild>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {(entry.badges ?? []).map((badge) => (
