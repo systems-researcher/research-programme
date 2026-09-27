@@ -52,20 +52,6 @@ export default function App() {
   // must not call back() — that would leave the page entirely.
   const pushedRef = useRef(false)
 
-  // Browser navigation owns the hash: Back must close the panel, Forward
-  // reopen it, so this listener keeps state in step with either.
-  useEffect(() => {
-    const sync = () => {
-      // We are here because of a traversal, so this entry was never pushed
-      // by this session — the next close must clear the hash in place
-      // rather than call back(), which could walk off the page entirely.
-      pushedRef.current = false
-      setOpenKey(keyFromHash())
-    }
-    window.addEventListener("popstate", sync)
-    return () => window.removeEventListener("popstate", sync)
-  }, [])
-
   // State and hash move together. pushState pushes a history entry, which is
   // what makes Back mean "close" — and unlike assigning location.hash it
   // fires no events of its own, so a popstate can only ever mean the user
@@ -89,6 +75,43 @@ export default function App() {
     }
     return byKey
   }, [strands])
+
+  // Matched the study regex and missed the index. Anything else (empty,
+  // #involved, a hash that does not match #study=<token>) stays. Do not call
+  // onClose: that path calls back() when pushedRef is set, and a bad inherited
+  // hash must not leave the page.
+  const stripUnknown = useCallback(() => {
+    const key = keyFromHash()
+    if (key !== null && !index.has(key)) {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search)
+      setOpenKey(null)
+    }
+  }, [index])
+
+  useEffect(() => {
+    stripUnknown()
+  }, [stripUnknown])
+
+  // Browser navigation owns the hash: Back must close the panel, Forward
+  // reopen it, so this listener keeps state in step with either.
+  useEffect(() => {
+    const sync = () => {
+      // We are here because of a traversal, so this entry was never pushed
+      // by this session. The next close must clear the hash in place
+      // rather than call back(), which could walk off the page entirely.
+      pushedRef.current = false
+      setOpenKey(keyFromHash())
+      // Same miss-strip as the mount effect. A Back or Forward that lands on
+      // a bad #study= hash must not leave it in the address bar.
+      const key = keyFromHash()
+      if (key !== null && !index.has(key)) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search)
+        setOpenKey(null)
+      }
+    }
+    window.addEventListener("popstate", sync)
+    return () => window.removeEventListener("popstate", sync)
+  }, [index])
 
   const current = openKey ? index.get(openKey) : undefined
 
