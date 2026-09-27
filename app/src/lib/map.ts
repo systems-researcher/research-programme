@@ -66,6 +66,17 @@ export type Stage = { id: string; title: string; note: string }
  *  own enum so the legend cannot drift from the vocabulary. */
 export type Status = { id: string; label: string; note: string }
 
+/** True when entry carries this status's label as a badge.
+ *  Same rule as App.byStatus: badges include visibility and
+ *  "last commit …" words, so only an exact label hit counts.
+ *  Do not match status.id. built-runs-pending never appears in a badge. */
+export function entryHasStatus(
+  entry: { badges?: string[] },
+  status: { label: string },
+): boolean {
+  return (entry.badges ?? []).includes(status.label)
+}
+
 /** A study in the dependency picture, already positioned by Python.
  *  `x` is dependency depth, `y` the slot within that column. */
 export type GraphNode = {
