@@ -3,7 +3,7 @@
 import { Fragment } from "react"
 import { BookOpen, ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { Entry, Stage, Status, Strand } from "@/lib/map"
+import { entryHasStatus, type Entry, type Stage, type Status, type Strand } from "@/lib/map"
 
 /** The programme as a stage x strand matrix.
  *
@@ -31,12 +31,14 @@ function Cell({
   strand,
   vocabulary,
   reported,
+  selected,
   onOpen,
 }: {
   entries: Entry[]
   strand: Strand
   vocabulary: Set<string>
   reported: number
+  selected: Status | null
   onOpen: (entry: Entry) => void
 }) {
   if (!entries.length) {
@@ -53,6 +55,11 @@ function Cell({
         {entries.map((entry) => {
           const status = cellStatus(entry, vocabulary)
 
+          // Opacity only. The button stays mounted and clickable: the deep-link
+          // walk counts #matrix [role=button] and clicks every one.
+          const dimmed = selected !== null && !entryHasStatus(entry, selected)
+          const filterClass = selected === null ? "" : dimmed ? "opacity-40" : "opacity-100"
+
           // The written column is not a study, so it has no question or
           // method and opens no detail sheet. It is still a real repository
           // with a state and a link. The line under the key states how many
@@ -64,7 +71,7 @@ function Cell({
                 type="button"
                 onClick={() => onOpen(entry)}
                 style={{ ["--accent" as string]: `var(--strand-${strand.token}-line)` }}
-                className="cell-card group relative w-full rounded-md border border-dashed p-2 text-left transition-colors focus-visible:outline-none"
+                className={`cell-card group relative w-full rounded-md border border-dashed p-2 text-left transition-colors transition-[opacity] duration-150 focus-visible:outline-none motion-reduce:transition-none ${filterClass}`}
               >
                 <span
                   aria-hidden="true"
@@ -94,7 +101,8 @@ function Cell({
               style={{ ["--accent" as string]: `var(--strand-${strand.token}-line)` }}
               className={cn(
                 "cell-card group relative w-full rounded-md border p-2 text-left",
-                "transition-colors focus-visible:outline-none",
+                "transition-colors transition-[opacity] duration-150 focus-visible:outline-none motion-reduce:transition-none",
+                filterClass,
               )}
             >
               {/* The strand's colour, as a spine rather than a whole-cell
@@ -136,14 +144,18 @@ export function Matrix({
   strands,
   stages,
   statuses,
+  selectedStatusId,
   onOpen,
 }: {
   strands: Strand[]
   stages: Stage[]
   statuses: Status[]
+  selectedStatusId: string | null
   onOpen: (entry: Entry) => void
 }) {
   const vocabulary = new Set(statuses.map((status) => status.label))
+  // Id in, label compared. A missing id is the same as no selection.
+  const selected = statuses.find((status) => status.id === selectedStatusId) ?? null
   // How many entries have a paper. The written-column cell states this
   // count. It is a count, not a denominator.
   const reported = strands
@@ -222,6 +234,7 @@ export function Matrix({
                     strand={strand}
                     vocabulary={vocabulary}
                     reported={reported}
+                    selected={selected}
                     entries={strand.entries.filter((e) => e.stage === stage.id)}
                     onOpen={onOpen}
                   />
