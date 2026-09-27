@@ -81,6 +81,7 @@
             "built",
             "last commit 2026-08-21"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-probe",
@@ -119,6 +120,7 @@
             "released",
             "last commit 2026-08-19"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-probe",
@@ -165,6 +167,7 @@
             "design",
             "last commit 2026-08-20"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-probe",
@@ -206,6 +209,7 @@
             "awaiting refresh",
             "design"
           ],
+          "visibility": "unknown",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
@@ -234,6 +238,7 @@
             "awaiting refresh",
             "design"
           ],
+          "visibility": "unknown",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
@@ -284,6 +289,7 @@
             "built",
             "last commit 2026-08-19"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
@@ -322,6 +328,7 @@
             "built",
             "last commit 2026-06-11"
           ],
+          "visibility": "private",
           "dependsOn": [],
           "feeds": [
             {
@@ -347,6 +354,7 @@
             "design",
             "last commit 2026-08-20"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-testing-toolkit",
@@ -376,6 +384,7 @@
             "published",
             "last commit 2026-10-03"
           ],
+          "visibility": "public",
           "dependsOn": [],
           "feeds": [
             {
@@ -427,6 +436,7 @@
             "retired",
             "last commit 2026-07-30"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-testing-toolkit",
@@ -456,6 +466,7 @@
             "design",
             "last commit 2026-08-20"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-sysml-v2-binding",
@@ -481,6 +492,7 @@
             "design",
             "last commit 2026-07-06"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-sysml-v2-binding",
@@ -523,6 +535,7 @@
             "design",
             "last commit 2026-07-06"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "SysML-v2-API-Services-Arch-A",
@@ -557,6 +570,7 @@
             "design",
             "last commit 2026-07-06"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "sysml-v2-metadata-graph-Arch-B",
@@ -595,6 +609,7 @@
             "design",
             "last commit 2026-07-02"
           ],
+          "visibility": "private",
           "dependsOn": [],
           "feeds": [
             {
@@ -619,6 +634,7 @@
             "not yet published",
             "design"
           ],
+          "visibility": "local",
           "dependsOn": [],
           "feeds": [
             {
@@ -643,6 +659,7 @@
             "not yet published",
             "design"
           ],
+          "visibility": "local",
           "dependsOn": [],
           "feeds": [
             {
@@ -675,6 +692,7 @@
             "private",
             "last commit 2026-08-19"
           ],
+          "visibility": "private",
           "dependsOn": [
             {
               "key": "epistemic-adequacy-spec",
