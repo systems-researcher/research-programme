@@ -5,8 +5,7 @@ import type { Entry } from "@/lib/map"
 
 /** The written column: what the programme has put into the record.
  *
- * One row per study that has a paper. Today that is one study of twelve,
- * which is the true state of the programme rather than a rendering fault.
+ * One row per study that has a paper. The count in the heading is derived.
  * It uses the same Citation component the detail sheet does, so there is one
  * place that decides whether a DOI is safe to link. */
 export function Publications({ entries }: { entries: Entry[] }) {
@@ -21,7 +20,13 @@ export function Publications({ entries }: { entries: Entry[] }) {
           Publications
         </h2>
         <p className="text-xs text-muted-foreground">
-          {papers.length} of {studies.length} studies have entered the record.
+          {papers.length === 1 && studies.length === 1
+            ? `1 of 1 study has a paper.`
+            : papers.length === 1
+              ? `1 of ${studies.length} studies has a paper.`
+              : studies.length === 1
+                ? `${papers.length} of 1 study have a paper.`
+                : `${papers.length} of ${studies.length} studies have a paper.`}
         </p>
       </div>
 
