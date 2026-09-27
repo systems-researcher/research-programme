@@ -167,6 +167,7 @@ export function Detail({
   onStep,
   onOpenKey,
   onClose,
+  onDismissToInvolved,
 }: {
   entry: Entry | null
   strand: Strand | undefined
@@ -174,6 +175,7 @@ export function Detail({
   onStep: (dir: 1 | -1) => void
   onOpenKey: (key: string) => void
   onClose: () => void
+  onDismissToInvolved: () => void
 }) {
   // Neighbours in render order, wrapping around: the sheet is a walk through
   // the programme, not a dead end per study.
@@ -184,6 +186,23 @@ export function Detail({
       : null
   const next =
     position > -1 ? orderedKeys[(position + 1) % orderedKeys.length] : null
+  // The dialog locks page scroll and covers the page until it unmounts
+  // (200 ms exit). Scroll only once [role="dialog"] is gone. If the bound
+  // expires, scroll anyway: a scroll under a closing overlay beats no scroll.
+  // rAF only. Do not use setTimeout to poll. Do not write a hash.
+  const dismissToInvolved = () => {
+    onDismissToInvolved()
+    const started = performance.now()
+    const tick = () => {
+      const gone = document.querySelector("[role='dialog']") === null
+      if (gone || performance.now() - started >= 1000) {
+        document.getElementById("involved")?.scrollIntoView({ block: "start" })
+        return
+      }
+      window.requestAnimationFrame(tick)
+    }
+    window.requestAnimationFrame(tick)
+  }
   return (
     <Sheet open={!!entry} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-lg">
@@ -303,6 +322,27 @@ export function Detail({
               <Refs label="Depends on" refs={entry.dependsOn ?? []} onOpen={onOpenKey} />
               <Refs label="Feeds" refs={entry.feeds ?? []} onOpen={onOpenKey} />
             </dl>
+
+            <div className="rounded-md border border-border bg-card p-3 mx-4 mb-4">
+              <button
+                type="button"
+                onClick={dismissToInvolved}
+                className="block w-full rounded text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span className="block text-sm font-medium">Interested in this study?</span>
+                <span className="mt-0.5 block text-sm text-muted-foreground">Get involved →</span>
+              </button>
+              <a
+                href={mailto(
+                  "Research programme: collaboration",
+                  `Study: ${entry.key}\nPage: ${studyUrl(entry.key)}\n\nWhat you are working on, and where it overlaps:\n\n`,
+                )}
+                rel="noopener"
+                className="mt-2 block text-sm underline decoration-border underline-offset-4 hover:decoration-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Start a conversation
+              </a>
+            </div>
 
             {(prev || next) && (
               <div className="sticky bottom-0 mt-auto flex items-center justify-between gap-2 border-t border-border bg-background px-4 py-3">
