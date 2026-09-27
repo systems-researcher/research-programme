@@ -46,10 +46,12 @@ const nodeY = (node: GraphNode, tallest: number) =>
 export function DependencyGraph({
   graph,
   entries,
+  selectedLabel,
   onOpen,
 }: {
   graph: Graph
   entries: Entry[]
+  selectedLabel: string | null
   onOpen: (entry: Entry) => void
 }) {
   const [active, setActive] = useState<string | null>(null)
@@ -139,6 +141,12 @@ export function DependencyGraph({
     return keep
   }, [active, graph.edges])
 
+  // Label, not id. node.status is the payload label ("built"), never
+  // "built-runs-pending". Null means no selection, so the gate is open.
+  // Empty node.status matches nothing, same as a missing badge.
+  const statusLit = (nodeStatus: string | undefined) =>
+    selectedLabel === null || nodeStatus === selectedLabel
+
   const width = PAD * 2 + graph.columns * NODE_W + (graph.columns - 1) * GAP_X
   const height = PAD * 2 + tallest * NODE_H + (tallest - 1) * GAP_Y
 
@@ -208,7 +216,11 @@ export function DependencyGraph({
             // A horizontal-tangent cubic: edges leave and enter side-on, so
             // they never appear to clip the boxes they connect.
             const bend = Math.max(28, (x2 - x1) * 0.45)
-            const lit = !related || (related.has(edge.from) && related.has(edge.to))
+            const hoverLit = !related || (related.has(edge.from) && related.has(edge.to))
+            const lit =
+              statusLit(placed.get(edge.from)?.node.status) &&
+              statusLit(placed.get(edge.to)?.node.status) &&
+              hoverLit
 
             // An edge that skips a column would otherwise run straight
             // through whatever sits in the column between. Bow it into the
@@ -239,7 +251,8 @@ export function DependencyGraph({
         {graph.nodes.map((node) => {
           const spot = placed.get(node.key)!
           const entry = byKey.get(node.key)
-          const lit = !related || related.has(node.key)
+          const hoverLit = !related || related.has(node.key)
+          const lit = statusLit(node.status) && hoverLit
           const isActive = active === node.key
 
           return (
