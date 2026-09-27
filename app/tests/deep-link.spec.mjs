@@ -8,6 +8,7 @@
 import { chromium } from "playwright"
 
 const url = process.argv[2] ?? "http://localhost:4173/"
+const origin = new URL(url).origin
 const browser = await chromium.launch()
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
 let failures = 0
@@ -47,6 +48,47 @@ if (new URL(url).pathname.includes("/research-programme/")) {
   check("the request page line carries the deploy prefix", body.includes("/research-programme/#study=sysml2-bench"))
 }
 
+// Copy control. Spy the write; do not read the clipboard and do not grant
+// permissions. data-copy-url is the same string the click writes, so a stub
+// drift cannot hide a wrong URL.
+const copyButton = sheet.getByRole("button", { name: "Copy link to this study" })
+check("the sheet has one copy control", (await copyButton.count()) === 1)
+const copyUrl = await copyButton.getAttribute("data-copy-url")
+const servedPath = new URL(page.url()).pathname.endsWith("/")
+  ? new URL(page.url()).pathname
+  : new URL(page.url()).pathname + "/"
+const expectedCopy = origin + servedPath + "#study=sysml2-bench"
+check("data-copy-url is origin, base, and the study hash", copyUrl === expectedCopy)
+if (new URL(url).pathname.includes("/research-programme/")) {
+  check("data-copy-url carries the deploy prefix", copyUrl.includes("/research-programme/#study=sysml2-bench"))
+} else {
+  check("data-copy-url does not invent the deploy prefix", !copyUrl.includes("/research-programme/"))
+}
+
+await page.evaluate(() => {
+  const calls = []
+  window.__copyCalls = calls
+  const stub = (text) => {
+    calls.push(text)
+    return Promise.resolve()
+  }
+  if (!navigator.clipboard) {
+    Object.defineProperty(navigator, "clipboard", { value: { writeText: stub }, configurable: true })
+  } else {
+    navigator.clipboard.writeText = stub
+  }
+})
+await copyButton.click()
+await page.waitForTimeout(300)
+const copyCalls = await page.evaluate(() => window.__copyCalls)
+check("writeText was called once", copyCalls.length === 1)
+check("writeText received data-copy-url", copyCalls[0] === copyUrl)
+check("the copy confirms in the accessible name", (await sheet.getByRole("button", { name: "Copied link to this study" }).count()) === 1)
+check("the copy does not change the hash", page.url().includes("#study=sysml2-bench"))
+check("the copy leaves the sheet open", await page.getByRole("dialog").isVisible())
+await page.waitForTimeout(2600)
+check("the copy label reverts", (await sheet.getByRole("button", { name: "Copy link to this study" }).count()) === 1)
+
 await page.reload({ waitUntil: "networkidle" })
 await page.waitForTimeout(500)
 check("reloading the hash reopens the sheet", await page.getByRole("dialog").isVisible())
@@ -57,7 +99,6 @@ check("Back closes the sheet", !(await page.getByRole("dialog").isVisible()))
 
 // A pasted deep link inherits its hash rather than pushing it, so Escape
 // must clear the hash in place instead of walking back off the site.
-const origin = new URL(url).origin
 await page.goto(`${url}#study=sysml2-bench`, { waitUntil: "networkidle", timeout: 45000 })
 await page.waitForTimeout(300)
 check("a pasted deep link opens the sheet", await page.getByRole("dialog").isVisible())
@@ -66,6 +107,35 @@ await page.waitForTimeout(300)
 check("Escape strips an inherited hash", !page.url().includes("#study="))
 check("closing an inherited deep link shuts the sheet", !(await page.getByRole("dialog").isVisible()))
 check("closing an inherited deep link stays on the page", page.url().startsWith(origin))
+
+// Mount-time strip. A hash-only goto from the same page is a same-document
+// navigation and would exercise popstate instead. about:blank forces a real
+// document load so the mount effect is what runs.
+await page.goto("about:blank")
+await page.goto(`${url}#study=not-a-study`, { waitUntil: "networkidle", timeout: 45000 })
+await page.waitForTimeout(300)
+check("an unknown key is stripped on load", !page.url().includes("#study="))
+check("an unknown key does not open a sheet", !(await page.getByRole("dialog").isVisible()))
+check("an unknown-key load stays on the origin", page.url().startsWith(origin))
+await page.keyboard.press("Escape")
+await page.waitForTimeout(300)
+check("Escape after a strip stays on the origin", page.url().startsWith(origin))
+
+// Popstate strip. Plant the bad entry with pushState so the traversal is
+// guaranteed same-document: a fragment-only goto can full-load, which would
+// run the mount strip instead and make this check pass vacuously. Back lands
+// on the entry behind the planted hash; Forward lands on the planted bad
+// hash and the listener must strip it.
+await page.evaluate(() => window.history.pushState(null, "", "#study=not-a-study"))
+await page.waitForTimeout(300)
+check("the planted bad hash is in the address bar", page.url().includes("#study=not-a-study"))
+await page.goBack()
+await page.waitForTimeout(300)
+check("Back off a planted bad hash leaves no study hash", !page.url().includes("#study="))
+await page.goForward()
+await page.waitForTimeout(500)
+check("Forward onto a planted bad hash strips it", !page.url().includes("#study="))
+check("Forward onto a planted bad hash leaves the sheet closed", !(await page.getByRole("dialog").isVisible()))
 
 // Regression: any traversal retires the session's pushed flag, because the
 // entry we landed on was not pushed here. Stepping from an inherited deep
