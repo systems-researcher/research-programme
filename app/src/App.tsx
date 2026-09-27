@@ -290,6 +290,19 @@ export default function App() {
             setOpenKey(null)
           }
         }}
+        onDismissToInvolved={() => {
+          // The involve row always closes in place. onClose's pushed branch
+          // calls history.back(), and after prev/next the entry beneath is
+          // another #study hash, so Back would reopen a sheet over the scroll.
+          // replaceState only. Do not write #involved. Do not call onClose.
+          window.history.replaceState(
+            null,
+            "",
+            window.location.pathname + window.location.search,
+          )
+          pushedRef.current = false
+          setOpenKey(null)
+        }}
       />
     </div>
   )
