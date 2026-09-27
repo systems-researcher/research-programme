@@ -10,7 +10,7 @@ import { Legend } from "@/components/legend"
 import { Matrix } from "@/components/matrix"
 import { Publications } from "@/components/publications"
 import { useTheme } from "@/components/theme"
-import type { Entry, MapPayload } from "@/lib/map"
+import { entryHasStatus, type Entry, type MapPayload } from "@/lib/map"
 import payload from "@data/map.json"
 import heroGate from "@/assets/hero-gate.webp"
 
@@ -47,6 +47,11 @@ function keyFromHash(): string | null {
 export default function App() {
   const { programme, strands, stages, statuses, graph, refreshedAt } = map
   const [openKey, setOpenKey] = useState<string | null>(() => keyFromHash())
+  // Status id, never a label. built-runs-pending is the id; badges store "built".
+  // Session only. Do not write location.hash, searchParams, or sessionStorage.
+  const [selectedStatusId, setSelectedStatusId] = useState<string | null>(null)
+  const selectedLabel =
+    statuses.find((status) => status.id === selectedStatusId)?.label ?? null
   // True once THIS session has pushed a study hash onto history. An inherited
   // hash (pasted deep link, shared URL) was never pushed here, so closing it
   // must not call back() — that would leave the page entirely.
@@ -146,9 +151,7 @@ export default function App() {
   const byStatus = useMemo(() => {
     const tally: Record<string, number> = {}
     for (const status of statuses) {
-      tally[status.id] = all.filter((entry) =>
-        (entry.badges ?? []).includes(status.label),
-      ).length
+      tally[status.id] = all.filter((entry) => entryHasStatus(entry, status)).length
     }
     return tally
   }, [all, statuses])
@@ -226,7 +229,13 @@ export default function App() {
               Select a repository for its question, method, and dependencies.
             </p>
           </div>
-          <Matrix strands={strands} stages={stages} statuses={statuses} onOpen={openEntry} />
+          <Matrix
+            strands={strands}
+            stages={stages}
+            statuses={statuses}
+            selectedStatusId={selectedStatusId}
+            onOpen={openEntry}
+          />
         </section>
 
         <section id="dependencies" className="scroll-mt-4 border-t border-border py-10">
@@ -238,10 +247,20 @@ export default function App() {
               Left to right is dependency order. Hover a study to see what it touches. A dashed outline is still design.
             </p>
           </div>
-          <DependencyGraph graph={graph} entries={all} onOpen={openEntry} />
+          <DependencyGraph
+            graph={graph}
+            entries={all}
+            selectedLabel={selectedLabel}
+            onOpen={openEntry}
+          />
         </section>
 
-        <Legend statuses={statuses} counts={byStatus} />
+        <Legend
+          statuses={statuses}
+          counts={byStatus}
+          selectedStatusId={selectedStatusId}
+          onSelectStatus={setSelectedStatusId}
+        />
 
         <Publications entries={all} />
 
