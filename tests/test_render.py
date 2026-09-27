@@ -265,6 +265,100 @@ def test_live_visibility_and_push_date_are_carried_as_badges() -> None:
     assert "last commit 2026-08-19" in badges
 
 
+def test_public_live_row_writes_public_visibility() -> None:
+    payload = render.payload(
+        data_with(entry()),
+        {"generated_at": "t", "repos": {"alpha": {"visibility": "public"}}},
+    )
+    alpha = find(payload, "alpha")
+
+    assert alpha["visibility"] == "public"
+    assert alpha["url"] == "https://github.com/systems-researcher/alpha"
+    assert "public" in alpha["badges"]
+
+
+def test_private_live_row_writes_private_visibility() -> None:
+    payload = render.payload(
+        data_with(entry()),
+        {
+            "generated_at": "t",
+            "repos": {"alpha": {"visibility": "private", "pushed_at": "2026-08-19T08:00:00Z"}},
+        },
+    )
+    alpha = find(payload, "alpha")
+
+    assert alpha["visibility"] == "private"
+    assert "private" in alpha["badges"]
+    assert "last commit 2026-08-19" in alpha["badges"]
+
+
+def test_local_owner_writes_local_visibility_and_no_url() -> None:
+    payload = render.payload(data_with(entry(owner="local")), LIVE_EMPTY)
+    alpha = find(payload, "alpha")
+
+    assert alpha["visibility"] == "local"
+    assert alpha["url"] is None
+    assert "not yet published" in alpha["badges"]
+
+
+def test_local_owner_wins_over_a_stale_public_live_row() -> None:
+    """A local owner has no GitHub repository yet, even if live data is stale."""
+    payload = render.payload(
+        data_with(entry(owner="local")),
+        {"generated_at": "t", "repos": {"alpha": {"visibility": "public"}}},
+    )
+    alpha = find(payload, "alpha")
+
+    assert alpha["visibility"] == "local"
+    assert alpha["url"] is None
+
+
+def test_missing_live_row_writes_unknown_visibility() -> None:
+    payload = render.payload(data_with(entry()), LIVE_EMPTY)
+    alpha = find(payload, "alpha")
+
+    assert alpha["visibility"] == "unknown"
+    assert "awaiting refresh" in alpha["badges"]
+
+
+def test_empty_visibility_string_writes_unknown() -> None:
+    """The empty string is the `or "awaiting refresh"` branch in _badges.
+    It must not read as public."""
+    for raw in ("", None):
+        payload = render.payload(
+            data_with(entry()),
+            {"generated_at": "t", "repos": {"alpha": {"visibility": raw}}},
+        )
+        assert find(payload, "alpha")["visibility"] == "unknown", raw
+
+
+def test_unexpected_live_string_writes_unknown_and_keeps_the_badge() -> None:
+    """The badge reports what live said. The field is the honesty gate."""
+    payload = render.payload(
+        data_with(entry()),
+        {"generated_at": "t", "repos": {"alpha": {"visibility": "internal"}}},
+    )
+    alpha = find(payload, "alpha")
+
+    assert alpha["visibility"] == "unknown"
+    assert "internal" in alpha["badges"]
+
+
+def test_node_only_entry_carries_visibility() -> None:
+    """The field is not card-only. The written column is a real repository."""
+    data = data_with(
+        entry(),
+        entry(key="publications", strand="formalisation", stage="release",
+              render="node-only", status="not-applicable", depends_on=["alpha"]),
+    )
+    payload = render.payload(
+        data,
+        {"generated_at": "t", "repos": {"publications": {"visibility": "private"}}},
+    )
+
+    assert find(payload, "publications")["visibility"] == "private"
+
+
 def test_status_is_badged_in_words_not_in_its_slug() -> None:
     """The badge says what the reader sees in the legend, not the enum key."""
     payload = render.payload(data_with(entry(status="built-runs-pending")), LIVE_EMPTY)

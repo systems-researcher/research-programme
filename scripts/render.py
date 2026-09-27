@@ -189,6 +189,20 @@ def _badges(entry: dict, live_repos: dict) -> list[str]:
     return [b for b in badges if b]
 
 
+def _visibility(entry: dict, live_repos: dict) -> str:
+    """Structured twin of the first badge: same inputs, enum instead of copy.
+
+    The badge wording and this enum are different projections of the same
+    inputs, and tests pin both. Neither function calls the other.
+    """
+    if entry["owner"] == "local":
+        return "local"
+    raw = live_repos.get(entry["key"], {}).get("visibility")
+    if raw in ("public", "private"):
+        return raw
+    return "unknown"
+
+
 def _link_refs(keys: list[str], data: mapdata.MapData) -> list[dict]:
     """A dependency reference, already told whether it can be linked.
 
@@ -306,6 +320,7 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
                     else f"https://github.com/{entry['owner']}/{key}"
                 ),
                 "badges": _badges(entry, live_repos),
+                "visibility": _visibility(entry, live_repos),
                 "dependsOn": _link_refs(entry.get("depends_on", []), data),
                 "feeds": _link_refs(inverted.get(key, []), data),
             }
