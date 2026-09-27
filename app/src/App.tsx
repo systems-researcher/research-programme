@@ -106,8 +106,14 @@ export default function App() {
     [openKey, orderedKeys, openByKey],
   )
 
+  // Card studies, not every entry. The publications node is an entry and a
+  // repository, and it is not a study tile. all.length must not feed a visitor
+  // count labeled Studies.
   const counts = useMemo(
-    () => ({ repos: all.length, published: all.filter((e) => e.paper).length }),
+    () => ({
+      studies: all.filter((e) => e.card).length,
+      published: all.filter((e) => e.paper).length,
+    }),
     [all],
   )
 
@@ -162,7 +168,7 @@ export default function App() {
               </div>
               <dl className="mt-7 flex flex-wrap gap-x-10 gap-y-3">
                 {[
-                  { label: "Repositories", value: counts.repos },
+                  { label: "Studies", value: counts.studies },
                   { label: "In the record", value: counts.published },
                   { label: "Strands", value: strands.length },
                 ].map((stat) => (
