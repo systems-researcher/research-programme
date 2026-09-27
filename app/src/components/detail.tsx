@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Jason D. Gower
 // SPDX-License-Identifier: MIT
-import { ArrowUpRight, Lock } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { ArrowUpRight, Link, Lock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import {
   Sheet,
@@ -68,6 +69,93 @@ function Refs({
           ),
         )}
       </dd>
+    </div>
+  )
+}
+
+/** Absolute share URL. The copy control and the request-mail Page: line both
+ *  call this. BASE_URL already ends in a slash; do not strip it and do not
+ *  insert another. Do not add search or a second hash. */
+function studyUrl(key: string): string {
+  return window.location.origin + import.meta.env.BASE_URL + "#study=" + encodeURIComponent(key)
+}
+
+const COPY_IDLE = "Copy link"
+const COPY_OK = "Copied"
+const COPY_FAIL = "Copy failed"
+
+function CopyLink({ entryKey }: { entryKey: string }) {
+  const url = studyUrl(entryKey)
+  const [label, setLabel] = useState(COPY_IDLE)
+  // liveOn inserts the span. liveText stays "" on that commit and is filled
+  // on the next frame, so the region is not mounted with text already set.
+  const [liveOn, setLiveOn] = useState(false)
+  const [liveText, setLiveText] = useState("")
+  const timer = useRef<number | undefined>(undefined)
+  const frame = useRef<number | undefined>(undefined)
+
+  useEffect(() => {
+    // Stepping to another study inside the revert window must not leave the
+    // new study's button stuck on the old study's state.
+    setLabel(COPY_IDLE)
+    setLiveOn(false)
+    setLiveText("")
+    return () => {
+      window.clearTimeout(timer.current)
+      if (frame.current !== undefined) window.cancelAnimationFrame(frame.current)
+    }
+  }, [entryKey])
+
+  const announce = (text: string) => {
+    window.clearTimeout(timer.current)
+    if (frame.current !== undefined) window.cancelAnimationFrame(frame.current)
+    setLabel(text)
+    setLiveText("")
+    setLiveOn(true)
+    frame.current = window.requestAnimationFrame(() => setLiveText(text))
+    timer.current = window.setTimeout(() => {
+      setLabel(COPY_IDLE)
+      setLiveText("")
+      setLiveOn(false)
+    }, 2000)
+  }
+
+  const copy = () => {
+    const write = navigator.clipboard?.writeText(url)
+    if (!write) {
+      announce(COPY_FAIL)
+      return
+    }
+    void write.then(
+      () => announce(COPY_OK),
+      () => announce(COPY_FAIL),
+    )
+  }
+
+  const name =
+    label === COPY_OK
+      ? "Copied link to this study"
+      : label === COPY_FAIL
+        ? "Copy failed"
+        : "Copy link to this study"
+
+  return (
+    <div className="mt-2">
+      <button
+        type="button"
+        onClick={copy}
+        aria-label={name}
+        data-copy-url={url}
+        className="inline-flex items-center gap-1 rounded border border-border bg-background px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Link aria-hidden="true" className="size-3" />
+        <span>{label}</span>
+      </button>
+      {liveOn && (
+        <span aria-live="polite" className="sr-only">
+          {liveText}
+        </span>
+      )}
     </div>
   )
 }
@@ -143,7 +231,7 @@ export function Detail({
                   <a
                     href={mailto(
                       "Research programme: access request",
-                      `Study: ${entry.key}\nRepository: ${entry.url ?? "not yet published"}\nPage: ${window.location.origin + import.meta.env.BASE_URL + "#study=" + encodeURIComponent(entry.key)}\n\nWhich repository, and what you are working on:\n\n`,
+                      `Study: ${entry.key}\nRepository: ${entry.url ?? "not yet published"}\nPage: ${studyUrl(entry.key)}\n\nWhich repository, and what you are working on:\n\n`,
                     )}
                     rel="noopener"
                     className="underline decoration-border underline-offset-4 hover:decoration-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -152,6 +240,7 @@ export function Detail({
                   </a>
                 </div>
               )}
+              <CopyLink entryKey={entry.key} />
               <SheetDescription asChild>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {(entry.badges ?? []).map((badge) => (
