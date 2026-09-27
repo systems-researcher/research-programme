@@ -108,6 +108,29 @@ check("Escape strips an inherited hash", !page.url().includes("#study="))
 check("closing an inherited deep link shuts the sheet", !(await page.getByRole("dialog").isVisible()))
 check("closing an inherited deep link stays on the page", page.url().startsWith(origin))
 
+// Inherited involve-row close. Own goto so it does not disturb the Escape
+// chain above or the two-Escape step chain below. The row must replaceState
+// in place: history.back() on an inherited hash would leave the origin.
+await page.goto(`${url}#study=sysml2-bench`, { waitUntil: "networkidle", timeout: 45000 })
+await page.waitForTimeout(300)
+check("inherited involve: the sheet is open", await page.getByRole("dialog").isVisible())
+await page.getByRole("dialog").getByRole("button", { name: /Get involved/ }).click()
+await page.waitForTimeout(500)
+check("inherited involve: the sheet closes", !(await page.getByRole("dialog").isVisible()))
+check("inherited involve: the hash is cleared", !page.url().includes("#study="))
+check("inherited involve: no #involved was written", !page.url().includes("#involved"))
+check("inherited involve: stays on the origin", page.url().startsWith(origin))
+const inheritedInvolved = await page.evaluate(() => {
+  const el = document.getElementById("involved")
+  if (!el) return null
+  const rect = el.getBoundingClientRect()
+  return { top: rect.top, height: window.innerHeight }
+})
+check(
+  "inherited involve: #involved is in the viewport",
+  inheritedInvolved !== null && inheritedInvolved.top >= 0 && inheritedInvolved.top < inheritedInvolved.height,
+)
+
 // Mount-time strip. A hash-only goto from the same page is a same-document
 // navigation and would exercise popstate instead. about:blank forces a real
 // document load so the mount effect is what runs.
@@ -178,6 +201,127 @@ for (let i = 0; i < count; i++) {
     check(`${key} offers no request link`, !requested)
   } else {
     check(`${key} is closed text`, !claimsGitHub && requested)
+  }
+  await page.keyboard.press("Escape")
+  await page.waitForTimeout(300)
+}
+
+// Pushed involve-row close. Own open, at the end of the file: the row strips
+// the hash in place, so this must not run before the reload assert above.
+await page.goto(url, { waitUntil: "networkidle", timeout: 45000 })
+await page.locator("#matrix").getByRole("button").filter({ hasText: "sysml2-bench" }).click()
+await page.waitForTimeout(300)
+const involveSheet = page.getByRole("dialog")
+check("pushed involve: the sheet is open", await involveSheet.isVisible())
+check(
+  "pushed involve: the sheet has a Get involved button",
+  (await involveSheet.getByRole("button", { name: /Get involved/ }).count()) === 1,
+)
+const conversation = involveSheet.getByRole("link", { name: "Start a conversation" })
+check("pushed involve: the sheet has Start a conversation", (await conversation.count()) === 1)
+const conversationHref = await conversation.getAttribute("href")
+const conversationUrl = new URL(conversationHref)
+const conversationBody = conversationUrl.searchParams.get("body")
+check("the conversation goes to the research address", conversationHref.startsWith("mailto:J.Gower@lboro.ac.uk"))
+check(
+  "the conversation subject is the collaboration route",
+  conversationUrl.searchParams.get("subject") === "Research programme: collaboration",
+)
+check("the conversation names the study", conversationBody.includes("Study: sysml2-bench"))
+check(
+  "the conversation page line carries the study hash",
+  conversationBody.includes("Page:") && conversationBody.includes("#study=sysml2-bench"),
+)
+check(
+  "the conversation carries the collaboration prompt",
+  conversationBody.includes("What you are working on, and where it overlaps:"),
+)
+check("the conversation never uses the company address", !conversationHref.includes("support@jgsystemsconsulting.com"))
+if (new URL(url).pathname.includes("/research-programme/")) {
+  check(
+    "the conversation page line carries the deploy prefix",
+    conversationBody.includes("/research-programme/#study=sysml2-bench"),
+  )
+}
+
+// A mailto click opens a client, not a navigation. It must not close the
+// sheet and must not change the hash. If the click throws because nothing
+// handles mailto, the dialog and the hash are still the assertion.
+try {
+  await conversation.click({ timeout: 2000 })
+} catch {
+  // no protocol handler in this browser; the sheet must still be as it was
+}
+await page.waitForTimeout(300)
+check("the conversation click leaves the sheet open", await page.getByRole("dialog").isVisible())
+check("the conversation click leaves the study hash", page.url().includes("#study=sysml2-bench"))
+
+await involveSheet.getByRole("button", { name: /Get involved/ }).click()
+await page.waitForTimeout(500)
+check("pushed involve: the sheet closes", !(await page.getByRole("dialog").isVisible()))
+check("pushed involve: no #study= remains", !page.url().includes("#study="))
+check("pushed involve: no #involved was written", !page.url().includes("#involved"))
+const pushedInvolved = await page.evaluate(() => {
+  const el = document.getElementById("involved")
+  if (!el) return null
+  const rect = el.getBoundingClientRect()
+  return { top: rect.top, height: window.innerHeight }
+})
+check(
+  "pushed involve: #involved is in the viewport",
+  pushedInvolved !== null && pushedInvolved.top >= 0 && pushedInvolved.top < pushedInvolved.height,
+)
+await page.goBack()
+await page.waitForTimeout(500)
+check("pushed involve: Back does not reopen the sheet", !(await page.getByRole("dialog").isVisible()))
+check("pushed involve: Back does not restore #study=", !page.url().includes("#study="))
+
+// Stepped close. The entry beneath a stepped sheet is another #study hash.
+// onClose would history.back() onto it and reopen. replaceState must not.
+await page.goto(url, { waitUntil: "networkidle", timeout: 45000 })
+await page.locator("#matrix").getByRole("button").filter({ hasText: "sysml2-bench" }).click()
+await page.waitForTimeout(300)
+await page.getByRole("button", { name: /governed-interaction-cost-probe →/ }).click()
+await page.waitForTimeout(300)
+check("stepped involve: the neighbour is open", page.url().includes("#study=governed-interaction-cost-probe"))
+await page.getByRole("dialog").getByRole("button", { name: /Get involved/ }).click()
+await page.waitForTimeout(500)
+check("stepped involve: the sheet closes", !(await page.getByRole("dialog").isVisible()))
+check("stepped involve: no #study= remains", !page.url().includes("#study="))
+check("stepped involve: no #involved was written", !page.url().includes("#involved"))
+const steppedInvolved = await page.evaluate(() => {
+  const el = document.getElementById("involved")
+  if (!el) return null
+  const rect = el.getBoundingClientRect()
+  return { top: rect.top, height: window.innerHeight }
+})
+check(
+  "stepped involve: #involved is in the viewport",
+  steppedInvolved !== null && steppedInvolved.top >= 0 && steppedInvolved.top < steppedInvolved.height,
+)
+
+// Public sheet. Current payload has epistemic-adequacy-probe as public. If a
+// future payload has no public studies, log the skip instead of failing.
+await page.goto(url, { waitUntil: "networkidle", timeout: 45000 })
+const publicCell = page.locator("#matrix").getByRole("button").filter({ hasText: "epistemic-adequacy-probe" })
+if ((await publicCell.count()) === 0) {
+  console.log("skip  public involve: epistemic-adequacy-probe is not in the matrix")
+} else {
+  await publicCell.click()
+  await page.waitForTimeout(300)
+  const publicSheet = page.getByRole("dialog")
+  const publicLinked = (await publicSheet.locator("h2").first().locator("a").count()) === 1
+  if (!publicLinked) {
+    console.log("skip  public involve: epistemic-adequacy-probe is not a public sheet in this payload")
+  } else {
+    check(
+      "public involve: Get involved is present",
+      (await publicSheet.getByRole("button", { name: /Get involved/ }).count()) === 1,
+    )
+    check(
+      "public involve: Start a conversation is present",
+      (await publicSheet.getByRole("link", { name: "Start a conversation" }).count()) === 1,
+    )
   }
   await page.keyboard.press("Escape")
   await page.waitForTimeout(300)
