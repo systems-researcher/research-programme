@@ -21,7 +21,7 @@ import { Mail, Lock } from "lucide-react"
 // doctoral research, and an academic enquiry belongs there. The company
 // address is offered alongside it for anyone whose interest is commercial
 // rather than academic, so they do not have to guess which is right.
-const EMAIL = "J.Gower@lboro.ac.uk"
+export const EMAIL = "J.Gower@lboro.ac.uk"
 const COMPANY_EMAIL = "support@jgsystemsconsulting.com"
 
 /** The two GitHub accounts the work is published from. The research account
@@ -57,7 +57,7 @@ function GithubMark({ className }: { className?: string }) {
   )
 }
 
-function mailto(subject: string, body: string): string {
+export function mailto(subject: string, body: string): string {
   return `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 }
 
