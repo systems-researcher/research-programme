@@ -36,6 +36,10 @@ export type Entry = {
   objective: string
   /** null when the repository is not yet published. */
   url?: string | null
+  /** Resolved in Python from the owner and the live row. Only "public" may
+   *  render a GitHub link; anything else, including a missing refresh, is
+   *  closed. Required so missing cannot be read as public. */
+  visibility: "public" | "private" | "local" | "unknown"
   badges?: string[]
   question?: string
   method?: string
