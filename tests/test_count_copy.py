@@ -40,3 +40,4 @@ def test_matrix_source_has_no_written_up() -> None:
 def test_publications_blurb_names_a_paper() -> None:
     text = PUBLICATIONS.read_text(encoding="utf-8")
     assert "have a paper" in text or "has a paper" in text
+    assert "entered the record" not in text
