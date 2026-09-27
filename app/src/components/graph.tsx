@@ -11,9 +11,9 @@ import type { Entry, Graph, GraphNode } from "@/lib/map"
  * is the reason the picture looks composed rather than generated.
  *
  * The one interaction: focusing a study dims everything it is not connected
- * to. With eleven edges the whole graph is legible at rest, so the
- * interaction answers "what does THIS one touch" rather than making an
- * unreadable picture readable. */
+ * to. The graph is legible at rest, so the interaction answers which
+ * neighbours one study touches rather than making an unreadable picture
+ * readable. */
 
 // Wide enough for the longest repository key at 10.5px mono
 // (epistemic-adequacy-testing-toolkit, 34 characters). A key is an
@@ -142,6 +142,10 @@ export function DependencyGraph({
   const width = PAD * 2 + graph.columns * NODE_W + (graph.columns - 1) * GAP_X
   const height = PAD * 2 + tallest * NODE_H + (tallest - 1) * GAP_Y
 
+  const n = graph.nodes.length
+  const studyWord = n === 1 ? "study" : "studies"
+  const graphLabel = `Dependency graph of ${n} ${studyWord}. Every study it shows is also a tile in the matrix above.`
+
   return (
     // Same containment as the matrix: the scroller is bounded by its column,
     // so the graph scrolls inside it rather than widening the page.
@@ -151,7 +155,7 @@ export function DependencyGraph({
         width={width}
         height={height}
         role="img"
-        aria-label="Dependency graph of the twelve studies. Every study it shows is also a tile in the matrix above."
+        aria-label={graphLabel}
         // Rendered at its natural size and allowed to scroll, never scaled
         // to fit: `w-full` shrank a 1800px graph into 1200px, which took the
         // 10.5px labels down to about 7px and made them unreadable. The
