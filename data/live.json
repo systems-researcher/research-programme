@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T14:11:22+00:00",
+  "generated_at": "2026-10-05T14:58:28+00:00",
   "repos": {
     "SysML-v2-API-Services-Arch-A": {
       "homepage": "",
@@ -18,7 +18,7 @@
     },
     "epistemic-adequacy-probe": {
       "homepage": "https://systems-researcher.github.io/epistemic-adequacy-probe/",
-      "pushed_at": "2026-09-28T05:30:28Z",
+      "pushed_at": "2026-10-03T18:22:01Z",
       "visibility": "public"
     },
     "epistemic-adequacy-spec": {
