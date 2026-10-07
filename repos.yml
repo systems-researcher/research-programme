@@ -125,7 +125,7 @@ repos:
       labelled hypothesis.
     output: >
       v0.1.0, released 2026-08-18. The criteria originate in the MODELS 2026
-      NIER paper, doi:10.1145/3822455.3838783, which resolves on publication.
+      NIER paper, doi:10.1145/3822455.3838783, published in the proceedings.
     depends_on: [epistemic-adequacy-probe, epistemic-adequacy-ontology]
 
   - key: admissibility-spec
@@ -326,9 +326,7 @@ repos:
         Emerging Results Track
       year: 2026
       doi: "10.1145/3822455.3838783"
-      # Accepted, not yet live: the DOI resolves when ACM posts the
-      # proceedings. Until then the page must not render it as a link.
-      status: accepted
+      status: published
     depends_on: []
 
   - key: pressure-susceptibility-probe

@@ -152,7 +152,7 @@
           "question": "What must a record expose for the groundedness of a claim — whether it is derived, at what standing, from what origin, with its premises reachable, and how it entered the record — to be decidable by query rather than by judgement?",
           "method": "Five criteria, EA1 to EA5, decomposed into eighteen MUST/SHOULD/MAY clauses, each carrying a Check line written against an abstract substrate and organised into three conformance profiles, with a non-normative SysML v2 binding and a machine-readable clause manifest validated against the prose in CI. EA1 to EA4 are labelled evidenced; all three EA5 clauses are labelled hypothesis.",
           "headline": null,
-          "output": "v0.1.0, released 2026-08-18. The criteria originate in the MODELS 2026 NIER paper, doi:10.1145/3822455.3838783, which resolves on publication.",
+          "output": "v0.1.0, released 2026-08-18. The criteria originate in the MODELS 2026 NIER paper, doi:10.1145/3822455.3838783, published in the proceedings.",
           "site": null,
           "paper": null
         },
@@ -422,7 +422,7 @@
             "venue": "Proceedings of the ACM/IEEE 29th International Conference on Model Driven Engineering Languages and Systems (MODELS 2026), New Ideas and Emerging Results Track",
             "year": 2026,
             "doi": "10.1145/3822455.3838783",
-            "status": "accepted"
+            "status": "published"
           }
         },
         {
