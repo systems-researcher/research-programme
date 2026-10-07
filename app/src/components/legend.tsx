@@ -41,7 +41,7 @@ export function Legend({
         written up.
       </p>
 
-      <ol className="mt-5 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2 lg:grid-cols-5">
+      <ol className="mt-5 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
         {statuses.map((status, index) => {
           const count = counts[status.id] ?? 0
           return (
