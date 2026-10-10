@@ -14,7 +14,7 @@ from scripts import mapdata
 # Identical literals to tests/check_external_links.py (parity test locks them).
 # Leading dot on the suffix is the registrable-boundary guard so evilgithub.io
 # never matches. Checker cannot be imported (module-level side effects).
-ALLOWED = {"github.com", "doi.org"}
+ALLOWED = {"arxiv.org", "doi.org", "github.com"}
 ALLOWED_SUFFIXES = (".github.io",)
 
 
@@ -160,6 +160,28 @@ def _collapse(value: object) -> str:
     both want the plain text; only the HTML renderer needs entities.
     """
     return " ".join(str(value).split())
+
+
+def _paper_payload(paper: dict) -> dict:
+    """The six required citation fields, plus any optional link that is set.
+
+    An absent optional key stays absent. Emitting null would make the
+    TypeScript optional (`preprint?: string`) a lie and force the component
+    to distinguish null from missing.
+    """
+    emitted = {
+        "title": _collapse(paper["title"]),
+        "authors": [_collapse(a) for a in paper["authors"]],
+        "venue": _collapse(paper["venue"]),
+        "year": paper["year"],
+        "doi": _collapse(paper["doi"]),
+        "status": paper["status"],
+    }
+    for part in ("preprint", "poster", "slides"):
+        value = paper.get(part)
+        if value:
+            emitted[part] = _collapse(value)
+    return emitted
 
 
 # ---------------------------------------------------------------------------
@@ -350,16 +372,7 @@ def payload(data: mapdata.MapData, live: dict | None) -> dict:
                             else None
                         ),
                         "paper": (
-                            {
-                                "title": _collapse(entry["paper"]["title"]),
-                                "authors": [
-                                    _collapse(a) for a in entry["paper"]["authors"]
-                                ],
-                                "venue": _collapse(entry["paper"]["venue"]),
-                                "year": entry["paper"]["year"],
-                                "doi": _collapse(entry["paper"]["doi"]),
-                                "status": entry["paper"]["status"],
-                            }
+                            _paper_payload(entry["paper"])
                             if entry.get("paper")
                             else None
                         ),

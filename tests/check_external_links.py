@@ -31,7 +31,7 @@ from urllib.parse import urlparse
 # whoever owns the repository, so it is matched as a suffix rather than
 # listed. Adding to this set should be a deliberate act: an unexpected host
 # is how a tracking pixel or a dead redirect gets onto a research page.
-ALLOWED = {"github.com", "doi.org"}
+ALLOWED = {"arxiv.org", "doi.org", "github.com"}
 ALLOWED_SUFFIXES = (".github.io",)
 
 
@@ -57,18 +57,26 @@ def hosts_in(text: str) -> set[str]:
 
 payload = json.loads((ROOT / "data" / "map.json").read_text(encoding="utf-8"))
 # Everything the page can send a reader to: the repository, its result site,
-# and the DOI resolver the citation block builds a link to.
+# the DOI resolver the citation block builds a link to, and a preprint link
+# when the paper carries one. poster and slides are site-relative, so they
+# have no host to check.
 links = set()
 for strand in payload["strands"]:
     for entry in strand["entries"]:
         for url in (entry.get("url"), entry.get("site")):
             if url:
                 links.add(url)
+        paper = entry.get("paper")
+        if not paper:
+            continue
         # Only a published paper is linked. An accepted one's DOI is shown as
         # text because it does not resolve until the venue posts.
-        paper = entry.get("paper")
-        if paper and paper.get("status") == "published":
+        if paper.get("status") == "published":
             links.add(f"https://doi.org/{paper['doi']}")
+        # Independent of publication status: an accepted paper can already
+        # have a preprint, and the page links it.
+        if paper.get("preprint"):
+            links.add(paper["preprint"])
 links = sorted(links)
 for link in links:
     print(link)

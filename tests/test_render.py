@@ -514,6 +514,33 @@ def test_a_paper_is_carried_whole_so_the_page_can_cite_it() -> None:
     }
 
 
+def test_optional_paper_links_are_emitted_only_when_present() -> None:
+    payload = render.payload(
+        data_with(
+            entry(
+                status="published",
+                paper={
+                    "title": "Models as Governed Interfaces",
+                    "authors": ["Gower, Jason D."],
+                    "venue": "Proceedings of MODELS 2026, NIER Track",
+                    "year": 2026,
+                    "doi": "10.1145/3822455.3838783",
+                    "status": "published",
+                    "preprint": "https://arxiv.org/abs/2609.16252",
+                    "poster": "papers/models-2026/poster.pdf",
+                },
+            )
+        ),
+        LIVE_EMPTY,
+    )
+
+    paper = find(payload, "alpha")["paper"]
+
+    assert paper["preprint"] == "https://arxiv.org/abs/2609.16252"
+    assert paper["poster"] == "papers/models-2026/poster.pdf"
+    assert "slides" not in paper
+
+
 def test_an_entry_without_a_paper_carries_none() -> None:
     payload = render.payload(data_with(entry()), LIVE_EMPTY)
 
