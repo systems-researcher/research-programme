@@ -422,7 +422,9 @@
             "venue": "Proceedings of the ACM/IEEE 29th International Conference on Model Driven Engineering Languages and Systems (MODELS 2026), New Ideas and Emerging Results Track",
             "year": 2026,
             "doi": "10.1145/3822455.3838783",
-            "status": "published"
+            "status": "published",
+            "preprint": "https://arxiv.org/abs/2609.16252",
+            "poster": "papers/models-2026/poster.pdf"
           }
         },
         {
