@@ -17,7 +17,9 @@ export type LinkRef = {
 export type Headline = { text: string; source: string }
 
 /** A peer-reviewed paper this repository is the artefact for. Validated in
- *  Python (rule 10): every field present, a bare DOI, and a known status. */
+ *  Python (rule 10): the six required fields always present, a bare DOI, and
+ *  a known status. preprint, poster, and slides are optional and checked only
+ *  when present; an absent key means the link does not exist yet. */
 export type Paper = {
   title: string
   authors: string[]
@@ -27,6 +29,12 @@ export type Paper = {
   /** The publication's own lifecycle, not the study's. Only "published"
    *  means the DOI resolves, so only then is it rendered as a link. */
   status: "in-preparation" | "submitted" | "in-review" | "accepted" | "published"
+  /** Absolute https URL, host arxiv.org. Absent when there is no preprint. */
+  preprint?: string
+  /** Site-relative PDF path, no leading slash. The component prefixes BASE_URL. */
+  poster?: string
+  /** Site-relative PDF path, same shape as poster. Absent until a deck ships. */
+  slides?: string
 }
 
 export type Entry = {
