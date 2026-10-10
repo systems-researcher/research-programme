@@ -92,6 +92,40 @@ export function Citation({ paper, entryKey }: { paper: Paper; entryKey: string }
           {copied ? "Copied" : "BibTeX"}
         </button>
       </div>
+      {(paper.preprint || paper.poster || paper.slides) && (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {paper.preprint && (
+            <a
+              href={paper.preprint}
+              rel="noopener"
+              className="inline-flex items-center gap-1 rounded border border-border bg-background px-2 py-1 text-[11px] transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Preprint
+              <ExternalLink aria-hidden="true" className="size-3" />
+            </a>
+          )}
+          {paper.poster && (
+            <a
+              href={`${import.meta.env.BASE_URL}${paper.poster}`}
+              rel="noopener"
+              className="inline-flex items-center gap-1 rounded border border-border bg-background px-2 py-1 text-[11px] transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Poster
+              <ExternalLink aria-hidden="true" className="size-3" />
+            </a>
+          )}
+          {paper.slides && (
+            <a
+              href={`${import.meta.env.BASE_URL}${paper.slides}`}
+              rel="noopener"
+              className="inline-flex items-center gap-1 rounded border border-border bg-background px-2 py-1 text-[11px] transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Slides
+              <ExternalLink aria-hidden="true" className="size-3" />
+            </a>
+          )}
+        </div>
+      )}
     </div>
   )
 }
