@@ -21,6 +21,12 @@
 #                           # the DOI as a link; until then it does not
 #                           # resolve. This is the PAPER's lifecycle, which is
 #                           # not the study's `status` field above.
+#     preprint: "https://arxiv.org/abs/..."  # optional. https, host arxiv.org.
+#     poster: papers/<key>/poster.pdf        # optional. site-relative .pdf,
+#                           # no leading slash, file under app/public/.
+#     slides: papers/<key>/slides.pdf        # optional, same shape as poster.
+#                           # Omit the key to say "not yet". A blank value is
+#                           # rejected.
 #
 # Transcribe a paper from the study's CITATION.cff. Never type one from
 # memory: a citation is a claim about the published record.
@@ -327,6 +333,8 @@ repos:
       year: 2026
       doi: "10.1145/3822455.3838783"
       status: published
+      preprint: "https://arxiv.org/abs/2609.16252"
+      poster: papers/models-2026/poster.pdf
     depends_on: []
 
   - key: pressure-susceptibility-probe
