@@ -12,6 +12,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import yaml
 
@@ -182,12 +183,56 @@ def _rule_6_headline_attribution(data: MapData) -> list[str]:
 
 DOI_PREFIX = "10."
 PAPER_FIELDS = ("title", "authors", "venue", "year", "doi", "status")
+# Checked only when present. An absent key means "not yet"; a present-but-falsy
+# value is rejected with the same missing-field wording as PAPER_FIELDS, so a
+# blank reserved field cannot pass as present. See the spec's Data shape.
+PAPER_OPTIONAL_FIELDS = ("preprint", "poster", "slides")
+PUBLIC_DIR = Path(__file__).resolve().parent.parent / "app" / "public"
 # A publication's own lifecycle, which is not the study's. A study can be
 # `released` with its paper still `submitted`, and the probe is `published` as
 # a study while its paper is only `accepted` — the proceedings are not out.
 # Keeping the two apart is what stops the page claiming a DOI resolves when
 # it does not.
 PAPER_STATUSES = ("in-preparation", "submitted", "in-review", "accepted", "published")
+
+
+def _preprint_errors(name: object, value: str) -> list[str]:
+    """preprint must be https with host exactly arxiv.org, no port, no userinfo."""
+    parts = urlsplit(value)
+    host = parts.hostname
+    if (
+        parts.scheme != "https"
+        or host != "arxiv.org"
+        or parts.netloc != host
+    ):
+        return [
+            f"{name}: paper preprint '{value}' must be an https URL "
+            "whose host is exactly arxiv.org, with no port and no userinfo"
+        ]
+    return []
+
+
+def _asset_errors(name: object, part: str, value: str) -> list[str]:
+    """poster and slides are site-relative PDF paths that exist under app/public."""
+    segments = value.split("/")
+    if (
+        "://" in value
+        or value.startswith("/")
+        or "\\" in value
+        or ".." in segments
+        or "." in segments
+        or not value.endswith(".pdf")
+        or "" in segments
+    ):
+        return [
+            f"{name}: paper {part} '{value}' must be a relative .pdf path "
+            "with no leading slash and no '..' segment"
+        ]
+    if not (PUBLIC_DIR / value).is_file():
+        return [
+            f"{name}: paper {part} '{value}' does not exist under app/public/"
+        ]
+    return []
 
 
 def _rule_10_paper_citation(data: MapData) -> list[str]:
@@ -219,6 +264,20 @@ def _rule_10_paper_citation(data: MapData) -> list[str]:
                     f"{name}: paper is missing '{part}'; "
                     "a partial citation is a false claim about the record"
                 )
+        for part in PAPER_OPTIONAL_FIELDS:
+            if part not in paper:
+                continue
+            value = paper.get(part)
+            if not value or not isinstance(value, str):
+                errors.append(
+                    f"{name}: paper is missing '{part}'; "
+                    "a partial citation is a false claim about the record"
+                )
+                continue
+            if part == "preprint":
+                errors.extend(_preprint_errors(name, value))
+            else:
+                errors.extend(_asset_errors(name, part, value))
         authors = paper.get("authors")
         if authors and not isinstance(authors, list):
             errors.append(f"{name}: paper authors must be a list, one per author")

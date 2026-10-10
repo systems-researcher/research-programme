@@ -376,3 +376,113 @@ def test_an_unknown_paper_status_is_rejected(tmp_path: Path) -> None:
     errors = mapdata.check(data)
 
     assert any("status is 'in-press'" in error for error in errors)
+
+
+def _complete_paper(**extra: object) -> dict[str, object]:
+    fields: dict[str, object] = {
+        "title": '"T"',
+        "authors": ['"Gower, Jason D."'],
+        "venue": '"V"',
+        "year": "2026",
+        "doi": '"10.1145/3822455.3838783"',
+        "status": "published",
+    }
+    fields.update(extra)
+    return fields
+
+
+def test_a_paper_with_a_valid_preprint_and_poster_passes(tmp_path: Path) -> None:
+    data = mapdata.load(
+        write(
+            tmp_path,
+            _with_paper(
+                _complete_paper(
+                    preprint='"https://arxiv.org/abs/2609.16252"',
+                    poster="papers/models-2026/poster.pdf",
+                )
+            ),
+        )
+    )
+
+    assert mapdata.check(data) == []
+
+
+def test_a_paper_with_none_of_the_optional_fields_passes(tmp_path: Path) -> None:
+    data = mapdata.load(write(tmp_path, _with_paper(_complete_paper())))
+
+    assert mapdata.check(data) == []
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        '"http://arxiv.org/abs/2609.16252"',
+        '"https://arxiv.org:443/abs/2609.16252"',
+        '"https://user@arxiv.org/abs/2609.16252"',
+        '"https://export.arxiv.org/abs/2609.16252"',
+        '"https://example.com/paper"',
+    ],
+)
+def test_a_preprint_that_is_not_a_bare_arxiv_https_url_is_rejected(
+    tmp_path: Path, value: str
+) -> None:
+    data = mapdata.load(
+        write(tmp_path, _with_paper(_complete_paper(preprint=value)))
+    )
+
+    errors = mapdata.check(data)
+
+    assert any("preprint" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "/papers/models-2026/poster.pdf",
+        "papers/../secrets/poster.pdf",
+        "papers\\models-2026\\poster.pdf",
+        "papers/./poster.pdf",
+        "papers/models-2026/poster.pptx",
+        "https://example.com/poster.pdf",
+    ],
+)
+def test_a_poster_path_that_is_not_a_relative_pdf_is_rejected(
+    tmp_path: Path, value: str
+) -> None:
+    data = mapdata.load(
+        write(tmp_path, _with_paper(_complete_paper(poster=value)))
+    )
+
+    errors = mapdata.check(data)
+
+    assert any("poster" in error for error in errors)
+
+
+def test_a_poster_whose_file_is_not_under_app_public_is_rejected(
+    tmp_path: Path,
+) -> None:
+    data = mapdata.load(
+        write(
+            tmp_path,
+            _with_paper(_complete_paper(poster="papers/models-2026/missing.pdf")),
+        )
+    )
+
+    errors = mapdata.check(data)
+
+    assert any("poster" in error and "does not exist" in error for error in errors)
+
+
+@pytest.mark.parametrize("blank", ['""', "null"])
+def test_a_present_but_falsy_optional_field_is_rejected(
+    tmp_path: Path, blank: str
+) -> None:
+    data = mapdata.load(
+        write(tmp_path, _with_paper(_complete_paper(preprint=blank)))
+    )
+
+    errors = mapdata.check(data)
+
+    assert any(
+        "preprint" in error and "paper is missing" in error for error in errors
+    )
